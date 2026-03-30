@@ -192,6 +192,37 @@ const server = http.createServer(async (req, res) => {
     const dm=p.match(/^\/api\/deploy\/(.+)$/);
     if(dm) { const r=await coolify('GET',`/applications/${dm[1]}/restart`); return json(res,200,{success:r.status===200}); }
 
+    // GET code from GitHub repo
+    const codeGet=p.match(/^\/api\/code\/(.+)$/);
+    if(codeGet&&req.method==='GET') {
+      const repo=decodeURIComponent(codeGet[1]);
+      const r=await github('GET',`/repos/${GITHUB_ORG}/${repo}/contents/index.html`);
+      if(r.status===200&&r.data&&r.data.content) {
+        const html=Buffer.from(r.data.content,'base64').toString('utf8');
+        return json(res,200,{success:true,html,sha:r.data.sha,size:html.length});
+      }
+      return json(res,r.status||404,{error:'Code nicht gefunden',details:r.data});
+    }
+
+    // POST updated code to GitHub + redeploy
+    if(codeGet&&req.method==='POST') {
+      const repo=decodeURIComponent(codeGet[1]);
+      const b=await parseBody(req);
+      if(!b.html) return json(res,400,{error:'html fehlt'});
+      // Get current SHA
+      const ex=await github('GET',`/repos/${GITHUB_ORG}/${repo}/contents/index.html`);
+      const sha=(ex.status===200&&ex.data&&ex.data.sha)?ex.data.sha:null;
+      const pushP={message:'Update via Deploy Center',content:Buffer.from(b.html).toString('base64'),branch:'main'};
+      if(sha) pushP.sha=sha;
+      const pushR=await github('PUT',`/repos/${GITHUB_ORG}/${repo}/contents/index.html`,pushP);
+      if(pushR.status!==200&&pushR.status!==201) return json(res,500,{error:'Push failed: '+(pushR.data&&pushR.data.message?pushR.data.message:'unknown')});
+      // Find Coolify app and redeploy
+      const appsR=await coolify('GET','/applications');
+      const app=Array.isArray(appsR.data)?appsR.data.find(a=>a.git_repository&&a.git_repository.includes(repo)):null;
+      if(app) await coolify('GET',`/applications/${app.uuid}/restart`);
+      return json(res,200,{success:true,redeployed:!!app,uuid:app?app.uuid:null});
+    }
+
     // Delete
     const del=p.match(/^\/api\/app\/(.+)$/);
     if(del&&req.method==='DELETE') { const r=await coolify('DELETE',`/applications/${del[1]}`); return json(res,200,{success:r.status===200}); }
