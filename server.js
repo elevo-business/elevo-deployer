@@ -141,7 +141,7 @@ function sanitizeName(name) {
 
 async function createRepo(repoName) {
   try {
-    const repo = await githubRequest('POST', `/orgs/${CONFIG.githubOrg}/repos`, {
+    const repo = await githubRequest('POST', `/user/repos`, {
       name: repoName,
       private: true,
       auto_init: false,
