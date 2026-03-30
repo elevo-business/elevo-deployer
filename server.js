@@ -420,6 +420,52 @@ app.delete('/api/projects/:name', authenticate, (req, res) => {
   return res.json({ success: true, message: `${safeName} entfernt (GitHub Repo bleibt bestehen)` });
 });
 
+// GET /api/fetch/:name — Load current code from GitHub
+app.get('/api/fetch/:name', authenticate, async (req, res) => {
+  const safeName = sanitizeName(req.params.name);
+  const repoName = `${safeName}-preview`;
+  const filename = req.query.file || 'index.html';
+
+  try {
+    const file = await githubRequest('GET', `/repos/${CONFIG.githubOrg}/${repoName}/contents/${filename}`);
+    
+    if (file.content) {
+      const content = Buffer.from(file.content, 'base64').toString('utf-8');
+      return res.json({
+        success: true,
+        name: safeName,
+        repo: repoName,
+        file: filename,
+        content: content,
+        size: content.length,
+        sha: file.sha,
+      });
+    } else {
+      return res.status(404).json({ error: 'Datei leer oder nicht lesbar' });
+    }
+  } catch (err) {
+    return res.status(err.status || 500).json({
+      error: err.message || 'Datei konnte nicht geladen werden',
+    });
+  }
+});
+
+// GET /api/files/:name — List all files in a repo
+app.get('/api/files/:name', authenticate, async (req, res) => {
+  const safeName = sanitizeName(req.params.name);
+  const repoName = `${safeName}-preview`;
+
+  try {
+    const contents = await githubRequest('GET', `/repos/${CONFIG.githubOrg}/${repoName}/contents/`);
+    const files = Array.isArray(contents) 
+      ? contents.map(f => ({ name: f.name, size: f.size, type: f.type }))
+      : [];
+    return res.json({ success: true, repo: repoName, files });
+  } catch (err) {
+    return res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ 
