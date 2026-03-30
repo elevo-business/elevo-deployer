@@ -199,7 +199,14 @@ textarea.fi{min-height:160px;font-family:'SF Mono',Menlo,'Courier New',monospace
       </div>
 
       <div class="fg">
-        <label>HTML-Code</label>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+          <label style="margin:0">HTML-Code</label>
+          <div style="display:flex;gap:5px">
+            <button class="cpb" onclick="pasteCode()" style="font-size:11px;padding:5px 10px">📋 Einfügen</button>
+            <button class="cpb" onclick="document.getElementById('dHtml').select()" style="font-size:11px;padding:5px 10px">Alles</button>
+            <button class="cpb" onclick="document.getElementById('dHtml').value='';document.getElementById('dHtml').dispatchEvent(new Event('input'))" style="font-size:11px;padding:5px 10px">✕</button>
+          </div>
+        </div>
         <textarea class="fi" id="dHtml" placeholder="<!DOCTYPE html>..."></textarea>
         <div class="char-count" id="charCount">0 Zeichen</div>
       </div>
@@ -279,6 +286,20 @@ function copyText(text){
     const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;left:-9999px';
     document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('Kopiert!','ts');
   });
+}
+
+// ═══ PASTE HELPER ═══
+async function pasteCode(){
+  try{
+    const text=await navigator.clipboard.readText();
+    if(text){
+      document.getElementById('dHtml').value=text;
+      document.getElementById('dHtml').dispatchEvent(new Event('input'));
+      toast('Eingefügt! '+text.length.toLocaleString('de')+' Zeichen','ts');
+    }
+  }catch(e){
+    toast('Clipboard-Zugriff verweigert — manuell einfügen (lange drücken)','te');
+  }
 }
 
 // ═══ SLUG ═══
@@ -434,7 +455,8 @@ async function deploy(){
         toast('Deploy erfolgreich!','ts');
       },400);
     }else{
-      lg('✗ '+( d.error||JSON.stringify(d)),'er');
+      lg('✗ '+(d.error||JSON.stringify(d)),'er');
+      if(d.details)lg('Details: '+JSON.stringify(d.details).substring(0,300),'er');
       toast('Deploy fehlgeschlagen','te');
     }
   }catch(e){lg('✗ '+e.message,'er');toast('Fehler','te')}
