@@ -1,12 +1,10 @@
 {
   "name": "elevo-deployer",
-  "version": "1.0.0",
-  "description": "ELEVO Mobile Deploy API — Push websites from phone to production",
+  "version": "2.0.0",
+  "description": "ELEVO Deployer — Coolify Auto-Create & GitHub Integration",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
-  "dependencies": {
-    "express": "^4.18.2"
-  }
+  "dependencies": {}
 }
