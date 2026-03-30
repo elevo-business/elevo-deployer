@@ -140,21 +140,32 @@ const server = http.createServer(async (req, res) => {
       if(!b.name||!b.html) return json(res,400,{error:'name + html required'});
       const slug=toSlug(b.name), repoName=`${slug}-preview`;
 
-      // GitHub repo
-      const repoR=await github('POST',`/orgs/${GITHUB_ORG}/repos`,{name:repoName,description:`Preview ${b.name} — ELEVO`,private:true,auto_init:true});
+      // GitHub repo (personal account, not org)
+      const repoR=await github('POST',`/user/repos`,{name:repoName,description:`Preview ${b.name} — ELEVO`,private:true,auto_init:true});
       const exists=repoR.status===422;
       if(!exists&&repoR.status!==201) return json(res,500,{error:'Repo creation failed',details:repoR.data});
 
       // Wait for GitHub to initialize the repo (auto_init needs a moment)
       if(!exists) await new Promise(r=>setTimeout(r,2000));
 
-      // Push HTML
+      // Push HTML — handle empty repos (no branch yet)
       let sha=null;
-      if(exists) { const ex=await github('GET',`/repos/${GITHUB_ORG}/${repoName}/contents/index.html`); if(ex.status===200&&ex.data.sha) sha=ex.data.sha; }
-      const pushP={message:exists?'Update via Deploy Center':'Initial via Deploy Center',content:Buffer.from(b.html).toString('base64'),branch:'main'};
+      if(exists) {
+        const ex=await github('GET',`/repos/${GITHUB_ORG}/${repoName}/contents/index.html`);
+        if(ex.status===200&&ex.data&&ex.data.sha) sha=ex.data.sha;
+        // If repo exists but is empty (404 on contents), that's fine — push will create the branch
+      }
+      // If repo was just created, wait for GitHub to init
+      if(!exists) await new Promise(r=>setTimeout(r,1000));
+      const pushP={message:exists&&sha?'Update via Deploy Center':'Initial via Deploy Center',content:Buffer.from(b.html).toString('base64'),branch:'main'};
       if(sha) pushP.sha=sha;
-      const pushR=await github('PUT',`/repos/${GITHUB_ORG}/${repoName}/contents/index.html`,pushP);
-      if(pushR.status!==200&&pushR.status!==201) return json(res,500,{error:'Push failed: '+(pushR.data?.message||JSON.stringify(pushR.data)),status:pushR.status,details:pushR.data});
+      let pushR=await github('PUT',`/repos/${GITHUB_ORG}/${repoName}/contents/index.html`,pushP);
+      // Retry once if conflict (SHA mismatch) — refetch SHA and try again
+      if(pushR.status===409||pushR.status===422){
+        const re=await github('GET',`/repos/${GITHUB_ORG}/${repoName}/contents/index.html`);
+        if(re.status===200&&re.data&&re.data.sha){pushP.sha=re.data.sha;pushR=await github('PUT',`/repos/${GITHUB_ORG}/${repoName}/contents/index.html`,pushP)}
+      }
+      if(pushR.status!==200&&pushR.status!==201) return json(res,500,{error:'Push failed: '+(pushR.data&&pushR.data.message?pushR.data.message:JSON.stringify(pushR.data)),status:pushR.status});
 
       // Coolify: check existing
       const appsR=await coolify('GET','/applications');
