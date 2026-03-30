@@ -1,511 +1,614 @@
-/**
- * ELEVO Deployer — Mobile Deploy API
- * 
- * Workflow: Handy → Firmenname + HTML → GitHub Repo → Coolify Deploy → Live
- * 
- * Endpoints:
- *   POST /api/deploy     — Neues Projekt erstellen + deployen
- *   POST /api/update     — Bestehendes Projekt updaten
- *   GET  /api/projects   — Alle deployen Projekte auflisten
- *   GET  /api/status/:name — Status eines Projekts prüfen
- */
+// ═══════════════════════════════════════════════════════════════════
+// ELEVO DEPLOYER v2.0 — Coolify Auto-Create
+// deploy.elevo.solutions
+// 
+// Endpoints:
+//   GET  /                        → Status
+//   GET  /api/coolify-test        → Coolify API connection test
+//   GET  /api/apps                → List all Coolify apps
+//   POST /api/create-preview      → Auto-create preview app in Coolify
+//   POST /api/create-and-push     → Create GitHub repo + push HTML + create Coolify app
+//   GET  /api/deploy/:appUuid     → Trigger redeploy of existing app
+//   GET  /api/status/:appUuid     → Get app status
+//   DELETE /api/app/:appUuid      → Delete app from Coolify
+//
+// Env Vars (set in Coolify):
+//   COOLIFY_URL           → http://159.195.37.216:8000
+//   COOLIFY_TOKEN         → Coolify API Bearer Token
+//   COOLIFY_SERVER_UUID   → rg87l8f5009gy2yp665a2iyg
+//   COOLIFY_PROJECT_UUID  → vqem6h43k3pimdxapypmz6hf
+//   COOLIFY_DEST_UUID     → bona6q9oxd0j53n7c7jjttl6
+//   GITHUB_APP_UUID       → (from Coolify Sources → GitHub App → UUID in URL)
+//   GITHUB_TOKEN          → GitHub Personal Access Token (repo scope)
+//   GITHUB_ORG            → elevo-business
+//   DEPLOY_SECRET         → Simple auth token for this API
+//   PORT                  → 3000
+// ═══════════════════════════════════════════════════════════════════
 
-const express = require('express');
+const http = require('http');
 const https = require('https');
-const path = require('path');
-const fs = require('fs');
+const { URL } = require('url');
 
-const app = express();
+// ─── Config ───────────────────────────────────────────────────────
+
 const PORT = process.env.PORT || 3000;
+const COOLIFY_URL = process.env.COOLIFY_URL || 'http://159.195.37.216:8000';
+const COOLIFY_TOKEN = process.env.COOLIFY_TOKEN || '';
+const COOLIFY_SERVER_UUID = process.env.COOLIFY_SERVER_UUID || '';
+const COOLIFY_PROJECT_UUID = process.env.COOLIFY_PROJECT_UUID || '';
+const COOLIFY_DEST_UUID = process.env.COOLIFY_DEST_UUID || '';
+const GITHUB_APP_UUID = process.env.GITHUB_APP_UUID || '';
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
+const GITHUB_ORG = process.env.GITHUB_ORG || 'elevo-business';
+const DEPLOY_SECRET = process.env.DEPLOY_SECRET || '';
 
-// Config from environment
-const CONFIG = {
-  githubToken: process.env.GITHUB_TOKEN,           // Personal Access Token (repo scope)
-  githubOrg: process.env.GITHUB_ORG || 'elevo-business',
-  coolifyToken: process.env.COOLIFY_TOKEN,          // Coolify API Token
-  coolifyUrl: process.env.COOLIFY_URL || 'https://159.195.37.216:8000',
-  apiKey: process.env.DEPLOYER_API_KEY,             // Simple auth for this API
-  previewDomain: process.env.PREVIEW_DOMAIN || 'preview.elevo.solutions',
-  coolifyServerId: process.env.COOLIFY_SERVER_ID,   // UUID of the Netcup server in Coolify
-  coolifyProjectId: process.env.COOLIFY_PROJECT_ID, // UUID of the "Kunden-Previews" project
-  githubAppId: process.env.GITHUB_APP_ID,           // Coolify's GitHub App source ID
-};
+// ─── Helpers ──────────────────────────────────────────────────────
 
-// Middleware
-app.use(express.json({ limit: '5mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Simple API key auth
-function authenticate(req, res, next) {
-  const key = req.headers['x-api-key'] || req.query.key;
-  if (!CONFIG.apiKey) return next(); // No key set = no auth (rely on Cloudflare Zero Trust)
-  if (key === CONFIG.apiKey) return next();
-  return res.status(401).json({ error: 'Unauthorized' });
+function json(res, status, data) {
+  res.writeHead(status, {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+  });
+  res.end(JSON.stringify(data, null, 2));
 }
 
-// ═══════════════════════════════════════════
-// GitHub API Helper
-// ═══════════════════════════════════════════
+function parseBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk;
+      if (body.length > 5e6) { req.destroy(); reject(new Error('Body too large')); }
+    });
+    req.on('end', () => {
+      try { resolve(JSON.parse(body)); } 
+      catch (e) { reject(new Error('Invalid JSON')); }
+    });
+    req.on('error', reject);
+  });
+}
 
-function githubRequest(method, endpoint, body = null) {
+function checkAuth(req) {
+  if (!DEPLOY_SECRET) return true; // No secret = no auth (dev mode)
+  const auth = req.headers.authorization;
+  if (auth && auth === `Bearer ${DEPLOY_SECRET}`) return true;
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  if (url.searchParams.get('token') === DEPLOY_SECRET) return true;
+  return false;
+}
+
+// ─── HTTP Request Helpers ─────────────────────────────────────────
+
+function coolifyRequest(method, path, data = null) {
+  return new Promise((resolve, reject) => {
+    const url = new URL(`${COOLIFY_URL}/api/v1${path}`);
+    const isHTTPS = url.protocol === 'https:';
+    const transport = isHTTPS ? https : http;
+
+    const options = {
+      hostname: url.hostname,
+      port: url.port || (isHTTPS ? 443 : 80),
+      path: url.pathname + url.search,
+      method: method,
+      headers: {
+        'Authorization': `Bearer ${COOLIFY_TOKEN}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    };
+
+    if (data) {
+      const payload = JSON.stringify(data);
+      options.headers['Content-Length'] = Buffer.byteLength(payload);
+    }
+
+    const req = transport.request(options, (res) => {
+      let body = '';
+      res.on('data', chunk => body += chunk);
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(body);
+          resolve({ status: res.statusCode, data: parsed });
+        } catch (e) {
+          resolve({ status: res.statusCode, data: body });
+        }
+      });
+    });
+
+    req.on('error', err => reject(err));
+    if (data) req.write(JSON.stringify(data));
+    req.end();
+  });
+}
+
+function githubRequest(method, path, data = null) {
   return new Promise((resolve, reject) => {
     const options = {
       hostname: 'api.github.com',
-      path: endpoint,
+      port: 443,
+      path: path,
       method: method,
       headers: {
-        'Authorization': `Bearer ${CONFIG.githubToken}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'ELEVO-Deployer/1.0',
-        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${GITHUB_TOKEN}`,
+        'Accept': 'application/vnd.github+json',
+        'User-Agent': 'ELEVO-Deployer/2.0',
+        'X-GitHub-Api-Version': '2022-11-28',
+        'Content-Type': 'application/json'
       }
     };
+
+    if (data) {
+      const payload = JSON.stringify(data);
+      options.headers['Content-Length'] = Buffer.byteLength(payload);
+    }
 
     const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
+      let body = '';
+      res.on('data', chunk => body += chunk);
       res.on('end', () => {
         try {
-          const parsed = data ? JSON.parse(data) : {};
-          if (res.statusCode >= 200 && res.statusCode < 300) {
-            resolve(parsed);
-          } else {
-            reject({ status: res.statusCode, message: parsed.message || 'GitHub API error', data: parsed });
-          }
-        } catch (e) {
-          reject({ status: res.statusCode, message: 'Invalid JSON response' });
-        }
-      });
-    });
-
-    req.on('error', reject);
-    if (body) req.write(JSON.stringify(body));
-    req.end();
-  });
-}
-
-// ═══════════════════════════════════════════
-// Coolify API Helper
-// ═══════════════════════════════════════════
-
-function coolifyRequest(method, endpoint, body = null) {
-  return new Promise((resolve, reject) => {
-    const url = new URL(CONFIG.coolifyUrl);
-    const options = {
-      hostname: url.hostname,
-      port: url.port || 443,
-      path: `/api/v1${endpoint}`,
-      method: method,
-      headers: {
-        'Authorization': `Bearer ${CONFIG.coolifyToken}`,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      rejectUnauthorized: false, // Self-signed cert on Coolify
-    };
-
-    const protocol = url.protocol === 'https:' ? https : require('http');
-    const req = protocol.request(options, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
-        try {
-          const parsed = data ? JSON.parse(data) : {};
+          const parsed = JSON.parse(body);
           resolve({ status: res.statusCode, data: parsed });
         } catch (e) {
-          resolve({ status: res.statusCode, data: { raw: data } });
+          resolve({ status: res.statusCode, data: body });
         }
       });
     });
 
-    req.on('error', (err) => {
-      reject({ message: 'Coolify API error: ' + err.message });
-    });
-    if (body) req.write(JSON.stringify(body));
+    req.on('error', err => reject(err));
+    if (data) req.write(JSON.stringify(data));
     req.end();
   });
 }
 
-// ═══════════════════════════════════════════
-// Core Functions
-// ═══════════════════════════════════════════
+// ─── Slug Helper ──────────────────────────────────────────────────
 
-function sanitizeName(name) {
+function toSlug(name) {
   return name
     .toLowerCase()
-    .replace(/[äöüß]/g, c => ({ 'ä': 'ae', 'ö': 'oe', 'ü': 'ue', 'ß': 'ss' }[c]))
-    .replace(/[^a-z0-9-]/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
+    .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
-async function createRepo(repoName) {
-  try {
-    const repo = await githubRequest('POST', `/user/repos`, {
-      name: repoName,
-      private: true,
-      auto_init: false,
-      description: `ELEVO Preview — ${repoName}`,
-    });
-    return { success: true, repo };
-  } catch (err) {
-    if (err.status === 422) {
-      // Repo already exists
-      return { success: true, exists: true };
+// ─── Route Handlers ───────────────────────────────────────────────
+
+async function handleStatus(req, res) {
+  json(res, 200, {
+    service: 'ELEVO Deployer v2.0',
+    status: 'running',
+    endpoints: [
+      'GET  /api/coolify-test',
+      'GET  /api/apps',
+      'POST /api/create-preview',
+      'POST /api/create-and-push',
+      'GET  /api/deploy/:appUuid',
+      'GET  /api/status/:appUuid',
+      'DELETE /api/app/:appUuid'
+    ],
+    config: {
+      coolify: COOLIFY_URL ? '✓' : '✗',
+      github: GITHUB_TOKEN ? '✓' : '✗',
+      githubOrg: GITHUB_ORG,
+      auth: DEPLOY_SECRET ? 'enabled' : 'disabled'
     }
-    throw err;
-  }
-}
-
-async function pushFile(repoName, filePath, content, message) {
-  const contentBase64 = Buffer.from(content, 'utf-8').toString('base64');
-  
-  // Check if file exists (need SHA for update)
-  let sha = null;
-  try {
-    const existing = await githubRequest('GET', `/repos/${CONFIG.githubOrg}/${repoName}/contents/${filePath}`);
-    sha = existing.sha;
-  } catch (e) {
-    // File doesn't exist yet — that's fine
-  }
-
-  const body = {
-    message: message,
-    content: contentBase64,
-    branch: 'main',
-  };
-  if (sha) body.sha = sha;
-
-  return githubRequest('PUT', `/repos/${CONFIG.githubOrg}/${repoName}/contents/${filePath}`, body);
-}
-
-async function initRepoWithBranch(repoName) {
-  // GitHub needs at least one commit to have a main branch
-  // Create a minimal README as initial commit
-  const readmeContent = Buffer.from(`# ${repoName}\nELEVO Preview Website\n`).toString('base64');
-  await githubRequest('PUT', `/repos/${CONFIG.githubOrg}/${repoName}/contents/README.md`, {
-    message: 'Initial commit',
-    content: readmeContent,
   });
 }
 
-// Local project tracking (simple JSON file)
-const PROJECTS_FILE = path.join(__dirname, 'data', 'projects.json');
-
-function loadProjects() {
+async function handleCoolifyTest(req, res) {
   try {
-    if (fs.existsSync(PROJECTS_FILE)) {
-      return JSON.parse(fs.readFileSync(PROJECTS_FILE, 'utf-8'));
-    }
-  } catch (e) {}
-  return {};
-}
-
-function saveProjects(projects) {
-  const dir = path.dirname(PROJECTS_FILE);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(PROJECTS_FILE, JSON.stringify(projects, null, 2));
-}
-
-// ═══════════════════════════════════════════
-// API Endpoints
-// ═══════════════════════════════════════════
-
-// POST /api/deploy — Deploy new project
-app.post('/api/deploy', authenticate, async (req, res) => {
-  const { name, html, filename } = req.body;
-
-  if (!name || !html) {
-    return res.status(400).json({ error: 'Name und HTML sind erforderlich.' });
+    const [apps, servers, projects] = await Promise.all([
+      coolifyRequest('GET', '/applications'),
+      coolifyRequest('GET', '/servers'),
+      coolifyRequest('GET', '/projects')
+    ]);
+    json(res, 200, {
+      success: true,
+      coolifyUrl: COOLIFY_URL,
+      apps: { status: apps.status, count: Array.isArray(apps.data) ? apps.data.length : '?' },
+      servers: { status: servers.status, data: servers.data },
+      projects: { status: projects.status, data: projects.data }
+    });
+  } catch (err) {
+    json(res, 500, { error: `Coolify API error: ${err.message}` });
   }
+}
 
-  const safeName = sanitizeName(name);
-  const repoName = `${safeName}-preview`;
-  const domain = `${safeName}-preview.${CONFIG.previewDomain}`;
-  const file = filename || 'index.html';
-  const steps = [];
-
+async function handleListApps(req, res) {
   try {
-    // Step 1: Create GitHub repo
-    steps.push({ step: 'GitHub Repo erstellen', status: 'running' });
-    const repoResult = await createRepo(repoName);
+    const result = await coolifyRequest('GET', '/applications');
+    if (result.status !== 200) {
+      return json(res, result.status, { error: 'Failed to list apps', data: result.data });
+    }
     
-    if (repoResult.exists) {
-      steps[steps.length - 1] = { step: 'GitHub Repo existiert bereits', status: 'done' };
-    } else {
-      steps[steps.length - 1].status = 'done';
-      
-      // Initialize with README so main branch exists
-      steps.push({ step: 'Branch initialisieren', status: 'running' });
-      await initRepoWithBranch(repoName);
-      steps[steps.length - 1].status = 'done';
+    const apps = Array.isArray(result.data) ? result.data.map(app => ({
+      uuid: app.uuid,
+      name: app.name,
+      fqdn: app.fqdn,
+      status: app.status,
+      git_repository: app.git_repository,
+      git_branch: app.git_branch,
+      build_pack: app.build_pack,
+      created_at: app.created_at
+    })) : [];
+    
+    json(res, 200, { count: apps.length, apps });
+  } catch (err) {
+    json(res, 500, { error: err.message });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CORE: Create Preview App in Coolify
+// Expects: { name: "firmenname" } or { name: "firmenname", repo: "custom-repo-name" }
+// Creates: App in Coolify → firmenname-preview.elevo.solutions
+// ═══════════════════════════════════════════════════════════════════
+
+async function handleCreatePreview(req, res) {
+  try {
+    const body = await parseBody(req);
+    const { name, repo } = body;
+
+    if (!name) {
+      return json(res, 400, { error: 'Missing "name" field. Example: { "name": "schmuckgarten" }' });
     }
 
-    // Step 2: Push HTML file
-    steps.push({ step: `${file} pushen`, status: 'running' });
-    await pushFile(repoName, file, html, `Deploy: ${safeName} via ELEVO Deployer`);
-    steps[steps.length - 1].status = 'done';
+    // Validate required config
+    if (!GITHUB_APP_UUID) return json(res, 500, { error: 'GITHUB_APP_UUID not configured' });
+    if (!COOLIFY_SERVER_UUID) return json(res, 500, { error: 'COOLIFY_SERVER_UUID not configured' });
+    if (!COOLIFY_PROJECT_UUID) return json(res, 500, { error: 'COOLIFY_PROJECT_UUID not configured' });
 
-    // Step 3: Track project
-    const projects = loadProjects();
-    projects[safeName] = {
-      name: name,
-      safeName: safeName,
-      repo: repoName,
-      domain: domain,
-      file: file,
-      githubUrl: `https://github.com/${CONFIG.githubOrg}/${repoName}`,
-      previewUrl: `https://${domain}`,
-      createdAt: projects[safeName]?.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      deployCount: (projects[safeName]?.deployCount || 0) + 1,
+    const slug = toSlug(name);
+    const repoName = repo || `${slug}-preview`;
+    const domain = `https://${slug}-preview.elevo.solutions`;
+    const gitRepo = `${GITHUB_ORG}/${repoName}`;
+
+    console.log(`[CREATE] Creating preview app: ${slug}`);
+    console.log(`[CREATE] Repo: ${gitRepo} → Domain: ${domain}`);
+
+    // Step 1: Create the application in Coolify
+    const createPayload = {
+      project_uuid: COOLIFY_PROJECT_UUID,
+      server_uuid: COOLIFY_SERVER_UUID,
+      environment_name: 'production',
+      github_app_uuid: GITHUB_APP_UUID,
+      git_repository: gitRepo,
+      git_branch: 'main',
+      build_pack: 'static',
+      ports_exposes: '80',
+      domains: domain,
+      name: `${slug}-preview`,
+      description: `Preview-Website für ${name} — ELEVO Solutions`,
+      instant_deploy: true,
+      is_static: true
     };
-    saveProjects(projects);
-    steps.push({ step: 'Projekt registriert', status: 'done' });
 
-    // Step 4: Coolify (optional — if configured)
-    let coolifyNote = null;
-    if (CONFIG.coolifyToken && CONFIG.coolifyServerId) {
-      steps.push({ step: 'Coolify App prüfen', status: 'running' });
-      try {
-        // List existing applications to check if it already exists
-        const appsResult = await coolifyRequest('GET', '/applications');
-        const existingApp = appsResult.data?.find?.(a => 
-          a.fqdn?.includes(domain) || a.name === repoName
-        );
-
-        if (existingApp) {
-          // Trigger redeploy
-          steps[steps.length - 1] = { step: 'Coolify Redeploy triggern', status: 'running' };
-          await coolifyRequest('POST', `/applications/${existingApp.uuid}/restart`);
-          steps[steps.length - 1].status = 'done';
-        } else {
-          steps[steps.length - 1].status = 'skipped';
-          coolifyNote = `App noch nicht in Coolify angelegt. Erstelle sie manuell mit Domain: ${domain}`;
-        }
-      } catch (coolifyErr) {
-        steps[steps.length - 1] = { step: 'Coolify (übersprungen)', status: 'skipped' };
-        coolifyNote = 'Coolify API nicht erreichbar. App manuell deployen.';
-      }
-    } else {
-      coolifyNote = `Coolify nicht konfiguriert. Erstelle die App manuell:\n→ Repo: ${repoName}\n→ Build Pack: Static\n→ Domain: ${domain}`;
+    // Add destination if configured
+    if (COOLIFY_DEST_UUID) {
+      createPayload.destination_uuid = COOLIFY_DEST_UUID;
     }
 
-    return res.json({
-      success: true,
-      project: projects[safeName],
-      steps: steps,
-      coolifyNote: coolifyNote,
-      nextSteps: coolifyNote ? [coolifyNote] : ['Deployment läuft automatisch via Coolify.'],
-    });
+    const result = await coolifyRequest('POST', '/applications/private-github-app', createPayload);
 
-  } catch (err) {
-    steps.push({ step: 'Fehler', status: 'error', message: err.message || JSON.stringify(err) });
-    return res.status(500).json({
-      success: false,
-      steps: steps,
-      error: err.message || 'Unbekannter Fehler',
-    });
-  }
-});
-
-// POST /api/update — Update existing project
-app.post('/api/update', authenticate, async (req, res) => {
-  const { name, html, filename } = req.body;
-
-  if (!name || !html) {
-    return res.status(400).json({ error: 'Name und HTML sind erforderlich.' });
-  }
-
-  const safeName = sanitizeName(name);
-  const repoName = `${safeName}-preview`;
-  const file = filename || 'index.html';
-
-  try {
-    // Push updated file
-    await pushFile(repoName, file, html, `Update: ${safeName} via ELEVO Deployer`);
-
-    // Update tracking
-    const projects = loadProjects();
-    if (projects[safeName]) {
-      projects[safeName].updatedAt = new Date().toISOString();
-      projects[safeName].deployCount = (projects[safeName].deployCount || 0) + 1;
-      saveProjects(projects);
-    }
-
-    // Trigger Coolify redeploy if configured
-    let coolifyStatus = 'not_configured';
-    if (CONFIG.coolifyToken) {
-      try {
-        const appsResult = await coolifyRequest('GET', '/applications');
-        const domain = `${safeName}-preview.${CONFIG.previewDomain}`;
-        const app = appsResult.data?.find?.(a => 
-          a.fqdn?.includes(domain) || a.name === repoName
-        );
-        if (app) {
-          await coolifyRequest('POST', `/applications/${app.uuid}/restart`);
-          coolifyStatus = 'redeployed';
-        } else {
-          coolifyStatus = 'app_not_found';
-        }
-      } catch (e) {
-        coolifyStatus = 'error';
-      }
-    }
-
-    return res.json({
-      success: true,
-      repo: repoName,
-      file: file,
-      coolifyStatus: coolifyStatus,
-      message: `${file} aktualisiert in ${repoName}`,
-    });
-
-  } catch (err) {
-    return res.status(500).json({
-      success: false,
-      error: err.message || 'Update fehlgeschlagen',
-    });
-  }
-});
-
-// GET /api/projects — List all projects
-app.get('/api/projects', authenticate, (req, res) => {
-  const projects = loadProjects();
-  return res.json({
-    count: Object.keys(projects).length,
-    projects: Object.values(projects).sort((a, b) => 
-      new Date(b.updatedAt) - new Date(a.updatedAt)
-    ),
-  });
-});
-
-// GET /api/status/:name — Project status
-app.get('/api/status/:name', authenticate, async (req, res) => {
-  const safeName = sanitizeName(req.params.name);
-  const projects = loadProjects();
-  const project = projects[safeName];
-
-  if (!project) {
-    return res.status(404).json({ error: 'Projekt nicht gefunden' });
-  }
-
-  // Check if GitHub repo is accessible
-  let githubStatus = 'unknown';
-  try {
-    await githubRequest('GET', `/repos/${CONFIG.githubOrg}/${project.repo}`);
-    githubStatus = 'accessible';
-  } catch (e) {
-    githubStatus = 'not_found';
-  }
-
-  return res.json({
-    ...project,
-    githubStatus,
-  });
-});
-
-// DELETE /api/projects/:name — Remove project tracking (doesn't delete repo)
-app.delete('/api/projects/:name', authenticate, (req, res) => {
-  const safeName = sanitizeName(req.params.name);
-  const projects = loadProjects();
-  
-  if (!projects[safeName]) {
-    return res.status(404).json({ error: 'Projekt nicht gefunden' });
-  }
-
-  delete projects[safeName];
-  saveProjects(projects);
-
-  return res.json({ success: true, message: `${safeName} entfernt (GitHub Repo bleibt bestehen)` });
-});
-
-// GET /api/fetch/:name — Load current code from GitHub
-app.get('/api/fetch/:name', authenticate, async (req, res) => {
-  const safeName = sanitizeName(req.params.name);
-  const repoName = `${safeName}-preview`;
-  const filename = req.query.file || 'index.html';
-
-  try {
-    const file = await githubRequest('GET', `/repos/${CONFIG.githubOrg}/${repoName}/contents/${filename}`);
-    
-    if (file.content) {
-      const content = Buffer.from(file.content, 'base64').toString('utf-8');
-      return res.json({
+    if (result.status === 201 || result.status === 200) {
+      console.log(`[CREATE] ✓ App created: ${result.data.uuid}`);
+      json(res, 201, {
         success: true,
-        name: safeName,
-        repo: repoName,
-        file: filename,
-        content: content,
-        size: content.length,
-        sha: file.sha,
+        message: `Preview-App für "${name}" erstellt und Deploy gestartet.`,
+        app: {
+          uuid: result.data.uuid,
+          domain: domain,
+          repo: gitRepo,
+          build_pack: 'static',
+          status: 'deploying'
+        },
+        next_steps: [
+          `GitHub App Repo-Access prüfen: ${repoName} muss Zugriff haben`,
+          `Website live unter: ${domain}`,
+          `Status checken: GET /api/status/${result.data.uuid}`
+        ]
       });
     } else {
-      return res.status(404).json({ error: 'Datei leer oder nicht lesbar' });
+      console.log(`[CREATE] ✗ Failed:`, JSON.stringify(result.data));
+      json(res, result.status || 500, {
+        success: false,
+        error: 'Coolify App-Erstellung fehlgeschlagen',
+        details: result.data,
+        payload_sent: createPayload
+      });
     }
   } catch (err) {
-    return res.status(err.status || 500).json({
-      error: err.message || 'Datei konnte nicht geladen werden',
-    });
+    console.error('[CREATE] Error:', err.message);
+    json(res, 500, { error: err.message });
   }
-});
+}
 
-// GET /api/files/:name — List all files in a repo
-app.get('/api/files/:name', authenticate, async (req, res) => {
-  const safeName = sanitizeName(req.params.name);
-  const repoName = `${safeName}-preview`;
+// ═══════════════════════════════════════════════════════════════════
+// FULL AUTO: Create GitHub Repo + Push HTML + Create Coolify App
+// Expects: { name: "firmenname", html: "<html>...</html>" }
+// Does everything: Repo → HTML push → Coolify App → Deploy
+// ═══════════════════════════════════════════════════════════════════
 
+async function handleCreateAndPush(req, res) {
   try {
-    const contents = await githubRequest('GET', `/repos/${CONFIG.githubOrg}/${repoName}/contents/`);
-    const files = Array.isArray(contents) 
-      ? contents.map(f => ({ name: f.name, size: f.size, type: f.type }))
-      : [];
-    return res.json({ success: true, repo: repoName, files });
+    const body = await parseBody(req);
+    const { name, html } = body;
+
+    if (!name) return json(res, 400, { error: 'Missing "name"' });
+    if (!html) return json(res, 400, { error: 'Missing "html" — die HTML-Datei als String' });
+    if (!GITHUB_TOKEN) return json(res, 500, { error: 'GITHUB_TOKEN not configured' });
+
+    const slug = toSlug(name);
+    const repoName = `${slug}-preview`;
+    const domain = `https://${slug}-preview.elevo.solutions`;
+
+    console.log(`[FULL-AUTO] Starting for: ${name}`);
+
+    // Step 1: Create GitHub repo
+    console.log(`[FULL-AUTO] Step 1: Creating GitHub repo ${GITHUB_ORG}/${repoName}`);
+    
+    const repoResult = await githubRequest('POST', `/orgs/${GITHUB_ORG}/repos`, {
+      name: repoName,
+      description: `Preview-Website für ${name} — ELEVO Solutions`,
+      private: true,
+      auto_init: false
+    });
+
+    if (repoResult.status !== 201 && repoResult.status !== 422) {
+      // 422 = repo already exists, which is fine
+      return json(res, repoResult.status, {
+        error: 'GitHub Repo konnte nicht erstellt werden',
+        details: repoResult.data
+      });
+    }
+
+    const repoExists = repoResult.status === 422;
+    console.log(`[FULL-AUTO] Repo ${repoExists ? 'existiert bereits' : 'erstellt'}`);
+
+    // Step 2: Push index.html to repo
+    console.log(`[FULL-AUTO] Step 2: Pushing index.html`);
+    
+    const htmlBase64 = Buffer.from(html).toString('base64');
+    
+    // Check if file exists (for update)
+    let fileSha = null;
+    if (repoExists) {
+      const existing = await githubRequest('GET', `/repos/${GITHUB_ORG}/${repoName}/contents/index.html`);
+      if (existing.status === 200 && existing.data.sha) {
+        fileSha = existing.data.sha;
+      }
+    }
+
+    const pushPayload = {
+      message: repoExists ? 'Website aktualisiert via ELEVO Deployer' : 'Initial commit via ELEVO Deployer',
+      content: htmlBase64,
+      branch: 'main'
+    };
+    if (fileSha) pushPayload.sha = fileSha;
+
+    // If repo was just created (no branch yet), we need to create with initial commit
+    const pushResult = await githubRequest('PUT', `/repos/${GITHUB_ORG}/${repoName}/contents/index.html`, pushPayload);
+
+    if (pushResult.status !== 200 && pushResult.status !== 201) {
+      return json(res, pushResult.status, {
+        error: 'HTML konnte nicht gepusht werden',
+        details: pushResult.data
+      });
+    }
+    console.log(`[FULL-AUTO] ✓ index.html gepusht`);
+
+    // Step 3: Create Coolify App (only if repo is new)
+    console.log(`[FULL-AUTO] Step 3: Creating Coolify app`);
+
+    // Check if app already exists
+    const appsResult = await coolifyRequest('GET', '/applications');
+    let existingApp = null;
+    if (Array.isArray(appsResult.data)) {
+      existingApp = appsResult.data.find(app => 
+        app.git_repository === `${GITHUB_ORG}/${repoName}` || 
+        app.name === `${slug}-preview`
+      );
+    }
+
+    if (existingApp) {
+      // App exists → just redeploy
+      console.log(`[FULL-AUTO] App existiert (${existingApp.uuid}), triggere Redeploy`);
+      const deployResult = await coolifyRequest('GET', `/applications/${existingApp.uuid}/restart`);
+      
+      json(res, 200, {
+        success: true,
+        action: 'updated',
+        message: `Website für "${name}" aktualisiert. Redeploy läuft.`,
+        app: {
+          uuid: existingApp.uuid,
+          domain: domain,
+          repo: `${GITHUB_ORG}/${repoName}`,
+          status: 'redeploying'
+        }
+      });
+    } else {
+      // Create new app
+      const createPayload = {
+        project_uuid: COOLIFY_PROJECT_UUID,
+        server_uuid: COOLIFY_SERVER_UUID,
+        environment_name: 'production',
+        github_app_uuid: GITHUB_APP_UUID,
+        git_repository: `${GITHUB_ORG}/${repoName}`,
+        git_branch: 'main',
+        build_pack: 'static',
+        ports_exposes: '80',
+        domains: domain,
+        name: `${slug}-preview`,
+        description: `Preview-Website für ${name} — ELEVO Solutions`,
+        instant_deploy: true,
+        is_static: true
+      };
+
+      if (COOLIFY_DEST_UUID) {
+        createPayload.destination_uuid = COOLIFY_DEST_UUID;
+      }
+
+      const createResult = await coolifyRequest('POST', '/applications/private-github-app', createPayload);
+
+      if (createResult.status === 201 || createResult.status === 200) {
+        console.log(`[FULL-AUTO] ✓ Alles fertig: ${domain}`);
+        json(res, 201, {
+          success: true,
+          action: 'created',
+          message: `Alles erledigt! Repo erstellt, HTML gepusht, Coolify-App erstellt, Deploy läuft.`,
+          app: {
+            uuid: createResult.data.uuid,
+            domain: domain,
+            repo: `${GITHUB_ORG}/${repoName}`,
+            status: 'deploying'
+          }
+        });
+      } else {
+        json(res, createResult.status || 500, {
+          success: false,
+          error: 'GitHub + Push OK, aber Coolify-Erstellung fehlgeschlagen',
+          repo_created: true,
+          html_pushed: true,
+          coolify_error: createResult.data,
+          manual_fix: `Erstelle die App manuell in Coolify: Repo ${GITHUB_ORG}/${repoName}, Static, Domain ${domain}`
+        });
+      }
+    }
   } catch (err) {
-    return res.status(err.status || 500).json({ error: err.message });
+    console.error('[FULL-AUTO] Error:', err.message);
+    json(res, 500, { error: err.message });
   }
-});
+}
 
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'ok',
-    github: !!CONFIG.githubToken,
-    coolify: !!CONFIG.coolifyToken,
-    version: '1.0.0',
-  });
-});
+// ─── Redeploy ─────────────────────────────────────────────────────
 
-// Coolify API test — shows raw response for debugging
-app.get('/api/coolify-test', authenticate, async (req, res) => {
-  if (!CONFIG.coolifyToken) {
-    return res.json({ error: 'COOLIFY_TOKEN not set' });
-  }
+async function handleDeploy(req, res, appUuid) {
   try {
-    const apps = await coolifyRequest('GET', '/applications');
-    const servers = await coolifyRequest('GET', '/servers');
-    const projects = await coolifyRequest('GET', '/projects');
-    res.json({ 
-      success: true,
-      coolifyUrl: CONFIG.coolifyUrl,
-      apps: apps,
-      servers: servers,
-      projects: projects,
+    const result = await coolifyRequest('GET', `/applications/${appUuid}/restart`);
+    json(res, result.status, {
+      success: result.status === 200,
+      message: result.status === 200 ? 'Redeploy gestartet' : 'Fehler',
+      data: result.data
     });
   } catch (err) {
-    res.json({ error: err.message || JSON.stringify(err) });
+    json(res, 500, { error: err.message });
+  }
+}
+
+// ─── Status ───────────────────────────────────────────────────────
+
+async function handleAppStatus(req, res, appUuid) {
+  try {
+    const result = await coolifyRequest('GET', `/applications/${appUuid}`);
+    if (result.status === 200) {
+      const app = result.data;
+      json(res, 200, {
+        uuid: app.uuid,
+        name: app.name,
+        fqdn: app.fqdn,
+        status: app.status,
+        git_repository: app.git_repository,
+        build_pack: app.build_pack,
+        created_at: app.created_at,
+        updated_at: app.updated_at
+      });
+    } else {
+      json(res, result.status, result.data);
+    }
+  } catch (err) {
+    json(res, 500, { error: err.message });
+  }
+}
+
+// ─── Delete ───────────────────────────────────────────────────────
+
+async function handleDeleteApp(req, res, appUuid) {
+  try {
+    const result = await coolifyRequest('DELETE', `/applications/${appUuid}`);
+    json(res, result.status, {
+      success: result.status === 200,
+      message: result.status === 200 ? 'App gelöscht' : 'Fehler',
+      data: result.data
+    });
+  } catch (err) {
+    json(res, 500, { error: err.message });
+  }
+}
+
+// ─── Router ───────────────────────────────────────────────────────
+
+const server = http.createServer(async (req, res) => {
+  // CORS preflight
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204, {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+    });
+    return res.end();
+  }
+
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const path = url.pathname;
+
+  // Public endpoints (no auth)
+  if (path === '/' && req.method === 'GET') {
+    return handleStatus(req, res);
+  }
+
+  // Auth check for all /api/ routes
+  if (path.startsWith('/api/') && !checkAuth(req)) {
+    return json(res, 401, { error: 'Unauthorized. Bearer Token oder ?token= Parameter fehlt.' });
+  }
+
+  // Routes
+  try {
+    if (path === '/api/coolify-test' && req.method === 'GET') {
+      return await handleCoolifyTest(req, res);
+    }
+    
+    if (path === '/api/apps' && req.method === 'GET') {
+      return await handleListApps(req, res);
+    }
+    
+    if (path === '/api/create-preview' && req.method === 'POST') {
+      return await handleCreatePreview(req, res);
+    }
+    
+    if (path === '/api/create-and-push' && req.method === 'POST') {
+      return await handleCreateAndPush(req, res);
+    }
+
+    // Dynamic routes: /api/deploy/:uuid, /api/status/:uuid, /api/app/:uuid
+    const deployMatch = path.match(/^\/api\/deploy\/(.+)$/);
+    if (deployMatch && req.method === 'GET') {
+      return await handleDeploy(req, res, deployMatch[1]);
+    }
+
+    const statusMatch = path.match(/^\/api\/status\/(.+)$/);
+    if (statusMatch && req.method === 'GET') {
+      return await handleAppStatus(req, res, statusMatch[1]);
+    }
+
+    const deleteMatch = path.match(/^\/api\/app\/(.+)$/);
+    if (deleteMatch && req.method === 'DELETE') {
+      return await handleDeleteApp(req, res, deleteMatch[1]);
+    }
+
+    json(res, 404, { error: 'Not found' });
+  } catch (err) {
+    console.error('Unhandled error:', err);
+    json(res, 500, { error: err.message });
   }
 });
 
-// Serve frontend
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// Start
-app.listen(PORT, () => {
-  console.log(`\n  ⚡ ELEVO Deployer running on port ${PORT}`);
-  console.log(`  📱 Open on your phone to deploy websites\n`);
-  if (!CONFIG.githubToken) console.warn('  ⚠️  GITHUB_TOKEN not set — deploys will fail');
-  if (!CONFIG.coolifyToken) console.log('  ℹ️  COOLIFY_TOKEN not set — manual Coolify setup needed');
+server.listen(PORT, () => {
+  console.log(`═══════════════════════════════════════`);
+  console.log(`  ELEVO Deployer v2.0`);
+  console.log(`  Port: ${PORT}`);
+  console.log(`  Coolify: ${COOLIFY_URL}`);
+  console.log(`  GitHub Org: ${GITHUB_ORG}`);
+  console.log(`  Auth: ${DEPLOY_SECRET ? 'enabled' : 'disabled'}`);
+  console.log(`═══════════════════════════════════════`);
 });
