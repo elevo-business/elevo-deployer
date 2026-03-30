@@ -895,6 +895,7 @@ async function loadProjects() {
           <a href="${p.previewUrl}" target="_blank">Preview öffnen</a>
           <button onclick="copyText('${p.previewUrl}')">URL kopieren</button>
           <a href="${p.githubUrl}" target="_blank">GitHub</a>
+          <button onclick="loadProjectCode('${esc(p.name)}')">📄 Code laden</button>
           <button onclick="quickUpdate('${esc(p.name)}')">Update</button>
           <button onclick="prefillOutreach('${esc(p.name)}','${p.previewUrl}')">Outreach</button>
         </div>
@@ -914,6 +915,32 @@ function quickUpdate(name) {
   document.getElementById('domainPreview').textContent = `${safe}-preview.elevo.solutions`;
   htmlEl.focus();
   toast('Update-Modus für ' + name);
+}
+
+async function loadProjectCode(name) {
+  const safe = sanitize(name);
+  toast('⏳ Code wird geladen...');
+  
+  try {
+    const res = await fetch(`/api/fetch/${safe}`);
+    const data = await res.json();
+    
+    if (data.success && data.content) {
+      switchTab('deploy');
+      setMode('update');
+      document.getElementById('projectName').value = name;
+      document.getElementById('repoPreview').textContent = `${safe}-preview`;
+      document.getElementById('domainPreview').textContent = `${safe}-preview.elevo.solutions`;
+      htmlEl.value = data.content;
+      updateCounts();
+      toast(`✓ ${data.size.toLocaleString()} Zeichen geladen`);
+      window.scrollTo({ top: document.getElementById('htmlCode').offsetTop - 100, behavior: 'smooth' });
+    } else {
+      toast(data.error || 'Code konnte nicht geladen werden', true);
+    }
+  } catch (err) {
+    toast('Fehler: ' + err.message, true);
+  }
 }
 
 // ═══ OUTREACH GENERATOR ═══
