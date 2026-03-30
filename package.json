@@ -1,10 +1,12 @@
 {
   "name": "elevo-deployer",
   "version": "2.0.0",
-  "description": "ELEVO Deployer — Coolify Auto-Create & GitHub Integration",
+  "description": "ELEVO Deploy Center — Build, Deploy & Manage Preview Websites",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
-  "dependencies": {}
+  "engines": {
+    "node": ">=18"
+  }
 }
