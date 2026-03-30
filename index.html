@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#05070E">
+<title>ELEVO Deployer</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+<style>
+  :root {
+    --bg: #05070E;
+    --bg-elevated: #0A0E1A;
+    --surface: #111827;
+    --surface-hover: #1A2035;
+    --border: #1E2A42;
+    --text: #E2E8F0;
+    --text-muted: #8899B0;
+    --text-dim: #516179;
+    --accent: #3B82F6;
+    --accent-hover: #2563EB;
+    --accent-glow: rgba(59,130,246,.15);
+    --green: #10B981;
+    --orange: #F59E0B;
+    --red: #EF4444;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-weight: 300;
+    line-height: 1.6;
+    min-height: 100dvh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ═══ HEADER ═══ */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(5,7,14,.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .header h1 {
+    font-family: 'Sora', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    color: var(--text);
+  }
+
+  .header h1 .v { color: var(--accent); }
+  .header .badge {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-glow);
+    padding: 2px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px rgba(16,185,129,.4);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 50% { opacity: .5; } }
+
+  /* ═══ TABS ═══ */
+  .tabs {
+    display: flex;
+    padding: 0 20px;
+    gap: 0;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    background: var(--bg);
+  }
+
+  .tab {
+    flex: 1;
+    padding: 12px 0;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-dim);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all .2s;
+  }
+
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* ═══ CONTENT ═══ */
+  .content {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ═══ FORM ═══ */
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  input[type="text"], textarea {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px; /* Prevents iOS zoom */
+    font-weight: 300;
+    padding: 12px 16px;
+    outline: none;
+    transition: border-color .2s;
+  }
+
+  input:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  textarea {
+    min-height: 200px;
+    resize: vertical;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .field { margin-bottom: 16px; }
+
+  .hint {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* ═══ BUTTONS ═══ */
+  .btn {
+    width: 100%;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 100px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-primary:active { transform: scale(.98); }
+  .btn-primary:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  /* ═══ STEPS LOG ═══ */
+  .steps-log {
+    margin-top: 20px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    display: none;
+  }
+
+  .steps-log.visible { display: block; }
+
+  .step-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    font-size: 14px;
+    color: var(--text-muted);
+    border-bottom: 1px solid rgba(255,255,255,.03);
+  }
+  .step-item:last-child { border-bottom: none; }
+
+  .step-icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .step-done .step-icon { color: var(--green); }
+  .step-done { color: var(--text); }
+  .step-running .step-icon { animation: spin .8s linear infinite; color: var(--accent); }
+  .step-error .step-icon { color: var(--red); }
+  .step-error { color: var(--red); }
+  .step-skipped { color: var(--text-dim); font-style: italic; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ═══ RESULT ═══ */
+  .result {
+    margin-top: 16px;
+    background: var(--surface);
+    border: 1px solid rgba(16,185,129,.2);
+    border-radius: 16px;
+    padding: 20px;
+    display: none;
+  }
+
+  .result.visible { display: block; }
+
+  .result-title {
+    font-family: 'Sora', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--green);
+    margin-bottom: 12px;
+  }
+
+  .result-url {
+    display: block;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--accent);
+    font-size: 14px;
+    text-decoration: none;
+    word-break: break-all;
+    margin-bottom: 10px;
+  }
+
+  .result-note {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    white-space: pre-line;
+  }
+
+  /* ═══ PROJECTS LIST ═══ */
+  .project-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: border-color .2s;
+  }
+
+  .project-card:active { border-color: rgba(59,130,246,.3); }
+
+  .project-name {
+    font-family: 'Sora', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .project-meta {
+    font-size: 12px;
+    color: var(--text-dim);
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .project-links {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .project-links a {
+    font-size: 12px;
+    color: var(--accent);
+    text-decoration: none;
+    padding: 4px 10px;
+    background: var(--accent-glow);
+    border-radius: 20px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-dim);
+  }
+
+  .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+
+  /* ═══ TOGGLE ═══ */
+  .mode-toggle {
+    display: flex;
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 3px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+  }
+
+  .mode-btn {
+    flex: 1;
+    padding: 8px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-dim);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+
+  .mode-btn.active {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  /* ═══ PASTE BUTTON ═══ */
+  .paste-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .btn-paste {
+    padding: 8px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'Outfit', sans-serif;
+  }
+
+  .btn-paste:active { background: var(--surface-hover); }
+
+  .char-count {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-align: right;
+    margin-top: 4px;
+  }
+
+  /* ═══ COPY BUTTON ═══ */
+  .btn-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-size: 12px;
+    cursor: pointer;
+    font-family: 'Outfit', sans-serif;
+  }
+
+  /* ═══ LOADING ═══ */
+  .loading { text-align: center; padding: 40px; color: var(--text-dim); }
+
+  /* ═══ GOOGLE FONTS PRECONNECT ═══ */
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Outfit:wght@300;400;500;600&display=swap');
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <h1>ELE<span class="v">V</span>O</h1>
+    <span class="badge">Deployer</span>
+  </div>
+  <div class="status-dot" id="statusDot" title="API Status"></div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" data-tab="deploy" onclick="switchTab('deploy')">Deploy</div>
+  <div class="tab" data-tab="projects" onclick="switchTab('projects')">Projekte</div>
+</div>
+
+<!-- DEPLOY PANEL -->
+<div class="content">
+  <div class="panel active" id="panel-deploy">
+    
+    <!-- Mode Toggle -->
+    <div class="mode-toggle">
+      <div class="mode-btn active" data-mode="new" onclick="setMode('new')">Neues Projekt</div>
+      <div class="mode-btn" data-mode="update" onclick="setMode('update')">Update</div>
+    </div>
+
+    <!-- Name -->
+    <div class="field">
+      <label>Firmenname</label>
+      <input type="text" id="projectName" placeholder="z.B. Mueller Sanitaer" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <div class="hint" id="repoHint">→ Repo: <span id="repoPreview">...-preview</span></div>
+    </div>
+
+    <!-- HTML Input -->
+    <div class="field">
+      <div class="paste-row">
+        <label style="flex:1; margin-bottom:0; line-height:28px;">HTML Code</label>
+        <button class="btn-paste" onclick="pasteFromClipboard()">📋 Einfügen</button>
+        <button class="btn-paste" onclick="clearHtml()">✕</button>
+      </div>
+      <textarea id="htmlCode" placeholder="<!DOCTYPE html>&#10;<html>&#10;  Hier den kompletten HTML-Code einfügen...&#10;</html>" spellcheck="false"></textarea>
+      <div class="char-count"><span id="charCount">0</span> Zeichen · <span id="lineCount">0</span> Zeilen</div>
+    </div>
+
+    <!-- Filename (optional) -->
+    <div class="field">
+      <label>Dateiname (optional)</label>
+      <input type="text" id="fileName" placeholder="index.html" value="index.html">
+    </div>
+
+    <!-- Deploy Button -->
+    <button class="btn btn-primary" id="deployBtn" onclick="deploy()">
+      <span id="deployBtnText">⚡ Deployen</span>
+    </button>
+
+    <!-- Steps Log -->
+    <div class="steps-log" id="stepsLog"></div>
+
+    <!-- Result -->
+    <div class="result" id="result">
+      <div class="result-title">✅ Deployment erfolgreich</div>
+      <a class="result-url" id="resultUrl" href="#" target="_blank"></a>
+      <a class="result-url" id="resultGithub" href="#" target="_blank" style="color: var(--text-muted); font-size: 12px;"></a>
+      <div class="result-note" id="resultNote"></div>
+    </div>
+  </div>
+
+  <!-- PROJECTS PANEL -->
+  <div class="panel" id="panel-projects">
+    <div id="projectsList">
+      <div class="loading">Lade Projekte...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══ STATE ═══
+let currentMode = 'new';
+let apiKey = localStorage.getItem('elevo_deployer_key') || '';
+
+// ═══ TAB SWITCHING ═══
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === `panel-${tab}`));
+  if (tab === 'projects') loadProjects();
+}
+
+// ═══ MODE TOGGLE ═══
+function setMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  document.getElementById('deployBtnText').textContent = mode === 'new' ? '⚡ Deployen' : '🔄 Update pushen';
+}
+
+// ═══ NAME → REPO PREVIEW ═══
+document.getElementById('projectName').addEventListener('input', (e) => {
+  const safe = sanitize(e.target.value);
+  document.getElementById('repoPreview').textContent = safe ? `${safe}-preview` : '...-preview';
+});
+
+function sanitize(name) {
+  return name.toLowerCase()
+    .replace(/[äöüß]/g, c => ({ 'ä': 'ae', 'ö': 'oe', 'ü': 'ue', 'ß': 'ss' }[c] || c))
+    .replace(/[^a-z0-9-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+// ═══ HTML TEXTAREA ═══
+const htmlEl = document.getElementById('htmlCode');
+htmlEl.addEventListener('input', updateCounts);
+
+function updateCounts() {
+  const val = htmlEl.value;
+  document.getElementById('charCount').textContent = val.length.toLocaleString();
+  document.getElementById('lineCount').textContent = val.split('\n').length.toLocaleString();
+}
+
+async function pasteFromClipboard() {
+  try {
+    const text = await navigator.clipboard.readText();
+    htmlEl.value = text;
+    updateCounts();
+  } catch (e) {
+    // Fallback: focus textarea so user can paste manually
+    htmlEl.focus();
+    alert('Clipboard nicht verfügbar. Bitte manuell einfügen (long-press → Paste).');
+  }
+}
+
+function clearHtml() {
+  htmlEl.value = '';
+  updateCounts();
+}
+
+// ═══ DEPLOY ═══
+async function deploy() {
+  const name = document.getElementById('projectName').value.trim();
+  const html = document.getElementById('htmlCode').value;
+  const filename = document.getElementById('fileName').value.trim() || 'index.html';
+
+  if (!name) return alert('Firmenname eingeben.');
+  if (!html) return alert('HTML-Code einfügen.');
+  if (html.length < 50) return alert('HTML sieht zu kurz aus. Vollständigen Code einfügen.');
+
+  const btn = document.getElementById('deployBtn');
+  const log = document.getElementById('stepsLog');
+  const result = document.getElementById('result');
+
+  btn.disabled = true;
+  document.getElementById('deployBtnText').textContent = '⏳ Läuft...';
+  log.classList.add('visible');
+  result.classList.remove('visible');
+  log.innerHTML = '<div class="step-item step-running"><div class="step-icon">⟳</div><div>Starte Deployment...</div></div>';
+
+  const endpoint = currentMode === 'new' ? '/api/deploy' : '/api/update';
+
+  try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': apiKey,
+      },
+      body: JSON.stringify({ name, html, filename }),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      // Show steps
+      if (data.steps) {
+        log.innerHTML = data.steps.map(s => {
+          const icon = s.status === 'done' ? '✓' : s.status === 'error' ? '✕' : s.status === 'skipped' ? '–' : '⟳';
+          const cls = `step-${s.status}`;
+          return `<div class="step-item ${cls}"><div class="step-icon">${icon}</div><div>${s.step}</div></div>`;
+        }).join('');
+      }
+
+      // Show result
+      const project = data.project || {};
+      result.classList.add('visible');
+      
+      const urlEl = document.getElementById('resultUrl');
+      urlEl.href = project.previewUrl || '#';
+      urlEl.textContent = project.previewUrl || project.domain || '';
+
+      const ghEl = document.getElementById('resultGithub');
+      ghEl.href = project.githubUrl || '#';
+      ghEl.textContent = `GitHub: ${project.repo || ''}`;
+
+      const noteEl = document.getElementById('resultNote');
+      if (data.coolifyNote) {
+        noteEl.textContent = data.coolifyNote;
+      } else if (data.nextSteps?.length) {
+        noteEl.textContent = data.nextSteps.join('\n');
+      } else {
+        noteEl.textContent = '';
+      }
+    } else {
+      log.innerHTML += `<div class="step-item step-error"><div class="step-icon">✕</div><div>${data.error || 'Fehler beim Deployment'}</div></div>`;
+    }
+  } catch (err) {
+    log.innerHTML += `<div class="step-item step-error"><div class="step-icon">✕</div><div>Netzwerkfehler: ${err.message}</div></div>`;
+  }
+
+  btn.disabled = false;
+  document.getElementById('deployBtnText').textContent = currentMode === 'new' ? '⚡ Deployen' : '🔄 Update pushen';
+}
+
+// ═══ PROJECTS LIST ═══
+async function loadProjects() {
+  const container = document.getElementById('projectsList');
+
+  try {
+    const res = await fetch('/api/projects', {
+      headers: { 'X-API-Key': apiKey },
+    });
+    const data = await res.json();
+
+    if (!data.projects?.length) {
+      container.innerHTML = `<div class="empty-state">
+        <div class="icon">📭</div>
+        <div>Noch keine Projekte deployt.</div>
+      </div>`;
+      return;
+    }
+
+    container.innerHTML = data.projects.map(p => {
+      const updated = new Date(p.updatedAt).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+      return `<div class="project-card">
+        <div class="project-name">${escapeHtml(p.name)}</div>
+        <div class="project-meta">
+          <span>📅 ${updated}</span>
+          <span>🔄 ${p.deployCount}x</span>
+        </div>
+        <div class="project-links">
+          <a href="${p.previewUrl}" target="_blank">Preview</a>
+          <a href="${p.githubUrl}" target="_blank">GitHub</a>
+          <a href="#" onclick="quickUpdate('${escapeHtml(p.name)}'); return false;">Update</a>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (err) {
+    container.innerHTML = `<div class="empty-state"><div>Fehler beim Laden: ${err.message}</div></div>`;
+  }
+}
+
+function quickUpdate(name) {
+  switchTab('deploy');
+  setMode('update');
+  document.getElementById('projectName').value = name;
+  document.getElementById('repoPreview').textContent = `${sanitize(name)}-preview`;
+  htmlEl.focus();
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ═══ HEALTH CHECK ═══
+async function checkHealth() {
+  const dot = document.getElementById('statusDot');
+  try {
+    const res = await fetch('/api/health');
+    const data = await res.json();
+    dot.style.background = data.github ? 'var(--green)' : 'var(--orange)';
+    dot.title = data.github ? 'API OK' : 'GitHub Token fehlt';
+  } catch (e) {
+    dot.style.background = 'var(--red)';
+    dot.title = 'API nicht erreichbar';
+  }
+}
+
+// Init
+checkHealth();
+updateCounts();
+</script>
+</body>
+</html>
