@@ -2,130 +2,155 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>ELEVO Deploy Center</title>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg viewBox='0 0 36 36' xmlns='http://www.w3.org/2000/svg'><circle cx='18' cy='18' r='16' fill='%2305070E' stroke='%233B82F6' stroke-width='1'/><path d='M18 8L25 19' stroke='%233B82F6' stroke-width='2.2' stroke-linecap='round'/><path d='M18 8L11 19' stroke='%233B82F6' stroke-width='2.2' stroke-linecap='round'/></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#05070E;--bg2:#0A0E1A;--surface:#111827;--surface-h:#1A2035;--border:#1E2A42;--text:#E2E8F0;--muted:#8899B0;--dim:#516179;--accent:#3B82F6;--accent-h:#2563EB;--green:#10B981;--orange:#F59E0B;--red:#EF4444;--radius:14px}
+:root{--bg:#05070E;--bg2:#0A0E1A;--sf:#111827;--sfh:#1A2035;--bd:#1E2A42;--tx:#E2E8F0;--mt:#8899B0;--dm:#516179;--ac:#3B82F6;--ach:#2563EB;--gn:#10B981;--og:#F59E0B;--rd:#EF4444;--r:14px}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--text);font-family:Outfit,sans-serif;font-weight:300;min-height:100vh}
-::selection{background:var(--accent);color:#fff}
-::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+body{background:var(--bg);color:var(--tx);font-family:Outfit,sans-serif;font-weight:300;min-height:100vh;min-height:100dvh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+::selection{background:var(--ac);color:#fff}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
+input,textarea,button,select{font-family:inherit}
 
 /* Header */
-header{position:sticky;top:0;z-index:100;background:rgba(5,7,14,.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.04);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between}
-.logo{font-family:Sora;font-weight:700;font-size:18px;letter-spacing:.24em;display:flex;align-items:center;gap:10px}
-.logo span{color:var(--accent)}
-.logo-icon{width:28px;height:28px}
-.header-actions{display:flex;gap:10px;align-items:center}
-.badge{font-size:11px;padding:4px 10px;border-radius:100px;background:rgba(59,130,246,.12);color:var(--accent);font-weight:500}
-.badge.green{background:rgba(16,185,129,.12);color:var(--green)}
+header{position:sticky;top:0;z-index:100;background:rgba(5,7,14,.9);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.04);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:Sora;font-weight:700;font-size:16px;letter-spacing:.22em;display:flex;align-items:center;gap:8px}
+.logo b{color:var(--ac)}
+.logo svg{width:24px;height:24px}
+.hdr-r{display:flex;gap:6px;align-items:center}
+.pill{font-size:9px;padding:3px 8px;border-radius:100px;font-weight:600;letter-spacing:.04em}
+.pill-b{background:rgba(59,130,246,.1);color:var(--ac)}
+.pill-g{background:rgba(16,185,129,.1);color:var(--gn)}
 
 /* Tabs */
-.tabs{display:flex;gap:0;padding:0 24px;background:var(--bg);border-bottom:1px solid rgba(255,255,255,.04)}
-.tab{padding:14px 20px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
-.tab:hover{color:var(--text)}
-.tab.active{color:var(--accent);border-color:var(--accent)}
+.tabs{display:flex;padding:0 16px;background:var(--bg);border-bottom:1px solid rgba(255,255,255,.04);overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tab{padding:12px 16px;font-size:13px;font-weight:500;color:var(--mt);cursor:pointer;border-bottom:2px solid transparent;transition:.2s;white-space:nowrap;min-height:44px;display:flex;align-items:center}
+.tab:hover{color:var(--tx)}.tab.on{color:var(--ac);border-color:var(--ac)}
 
-/* Content */
-.content{max-width:1200px;margin:0 auto;padding:24px}
-.section{display:none}.section.active{display:block}
+.wrap{max-width:1200px;margin:0 auto;padding:16px}
+.sec{display:none}.sec.on{display:block}
 
-/* Stats bar */
-.stats{display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap}
-.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;flex:1;min-width:140px}
-.stat-label{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px}
-.stat-value{font-family:Sora;font-size:24px;font-weight:700}
-.stat-value.blue{color:var(--accent)}.stat-value.green{color:var(--green)}.stat-value.orange{color:var(--orange)}
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.st{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:12px}
+.st small{font-size:9px;color:var(--dm);text-transform:uppercase;letter-spacing:.14em;display:block;margin-bottom:2px}
+.st strong{font-family:Sora;font-size:20px;font-weight:700}
+.st strong.b{color:var(--ac)}.st strong.g{color:var(--gn)}.st strong.o{color:var(--og)}
 
-/* Search + Filter */
-.toolbar{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
-.search{flex:1;min-width:200px;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:Outfit;font-size:14px;outline:none;transition:border .2s}
-.search:focus{border-color:var(--accent)}
-.filter-btn{padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-size:13px;cursor:pointer;transition:all .2s;font-family:Outfit}
-.filter-btn:hover,.filter-btn.active{border-color:var(--accent);color:var(--accent)}
+/* Toolbar */
+.bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.bar input{flex:1;min-width:140px;padding:10px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;color:var(--tx);font-size:14px;outline:none;transition:.2s;min-height:44px}
+.bar input:focus{border-color:var(--ac)}
+.fbtn{padding:8px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;color:var(--mt);font-size:12px;cursor:pointer;transition:.15s;min-height:44px}
+.fbtn:hover,.fbtn.on{border-color:var(--ac);color:var(--ac)}
 
-/* App Grid */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
-.app-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;transition:all .25s;cursor:default;position:relative;overflow:hidden}
-.app-card:hover{border-color:rgba(59,130,246,.25);transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.3)}
-.app-card .type{position:absolute;top:0;right:0;font-size:9px;padding:4px 10px;border-radius:0 0 0 10px;background:rgba(59,130,246,.1);color:var(--accent);text-transform:uppercase;letter-spacing:.1em;font-weight:600}
-.app-card .type.infra{background:rgba(249,115,22,.1);color:var(--orange)}
-.app-name{font-family:Sora;font-weight:600;font-size:14px;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:60px}
-.app-domain{font-size:12px;color:var(--muted);margin-bottom:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.app-domain a{color:var(--accent);text-decoration:none}
-.app-domain a:hover{text-decoration:underline}
-.app-status{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:3px 10px;border-radius:100px}
-.app-status.running{background:rgba(16,185,129,.1);color:var(--green)}
-.app-status.stopped{background:rgba(239,68,68,.1);color:var(--red)}
-.app-actions{display:flex;gap:6px;margin-top:12px}
-.app-btn{padding:6px 12px;font-size:11px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:Outfit;transition:all .15s}
-.app-btn:hover{border-color:var(--accent);color:var(--accent)}
-.app-btn.danger:hover{border-color:var(--red);color:var(--red)}
-.app-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-.app-btn.primary:hover{background:var(--accent-h)}
+/* Grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px;transition:.2s;position:relative;overflow:hidden}
+.card:hover{border-color:rgba(59,130,246,.2)}
+.card .tag{position:absolute;top:0;right:0;font-size:8px;padding:3px 8px;border-radius:0 0 0 8px;text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.tag-p{background:rgba(59,130,246,.08);color:var(--ac)}
+.tag-i{background:rgba(249,115,22,.08);color:var(--og)}
+.card h4{font-family:Sora;font-weight:600;font-size:13px;margin-bottom:4px;padding-right:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card .url{font-size:11px;color:var(--mt);margin-bottom:8px;display:flex;align-items:center;gap:4px;overflow:hidden}
+.card .url a{color:var(--ac);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.card .url a:hover{text-decoration:underline}
+.dot{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:500;padding:2px 8px;border-radius:100px}
+.dot-g{background:rgba(16,185,129,.08);color:var(--gn)}.dot-r{background:rgba(239,68,68,.08);color:var(--rd)}
+.card .acts{display:flex;gap:5px;margin-top:10px;flex-wrap:wrap}
+.ab{padding:7px 12px;font-size:11px;border-radius:8px;border:1px solid var(--bd);background:transparent;color:var(--mt);cursor:pointer;transition:.15s;min-height:36px;display:inline-flex;align-items:center;gap:4px}
+.ab:hover{border-color:var(--ac);color:var(--ac)}
+.ab:active{transform:scale(.96)}
+.ab.x:hover{border-color:var(--rd);color:var(--rd)}
+.ab.prim{background:var(--ac);border-color:var(--ac);color:#fff}
+.ab.prim:hover{background:var(--ach)}
 
-/* Builder Section */
-.builder{max-width:700px}
-.builder h2{font-family:Sora;font-size:22px;font-weight:700;margin-bottom:6px}
-.builder p{color:var(--muted);font-size:14px;margin-bottom:28px}
-.form-group{margin-bottom:18px}
-.form-group label{display:block;font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;font-weight:500;margin-bottom:6px}
-.form-input{width:100%;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:Outfit;font-size:14px;outline:none;transition:border .2s;resize:vertical}
-.form-input:focus{border-color:var(--accent)}
-textarea.form-input{min-height:100px}
-.btn{padding:14px 28px;border-radius:100px;font-family:Sora;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
-.btn-primary{background:var(--accent);color:#fff}
-.btn-primary:hover{background:var(--accent-h);transform:translateY(-1px);box-shadow:0 4px 20px rgba(59,130,246,.3)}
-.btn-secondary{background:transparent;border:1px solid var(--border);color:var(--muted)}
-.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
-.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+/* Copy button */
+.cpb{padding:4px 8px;font-size:10px;border-radius:6px;border:1px solid var(--bd);background:transparent;color:var(--dm);cursor:pointer;transition:.15s;min-height:28px;display:inline-flex;align-items:center;gap:3px;flex-shrink:0}
+.cpb:hover{border-color:var(--ac);color:var(--ac)}
+.cpb:active{transform:scale(.93)}
+.cpb.ok{border-color:var(--gn);color:var(--gn)}
 
-/* Progress Steps */
-.progress{margin:28px 0;display:flex;gap:0}
-.step{flex:1;text-align:center;position:relative;padding-bottom:24px}
-.step::after{content:'';position:absolute;bottom:10px;left:50%;width:100%;height:2px;background:var(--border)}
+/* Deploy Section */
+.dw{max-width:640px}
+.dw h2{font-family:Sora;font-size:20px;font-weight:700;margin-bottom:4px}
+.dw>p{color:var(--mt);font-size:13px;margin-bottom:20px}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:11px;color:var(--dm);text-transform:uppercase;letter-spacing:.1em;font-weight:500;margin-bottom:5px}
+.fi{width:100%;padding:12px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;color:var(--tx);font-size:14px;outline:none;transition:.2s;resize:vertical;min-height:44px}
+.fi:focus{border-color:var(--ac)}
+textarea.fi{min-height:160px;font-family:'SF Mono',Menlo,'Courier New',monospace;font-size:12px;line-height:1.5}
+
+/* Preview link box */
+.preview-box{margin:8px 0 16px;padding:12px 14px;background:var(--bg2);border:1px solid var(--bd);border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px}
+.preview-box .link{font-size:13px;color:var(--ac);font-family:Sora;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.preview-box.empty .link{color:var(--dm)}
+.char-count{font-size:10px;color:var(--dm);text-align:right;margin-top:4px}
+
+/* Buttons */
+.btn{padding:14px 24px;border-radius:100px;font-family:Sora;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:.2s;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:48px;width:100%}
+.btn-p{background:var(--ac);color:#fff}.btn-p:hover{background:var(--ach);box-shadow:0 4px 16px rgba(59,130,246,.3)}
+.btn-s{background:transparent;border:1px solid var(--bd);color:var(--mt);width:auto}.btn-s:hover{border-color:var(--ac);color:var(--ac)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn:active:not(:disabled){transform:scale(.97)}
+
+/* Steps */
+.steps{display:flex;gap:6px;margin-bottom:18px;align-items:center}
+.step{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--dm);font-weight:500}
+.step .n{width:22px;height:22px;border-radius:50%;background:var(--sf);border:1.5px solid var(--bd);display:flex;align-items:center;justify-content:center;font-family:Sora;font-size:10px;font-weight:700;transition:.3s;flex-shrink:0}
+.step.done .n{background:var(--gn);border-color:var(--gn);color:#fff}
+.step.act .n{background:var(--ac);border-color:var(--ac);color:#fff;box-shadow:0 0 10px rgba(59,130,246,.3)}
+.step::after{content:'→';color:var(--bd);margin:0 2px;font-size:10px}
 .step:last-child::after{display:none}
-.step-dot{width:20px;height:20px;border-radius:50%;background:var(--surface);border:2px solid var(--border);margin:0 auto 8px;position:relative;z-index:1;transition:all .3s}
-.step.done .step-dot{background:var(--green);border-color:var(--green)}
-.step.active .step-dot{background:var(--accent);border-color:var(--accent);box-shadow:0 0 12px rgba(59,130,246,.4)}
-.step-label{font-size:11px;color:var(--dim);font-weight:500}
-.step.done .step-label{color:var(--green)}
-.step.active .step-label{color:var(--accent)}
 
-/* Output */
-.output{margin-top:20px;padding:16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:13px;line-height:1.7;max-height:300px;overflow-y:auto;white-space:pre-wrap;font-family:'Courier New',monospace}
-.output .log{color:var(--dim)}.output .ok{color:var(--green)}.output .err{color:var(--red)}.output .info{color:var(--accent)}
+/* Log */
+.log{margin-top:14px;padding:12px;background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);font-size:11px;line-height:1.7;max-height:200px;overflow-y:auto;white-space:pre-wrap;font-family:'SF Mono',Menlo,monospace;display:none}
+.log .l{color:var(--dm)}.log .ok{color:var(--gn)}.log .er{color:var(--rd)}.log .i{color:var(--ac)}
 
-/* Preview */
-.preview-frame{width:100%;height:500px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;margin:16px 0}
+/* Success card */
+.success-card{background:var(--sf);border:1px solid rgba(16,185,129,.2);border-radius:16px;padding:28px 20px;text-align:center;display:none}
+.success-card .check{width:56px;height:56px;border-radius:50%;background:rgba(16,185,129,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px}
+.success-card h3{font-family:Sora;font-size:18px;font-weight:700;margin-bottom:12px}
+.success-card .link-box{background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:16px}
+.success-card .link-box a{color:var(--ac);font-size:14px;font-weight:500;word-break:break-all;text-decoration:none}
+.success-card .link-box a:hover{text-decoration:underline}
+.success-card .btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 
 /* Modal */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
-.modal-overlay.show{display:flex}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;max-width:500px;width:100%;padding:28px}
-.modal h3{font-family:Sora;font-size:18px;font-weight:700;margin-bottom:16px}
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
+.mo.show{display:flex}
+.mo-box{background:var(--sf);border:1px solid var(--bd);border-radius:16px;max-width:380px;width:100%;padding:20px}
+.mo-box h3{font-family:Sora;font-size:16px;font-weight:700;margin-bottom:10px}
 
 /* Toast */
-.toast{position:fixed;bottom:24px;right:24px;padding:14px 20px;border-radius:12px;font-size:13px;font-weight:500;z-index:300;transform:translateY(100px);opacity:0;transition:all .3s}
+.toast{position:fixed;bottom:16px;left:16px;right:16px;max-width:360px;margin:0 auto;padding:12px 16px;border-radius:10px;font-size:12px;font-weight:500;z-index:300;transform:translateY(80px);opacity:0;transition:.3s;text-align:center}
 .toast.show{transform:translateY(0);opacity:1}
-.toast.success{background:var(--green);color:#fff}
-.toast.error{background:var(--red);color:#fff}
-.toast.info{background:var(--accent);color:#fff}
+.toast.ts{background:var(--gn);color:#fff}.toast.te{background:var(--rd);color:#fff}.toast.ti{background:var(--ac);color:#fff}
 
-/* Spinner */
 @keyframes spin{to{transform:rotate(360deg)}}
-.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
-.spinner.dark{border-color:var(--border);border-top-color:var(--accent)}
+.sp{width:16px;height:16px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .5s linear infinite;display:inline-block}
+
+/* File input styled */
+.file-label{display:flex;align-items:center;justify-content:center;padding:12px;border:2px dashed var(--bd);border-radius:10px;color:var(--dm);font-size:12px;cursor:pointer;transition:.2s;min-height:48px;text-align:center}
+.file-label:hover{border-color:var(--ac);color:var(--ac)}
+.file-label.has{border-color:var(--gn);color:var(--gn);border-style:solid}
+#dFile{display:none}
 
 /* Mobile */
-@media(max-width:600px){
-  .content{padding:16px}
-  .stats{gap:10px}.stat{min-width:100px;padding:12px 14px}
+@media(max-width:640px){
+  .wrap{padding:12px}
+  .stats{grid-template-columns:repeat(2,1fr);gap:6px}
   .grid{grid-template-columns:1fr}
-  .tabs{overflow-x:auto;gap:0}.tab{padding:12px 14px;font-size:12px;white-space:nowrap}
-  .builder{max-width:100%}
-  header{padding:0 16px}
+  .tab{padding:10px 12px;font-size:12px}
+  header{padding:0 12px;height:48px}
+  .dw h2{font-size:18px}
+  .steps{flex-wrap:wrap;gap:4px}
+  .btn{padding:12px 20px;font-size:12px}
+  textarea.fi{min-height:120px;font-size:11px}
+  .success-card{padding:20px 16px}
 }
 </style>
 </head>
@@ -133,447 +158,311 @@ textarea.form-input{min-height:100px}
 
 <header>
   <div class="logo">
-    <svg class="logo-icon" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="16.5" stroke="rgba(59,130,246,.18)" stroke-width="1"/><path d="M18 8L25.5 19" stroke="#3B82F6" stroke-width="2.2" stroke-linecap="round"/><path d="M18 8L10.5 19" stroke="#3B82F6" stroke-width="2.2" stroke-linecap="round"/><path d="M18 14L22.5 21.5" stroke="rgba(59,130,246,.3)" stroke-width="1.4" stroke-linecap="round"/><path d="M18 14L13.5 21.5" stroke="rgba(59,130,246,.3)" stroke-width="1.4" stroke-linecap="round"/><line x1="11" y1="26" x2="25" y2="26" stroke="rgba(59,130,246,.15)" stroke-width="1" stroke-linecap="round"/></svg>
-    ELE<span>V</span>O
+    <svg viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="16.5" stroke="rgba(59,130,246,.18)" stroke-width="1"/><path d="M18 8L25.5 19" stroke="#3B82F6" stroke-width="2.2" stroke-linecap="round"/><path d="M18 8L10.5 19" stroke="#3B82F6" stroke-width="2.2" stroke-linecap="round"/><path d="M18 14L22.5 21.5" stroke="rgba(59,130,246,.3)" stroke-width="1.4" stroke-linecap="round"/><path d="M18 14L13.5 21.5" stroke="rgba(59,130,246,.3)" stroke-width="1.4" stroke-linecap="round"/><line x1="11" y1="26" x2="25" y2="26" stroke="rgba(59,130,246,.15)" stroke-width="1" stroke-linecap="round"/></svg>
+    ELE<b>V</b>O
   </div>
-  <div class="header-actions">
-    <div class="badge" id="configBadge">...</div>
-    <div class="badge green" id="appCount">0 Apps</div>
+  <div class="hdr-r">
+    <div class="pill pill-b" id="cfgPill">...</div>
+    <div class="pill pill-g" id="cntPill">0</div>
   </div>
 </header>
 
 <div class="tabs">
-  <div class="tab active" data-tab="dashboard">Dashboard</div>
-  <div class="tab" data-tab="builder">Website bauen</div>
-  <div class="tab" data-tab="deploy">Quick Deploy</div>
+  <div class="tab on" data-t="dep">Deploy</div>
+  <div class="tab" data-t="dash">Apps</div>
 </div>
 
-<!-- ═══ DASHBOARD ═══ -->
-<div class="content">
-<div class="section active" id="dashboard">
-  <div class="stats">
-    <div class="stat"><div class="stat-label">Previews</div><div class="stat-value blue" id="previewCount">-</div></div>
-    <div class="stat"><div class="stat-label">Infra</div><div class="stat-value orange" id="infraCount">-</div></div>
-    <div class="stat"><div class="stat-label">Running</div><div class="stat-value green" id="runningCount">-</div></div>
-  </div>
-  <div class="toolbar">
-    <input type="text" class="search" id="searchInput" placeholder="Suchen...">
-    <button class="filter-btn active" data-filter="all">Alle</button>
-    <button class="filter-btn" data-filter="preview">Previews</button>
-    <button class="filter-btn" data-filter="infra">Infra</button>
-    <button class="filter-btn" onclick="loadApps()">↻</button>
-  </div>
-  <div class="grid" id="appGrid"></div>
-</div>
+<div class="wrap">
 
-<!-- ═══ BUILDER ═══ -->
-<div class="section" id="builder">
-  <div class="builder">
-    <h2>Website bauen</h2>
-    <p>URL eingeben → Claude baut die Website → One-Click Deploy</p>
+<!-- ═══ DEPLOY ═══ -->
+<div class="sec on" id="dep">
+  <div class="dw">
+    <h2>Website deployen</h2>
+    <p>In Claude bauen → HTML kopieren → hier pasten → live.</p>
 
-    <div class="progress">
-      <div class="step" id="step1"><div class="step-dot"></div><div class="step-label">Eingabe</div></div>
-      <div class="step" id="step2"><div class="step-dot"></div><div class="step-label">Claude baut</div></div>
-      <div class="step" id="step3"><div class="step-dot"></div><div class="step-label">Preview</div></div>
-      <div class="step" id="step4"><div class="step-dot"></div><div class="step-label">Deploy</div></div>
+    <div class="steps">
+      <div class="step act" id="s1"><span class="n">1</span>Eingabe</div>
+      <div class="step" id="s2"><span class="n">2</span>GitHub</div>
+      <div class="step" id="s3"><span class="n">3</span>Coolify</div>
+      <div class="step" id="s4"><span class="n">4</span>Live</div>
     </div>
 
-    <!-- Step 1: Input -->
-    <div id="builderInput">
-      <div class="form-group">
-        <label>Website-URL des Prospects</label>
-        <input type="text" class="form-input" id="buildUrl" placeholder="https://beispiel.de">
+    <div id="depForm">
+      <div class="fg">
+        <label>Firmenname</label>
+        <input type="text" class="fi" id="dName" placeholder="z.B. Mueller Sanitaer" autocomplete="off" autocapitalize="words">
       </div>
-      <div class="form-group">
-        <label>Firmenname (für Subdomain)</label>
-        <input type="text" class="form-input" id="buildName" placeholder="Beispiel GmbH">
+
+      <div class="preview-box empty" id="previewBox">
+        <span class="link" id="previewLink">Subdomain erscheint hier...</span>
+        <button class="cpb" onclick="copyText(document.getElementById('previewLink').textContent)" id="previewCopy" style="display:none">Kopieren</button>
       </div>
-      <div class="form-group">
-        <label>Zusätzliche Anweisungen (optional)</label>
-        <textarea class="form-input" id="buildPrompt" placeholder="z.B. Branche: GaLaBau, helles Theme, Signature Feature: Preisrechner..."></textarea>
+
+      <div class="fg">
+        <label>HTML-Code</label>
+        <textarea class="fi" id="dHtml" placeholder="<!DOCTYPE html>..."></textarea>
+        <div class="char-count" id="charCount">0 Zeichen</div>
       </div>
-      <button class="btn btn-primary" id="buildBtn" onclick="startBuild()">
-        Website generieren
+
+      <div class="fg">
+        <label for="dFile" class="file-label" id="fileLabel">
+          HTML-Datei wählen oder hierhin ziehen
+        </label>
+        <input type="file" accept=".html,.htm" id="dFile">
+      </div>
+
+      <button class="btn btn-p" id="depBtn" onclick="deploy()">
+        Deploy starten
       </button>
     </div>
 
-    <!-- Step 2: Building -->
-    <div id="builderProgress" style="display:none">
-      <div class="output" id="buildLog"></div>
-    </div>
-
-    <!-- Step 3: Preview -->
-    <div id="builderPreview" style="display:none">
-      <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
-        <button class="btn btn-primary" onclick="deployBuilt()">Jetzt deployen</button>
-        <button class="btn btn-secondary" onclick="downloadHtml()">HTML downloaden</button>
-        <button class="btn btn-secondary" onclick="resetBuilder()">Neu starten</button>
+    <!-- Success -->
+    <div class="success-card" id="depDone">
+      <div class="check">✓</div>
+      <h3 id="doneTitle">Live!</h3>
+      <div class="link-box">
+        <a id="doneLink" href="#" target="_blank"></a>
+        <button class="cpb" onclick="copyText(document.getElementById('doneLink').textContent)">Kopieren</button>
       </div>
-      <iframe id="previewFrame" class="preview-frame" sandbox="allow-scripts"></iframe>
-    </div>
-
-    <!-- Step 4: Deployed -->
-    <div id="builderDone" style="display:none">
-      <div style="text-align:center;padding:40px 0">
-        <div style="font-size:48px;margin-bottom:16px">✓</div>
-        <h3 style="font-family:Sora;font-size:20px;margin-bottom:8px" id="deployedTitle">Deployed!</h3>
-        <a id="deployedLink" href="#" target="_blank" style="color:var(--accent);font-size:16px"></a>
-        <div style="margin-top:24px;display:flex;gap:10px;justify-content:center">
-          <button class="btn btn-primary" onclick="resetBuilder()">Nächste Website</button>
-          <button class="btn btn-secondary" onclick="switchTab('dashboard');loadApps()">Dashboard</button>
-        </div>
+      <div class="btns">
+        <button class="ab prim" onclick="window.open(document.getElementById('doneLink').href,'_blank')">Öffnen</button>
+        <button class="ab" onclick="resetDep()">Nächste Website</button>
+        <button class="ab" onclick="sw('dash');loadApps()">Apps</button>
       </div>
     </div>
+
+    <div class="log" id="log"></div>
   </div>
 </div>
 
-<!-- ═══ QUICK DEPLOY ═══ -->
-<div class="section" id="deploy">
-  <div class="builder">
-    <h2>Quick Deploy</h2>
-    <p>Eigene HTML-Datei hochladen und sofort deployen</p>
-    <div class="form-group">
-      <label>Firmenname</label>
-      <input type="text" class="form-input" id="quickName" placeholder="Beispiel GmbH">
-    </div>
-    <div class="form-group">
-      <label>HTML-Code</label>
-      <textarea class="form-input" id="quickHtml" placeholder="<!DOCTYPE html>..." style="min-height:200px;font-family:monospace;font-size:12px"></textarea>
-    </div>
-    <div class="form-group">
-      <label>Oder HTML-Datei wählen</label>
-      <input type="file" accept=".html,.htm" id="htmlFile" style="color:var(--muted);font-size:13px" onchange="loadFile(this)">
-    </div>
-    <button class="btn btn-primary" onclick="quickDeploy()">Deploy starten</button>
-    <div class="output" id="quickLog" style="display:none;margin-top:16px"></div>
+<!-- ═══ DASHBOARD ═══ -->
+<div class="sec" id="dash">
+  <div class="stats">
+    <div class="st"><small>Previews</small><strong class="b" id="nPrev">-</strong></div>
+    <div class="st"><small>Infra</small><strong class="o" id="nInfra">-</strong></div>
+    <div class="st"><small>Running</small><strong class="g" id="nRun">-</strong></div>
+    <div class="st"><small>Total</small><strong id="nTotal">-</strong></div>
   </div>
-</div>
+  <div class="bar">
+    <input type="text" id="q" placeholder="Suchen..." autocomplete="off">
+    <button class="fbtn on" data-f="all">Alle</button>
+    <button class="fbtn" data-f="preview">Previews</button>
+    <button class="fbtn" data-f="infra">Infra</button>
+    <button class="fbtn" onclick="loadApps()" title="Refresh">↻</button>
+  </div>
+  <div class="grid" id="g"></div>
 </div>
 
-<!-- Confirm Modal -->
-<div class="modal-overlay" id="confirmModal">
-  <div class="modal">
-    <h3 id="confirmTitle">Bestätigen</h3>
-    <p id="confirmText" style="color:var(--muted);margin-bottom:20px"></p>
-    <div style="display:flex;gap:10px;justify-content:flex-end">
-      <button class="btn btn-secondary" onclick="closeModal()">Abbrechen</button>
-      <button class="btn btn-primary" id="confirmBtn" style="background:var(--red)">Löschen</button>
+</div>
+
+<!-- Modal -->
+<div class="mo" id="cMo">
+  <div class="mo-box">
+    <h3>Löschen?</h3>
+    <p id="cP" style="color:var(--mt);margin-bottom:14px;font-size:13px"></p>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="ab" onclick="cMo()" style="min-height:40px">Abbrechen</button>
+      <button class="ab" id="cBtn" style="min-height:40px;border-color:var(--rd);color:var(--rd)">Löschen</button>
     </div>
   </div>
 </div>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ═══ State ═══
-let apps = [];
-let builtHtml = '';
-let builtName = '';
-let currentFilter = 'all';
+let apps=[],filt='all';
+
+// ═══ COPY HELPER ═══
+function copyText(text){
+  if(!text||text.includes('erscheint'))return;
+  navigator.clipboard.writeText(text).then(()=>toast('Kopiert!','ts')).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;left:-9999px';
+    document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('Kopiert!','ts');
+  });
+}
+
+// ═══ SLUG ═══
+function toSlug(n){return n.toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')}
 
 // ═══ Tabs ═══
-document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
-function switchTab(id) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === id));
-  document.querySelectorAll('.section').forEach(s => s.classList.toggle('active', s.id === id));
-}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>sw(t.dataset.t));
+function sw(id){document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.t===id));document.querySelectorAll('.sec').forEach(s=>s.classList.toggle('on',s.id===id))}
 
 // ═══ Toast ═══
-function toast(msg, type='info') {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = `toast ${type} show`;
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
+function toast(m,t='ti'){const e=document.getElementById('toast');e.textContent=m;e.className=`toast ${t} show`;setTimeout(()=>e.classList.remove('show'),2500)}
+
+// ═══ Live Preview Link ═══
+document.getElementById('dName').addEventListener('input',function(){
+  const v=this.value.trim();
+  const box=document.getElementById('previewBox');
+  const link=document.getElementById('previewLink');
+  const cp=document.getElementById('previewCopy');
+  if(v.length>0){
+    const slug=toSlug(v);
+    link.textContent=slug+'-preview.elevo.solutions';
+    box.classList.remove('empty');
+    cp.style.display='inline-flex';
+  }else{
+    link.textContent='Subdomain erscheint hier...';
+    box.classList.add('empty');
+    cp.style.display='none';
+  }
+});
+
+// ═══ Char Counter ═══
+document.getElementById('dHtml').addEventListener('input',function(){
+  const c=this.value.length;
+  const lines=this.value.split('\n').length;
+  document.getElementById('charCount').textContent=c.toLocaleString('de')+' Zeichen · '+lines+' Zeilen';
+});
+
+// ═══ File Upload ═══
+const fileInput=document.getElementById('dFile');
+const fileLabel=document.getElementById('fileLabel');
+fileInput.addEventListener('change',function(){
+  const f=this.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    document.getElementById('dHtml').value=e.target.result;
+    document.getElementById('dHtml').dispatchEvent(new Event('input'));
+    fileLabel.textContent='✓ '+f.name;
+    fileLabel.classList.add('has');
+    if(!document.getElementById('dName').value){
+      document.getElementById('dName').value=f.name.replace(/\.html?$/i,'').replace(/[-_]/g,' ');
+      document.getElementById('dName').dispatchEvent(new Event('input'));
+    }
+  };
+  r.readAsText(f);
+});
+
+// Drag & Drop
+fileLabel.addEventListener('dragover',e=>{e.preventDefault();fileLabel.style.borderColor='var(--ac)'});
+fileLabel.addEventListener('dragleave',()=>{fileLabel.style.borderColor=''});
+fileLabel.addEventListener('drop',e=>{
+  e.preventDefault();fileLabel.style.borderColor='';
+  if(e.dataTransfer.files.length){fileInput.files=e.dataTransfer.files;fileInput.dispatchEvent(new Event('change'))}
+});
+
+// ═══ Filter ═══
+document.querySelectorAll('.fbtn[data-f]').forEach(b=>b.onclick=()=>{filt=b.dataset.f;document.querySelectorAll('.fbtn[data-f]').forEach(x=>x.classList.toggle('on',x===b));render()});
+document.getElementById('q').oninput=render;
 
 // ═══ Apps ═══
-async function loadApps() {
-  try {
-    const r = await fetch('/api/apps'); const d = await r.json();
-    apps = d.apps || [];
-    renderApps();
-    document.getElementById('appCount').textContent = `${apps.length} Apps`;
-  } catch(e) { toast('Apps laden fehlgeschlagen', 'error'); }
+const INFRA=[1,2,4,5,7];
+async function loadApps(){
+  try{const r=await fetch('/api/apps');const d=await r.json();apps=d.apps||[];render();document.getElementById('cntPill').textContent=apps.length}catch(e){toast('Laden fehlgeschlagen','te')}
 }
 
-function renderApps() {
-  const q = document.getElementById('searchInput').value.toLowerCase();
-  const grid = document.getElementById('appGrid');
-  
-  const INFRA_ENV = [1, 2, 4, 5, 7]; // non-preview environments
-  
-  let filtered = apps.filter(a => {
-    const isInfra = INFRA_ENV.includes(a.environment_id);
-    if (currentFilter === 'preview' && isInfra) return false;
-    if (currentFilter === 'infra' && !isInfra) return false;
-    if (q && !a.name.toLowerCase().includes(q) && !(a.fqdn||'').toLowerCase().includes(q)) return false;
+function render(){
+  const q=document.getElementById('q').value.toLowerCase();
+  let f=apps.filter(a=>{
+    const inf=INFRA.includes(a.environment_id);
+    if(filt==='preview'&&inf)return false;if(filt==='infra'&&!inf)return false;
+    if(q&&!a.name.toLowerCase().includes(q)&&!(a.fqdn||'').toLowerCase().includes(q))return false;
     return true;
-  });
+  }).sort((a,b)=>{if(a.environment_id===3&&b.environment_id!==3)return -1;if(a.environment_id!==3&&b.environment_id===3)return 1;return a.name.localeCompare(b.name)});
 
-  // Sort: previews first (env 3), then by name
-  filtered.sort((a, b) => {
-    if (a.environment_id === 3 && b.environment_id !== 3) return -1;
-    if (a.environment_id !== 3 && b.environment_id === 3) return 1;
-    return a.name.localeCompare(b.name);
-  });
+  const pv=apps.filter(a=>a.environment_id===3).length;
+  const inf=apps.filter(a=>INFRA.includes(a.environment_id)).length;
+  const run=apps.filter(a=>(a.status||'').includes('running')).length;
+  document.getElementById('nPrev').textContent=pv;
+  document.getElementById('nInfra').textContent=inf;
+  document.getElementById('nRun').textContent=run;
+  document.getElementById('nTotal').textContent=apps.length;
 
-  const previews = apps.filter(a => a.environment_id === 3);
-  const infra = apps.filter(a => INFRA_ENV.includes(a.environment_id));
-  const running = apps.filter(a => (a.status||'').includes('running'));
-  
-  document.getElementById('previewCount').textContent = previews.length;
-  document.getElementById('infraCount').textContent = infra.length;
-  document.getElementById('runningCount').textContent = running.length;
-
-  grid.innerHTML = filtered.map(a => {
-    const isInfra = INFRA_ENV.includes(a.environment_id);
-    const domain = (a.fqdn||'').replace(/^https?:\/\//,'').replace(/\/$/,'');
-    const isRunning = (a.status||'').includes('running');
-    return `<div class="app-card">
-      <div class="type${isInfra?' infra':''}">${isInfra?'Infra':'Preview'}</div>
-      <div class="app-name">${esc(a.name)}</div>
-      <div class="app-domain"><a href="${a.fqdn}" target="_blank">${domain}</a></div>
-      <span class="app-status ${isRunning?'running':'stopped'}">${isRunning?'● Running':'○ Stopped'}</span>
-      <div class="app-actions">
-        <button class="app-btn" onclick="window.open('${a.fqdn}','_blank')">Öffnen</button>
-        <button class="app-btn" onclick="redeploy('${a.uuid}','${esc(a.name)}')">Redeploy</button>
-        ${!isInfra?`<button class="app-btn danger" onclick="confirmDelete('${a.uuid}','${esc(a.name)}')">×</button>`:''}
+  document.getElementById('g').innerHTML=f.map(a=>{
+    const isInf=INFRA.includes(a.environment_id);
+    const dom=(a.fqdn||'').replace(/^https?:\/\//,'').replace(/\/$/,'');
+    const up=(a.status||'').includes('running');
+    return`<div class="card">
+      <div class="tag ${isInf?'tag-i':'tag-p'}">${isInf?'Infra':'Preview'}</div>
+      <h4>${h(a.name)}</h4>
+      <div class="url"><a href="${a.fqdn}" target="_blank">${dom}</a><button class="cpb" onclick="event.stopPropagation();copyText('${dom}')">📋</button></div>
+      <span class="dot ${up?'dot-g':'dot-r'}">${up?'● Live':'○ Off'}</span>
+      <div class="acts">
+        <button class="ab prim" onclick="window.open('${a.fqdn}','_blank')">Öffnen</button>
+        <button class="ab" onclick="rd('${a.uuid}','${h(a.name)}')">Redeploy</button>
+        ${!isInf?`<button class="ab x" onclick="cd('${a.uuid}','${h(a.name)}')">✕</button>`:''}
       </div>
-    </div>`;
-  }).join('');
+    </div>`
+  }).join('')||'<p style="color:var(--dm);text-align:center;padding:40px">Keine Apps gefunden</p>';
 }
+function h(s){return(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;').replace(/</g,'&lt;')}
 
-function esc(s) { return (s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+async function rd(u,n){toast(n+' wird redeployed...','ti');try{await fetch('/api/deploy/'+u);toast(n+' Redeploy gestartet','ts')}catch(e){toast('Fehler','te')}}
+function cd(u,n){document.getElementById('cP').textContent=`"${n}" wirklich löschen?`;document.getElementById('cBtn').onclick=()=>da(u,n);document.getElementById('cMo').classList.add('show')}
+function cMo(){document.getElementById('cMo').classList.remove('show')}
+async function da(u,n){cMo();toast('Lösche...','ti');try{await fetch('/api/app/'+u,{method:'DELETE'});toast(n+' gelöscht','ts');setTimeout(loadApps,1000)}catch(e){toast('Fehler','te')}}
 
-// Filter
-document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.addEventListener('click', () => {
-  currentFilter = b.dataset.filter;
-  document.querySelectorAll('.filter-btn[data-filter]').forEach(x => x.classList.toggle('active', x === b));
-  renderApps();
-}));
-document.getElementById('searchInput').addEventListener('input', renderApps);
+// ═══ Deploy ═══
+function setS(n){[1,2,3,4].forEach(i=>{const e=document.getElementById('s'+i);e.classList.remove('act','done');if(i<n)e.classList.add('done');if(i===n)e.classList.add('act')})}
+function lg(m,c='l'){const e=document.getElementById('log');e.style.display='block';e.innerHTML+=`<span class="${c}">${m}</span>\n`;e.scrollTop=e.scrollHeight}
 
-// Redeploy
-async function redeploy(uuid, name) {
-  toast(`Redeploy: ${name}...`, 'info');
-  try {
-    await fetch(`/api/deploy/${uuid}`);
-    toast(`${name} wird neu deployed`, 'success');
-  } catch(e) { toast('Redeploy fehlgeschlagen', 'error'); }
-}
+async function deploy(){
+  const name=document.getElementById('dName').value.trim();
+  const html=document.getElementById('dHtml').value.trim();
+  if(!name)return toast('Firmenname eingeben','te');
+  if(!html)return toast('HTML-Code eingeben','te');
+  if(html.length<100)return toast('HTML zu kurz — mindestens 100 Zeichen','te');
 
-// Delete
-function confirmDelete(uuid, name) {
-  document.getElementById('confirmTitle').textContent = 'App löschen';
-  document.getElementById('confirmText').textContent = `"${name}" wirklich löschen? Das kann nicht rückgängig gemacht werden.`;
-  document.getElementById('confirmBtn').onclick = () => deleteApp(uuid, name);
-  document.getElementById('confirmModal').classList.add('show');
-}
-function closeModal() { document.getElementById('confirmModal').classList.remove('show'); }
-async function deleteApp(uuid, name) {
-  closeModal();
-  toast(`Lösche ${name}...`, 'info');
-  try {
-    await fetch(`/api/app/${uuid}`, { method: 'DELETE' });
-    toast(`${name} gelöscht`, 'success');
-    setTimeout(loadApps, 1000);
-  } catch(e) { toast('Löschen fehlgeschlagen', 'error'); }
-}
+  const btn=document.getElementById('depBtn');
+  btn.disabled=true;btn.innerHTML='<span class="sp"></span> Deploying...';
+  document.getElementById('log').innerHTML='';
+  document.getElementById('log').style.display='block';
+  setS(2);
 
-// ═══ Builder ═══
-function setStep(n) {
-  [1,2,3,4].forEach(i => {
-    const el = document.getElementById(`step${i}`);
-    el.classList.remove('active','done');
-    if (i < n) el.classList.add('done');
-    if (i === n) el.classList.add('active');
-  });
-}
+  const slug=toSlug(name);
+  lg('▸ Deploy: '+name+' → '+slug+'-preview.elevo.solutions','i');
+  lg('▸ HTML: '+html.length.toLocaleString('de')+' Zeichen','l');
 
-function log(target, msg, cls='log') {
-  const el = document.getElementById(target);
-  el.innerHTML += `<span class="${cls}">${msg}</span>\n`;
-  el.scrollTop = el.scrollHeight;
-}
+  try{
+    const r=await fetch('/api/deploy-full',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,html})});
+    const d=await r.json();
 
-async function startBuild() {
-  const url = document.getElementById('buildUrl').value.trim();
-  const name = document.getElementById('buildName').value.trim();
-  const prompt = document.getElementById('buildPrompt').value.trim();
-  
-  if (!url && !prompt) return toast('URL oder Anweisungen eingeben', 'error');
-  if (!name) return toast('Firmenname eingeben', 'error');
+    if(d.success){
+      setS(3);lg('✓ GitHub: OK','ok');
+      lg('✓ Coolify: '+(d.action==='created'?'Erstellt':'Aktualisiert'),'ok');
+      setS(4);lg('✓ Live: '+d.domain,'ok');
 
-  builtName = name;
-  builtHtml = '';
-  
-  // Show progress
-  document.getElementById('builderInput').style.display = 'none';
-  document.getElementById('builderProgress').style.display = 'block';
-  document.getElementById('buildLog').innerHTML = '';
-  setStep(2);
-
-  log('buildLog', `▸ Website wird generiert für: ${url || 'Custom'}`, 'info');
-  log('buildLog', `▸ Claude API wird aufgerufen...`, 'log');
-  log('buildLog', `▸ Das kann 30-60 Sekunden dauern.`, 'log');
-
-  const btn = document.getElementById('buildBtn');
-  btn.disabled = true;
-
-  try {
-    const r = await fetch('/api/build', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url, prompt: `Firmenname: ${name}\n${prompt}` })
-    });
-    const d = await r.json();
-
-    if (d.success && d.html) {
-      builtHtml = d.html;
-      log('buildLog', `✓ Website generiert! (${d.usage?.input_tokens || '?'} input / ${d.usage?.output_tokens || '?'} output tokens)`, 'ok');
-      
-      // Show preview
-      setTimeout(() => {
-        document.getElementById('builderProgress').style.display = 'none';
-        document.getElementById('builderPreview').style.display = 'block';
-        setStep(3);
-        
-        const frame = document.getElementById('previewFrame');
-        frame.srcdoc = builtHtml;
-      }, 500);
-    } else {
-      log('buildLog', `✗ Fehler: ${d.error || JSON.stringify(d.details || d)}`, 'err');
-      toast('Build fehlgeschlagen', 'error');
+      const domain=d.domain||'https://'+slug+'-preview.elevo.solutions';
+      setTimeout(()=>{
+        document.getElementById('depForm').style.display='none';
+        const sc=document.getElementById('depDone');sc.style.display='block';
+        document.getElementById('doneTitle').textContent=name+' ist live!';
+        const lnk=document.getElementById('doneLink');
+        lnk.href=domain;lnk.textContent=domain.replace('https://','');
+        toast('Deploy erfolgreich!','ts');
+      },400);
+    }else{
+      lg('✗ '+( d.error||JSON.stringify(d)),'er');
+      toast('Deploy fehlgeschlagen','te');
     }
-  } catch(e) {
-    log('buildLog', `✗ Fehler: ${e.message}`, 'err');
-    toast('Build fehlgeschlagen', 'error');
-  }
-  btn.disabled = false;
+  }catch(e){lg('✗ '+e.message,'er');toast('Fehler','te')}
+
+  btn.disabled=false;btn.innerHTML='Deploy starten';
 }
 
-async function deployBuilt() {
-  if (!builtHtml || !builtName) return toast('Nichts zum Deployen', 'error');
-  
-  setStep(4);
-  document.getElementById('builderPreview').style.display = 'none';
-  document.getElementById('builderProgress').style.display = 'block';
-
-  log('buildLog', `\n▸ Deploy wird gestartet...`, 'info');
-  log('buildLog', `▸ GitHub Repo erstellen...`, 'log');
-
-  try {
-    const r = await fetch('/api/deploy-full', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: builtName, html: builtHtml })
-    });
-    const d = await r.json();
-
-    if (d.success) {
-      log('buildLog', `✓ ${d.action === 'created' ? 'Neue App erstellt' : 'App aktualisiert'}`, 'ok');
-      log('buildLog', `✓ Domain: ${d.domain}`, 'ok');
-      log('buildLog', `✓ UUID: ${d.uuid}`, 'ok');
-      
-      setTimeout(() => {
-        document.getElementById('builderProgress').style.display = 'none';
-        document.getElementById('builderDone').style.display = 'block';
-        document.getElementById('deployedTitle').textContent = `${builtName} ist live!`;
-        const link = document.getElementById('deployedLink');
-        link.href = d.domain; link.textContent = d.domain.replace('https://','');
-        setStep(4);
-        toast('Deploy erfolgreich!', 'success');
-      }, 500);
-    } else {
-      log('buildLog', `✗ Deploy fehlgeschlagen: ${d.error || JSON.stringify(d)}`, 'err');
-      toast('Deploy fehlgeschlagen', 'error');
-    }
-  } catch(e) {
-    log('buildLog', `✗ ${e.message}`, 'err');
-    toast('Deploy fehlgeschlagen', 'error');
-  }
-}
-
-function downloadHtml() {
-  if (!builtHtml) return;
-  const blob = new Blob([builtHtml], { type: 'text/html' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `${builtName ? builtName.toLowerCase().replace(/\s+/g,'-') : 'website'}.html`;
-  a.click();
-}
-
-function resetBuilder() {
-  builtHtml = ''; builtName = '';
-  document.getElementById('builderInput').style.display = 'block';
-  document.getElementById('builderProgress').style.display = 'none';
-  document.getElementById('builderPreview').style.display = 'none';
-  document.getElementById('builderDone').style.display = 'none';
-  document.getElementById('buildLog').innerHTML = '';
-  document.getElementById('buildUrl').value = '';
-  document.getElementById('buildName').value = '';
-  document.getElementById('buildPrompt').value = '';
-  setStep(1);
-}
-
-// ═══ Quick Deploy ═══
-function loadFile(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => document.getElementById('quickHtml').value = e.target.result;
-  reader.readAsText(file);
-  // Auto-fill name from filename
-  if (!document.getElementById('quickName').value) {
-    document.getElementById('quickName').value = file.name.replace(/\.html?$/i, '').replace(/[-_]/g, ' ');
-  }
-}
-
-async function quickDeploy() {
-  const name = document.getElementById('quickName').value.trim();
-  const html = document.getElementById('quickHtml').value.trim();
-  if (!name) return toast('Firmenname eingeben', 'error');
-  if (!html) return toast('HTML-Code eingeben oder Datei hochladen', 'error');
-
-  const logEl = document.getElementById('quickLog');
-  logEl.style.display = 'block';
-  logEl.innerHTML = '';
-  
-  const log2 = (msg, cls) => { logEl.innerHTML += `<span class="${cls}">${msg}</span>\n`; logEl.scrollTop = logEl.scrollHeight; };
-  
-  log2(`▸ Deploy: ${name}`, 'info');
-  log2(`▸ HTML: ${html.length} Zeichen`, 'log');
-  
-  try {
-    const r = await fetch('/api/deploy-full', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, html })
-    });
-    const d = await r.json();
-    if (d.success) {
-      log2(`✓ ${d.action === 'created' ? 'Erstellt' : 'Aktualisiert'}: ${d.domain}`, 'ok');
-      toast('Deploy erfolgreich!', 'success');
-      setTimeout(loadApps, 2000);
-    } else {
-      log2(`✗ ${d.error || JSON.stringify(d)}`, 'err');
-      toast('Deploy fehlgeschlagen', 'error');
-    }
-  } catch(e) { log2(`✗ ${e.message}`, 'err'); toast('Fehler', 'error'); }
+function resetDep(){
+  document.getElementById('depForm').style.display='block';
+  document.getElementById('depDone').style.display='none';
+  document.getElementById('log').style.display='none';
+  document.getElementById('log').innerHTML='';
+  document.getElementById('dName').value='';
+  document.getElementById('dHtml').value='';
+  document.getElementById('charCount').textContent='0 Zeichen';
+  document.getElementById('previewLink').textContent='Subdomain erscheint hier...';
+  document.getElementById('previewBox').classList.add('empty');
+  document.getElementById('previewCopy').style.display='none';
+  document.getElementById('fileLabel').textContent='HTML-Datei wählen oder hierhin ziehen';
+  document.getElementById('fileLabel').classList.remove('has');
+  document.getElementById('dFile').value='';
+  setS(1);
 }
 
 // ═══ Init ═══
-async function init() {
-  try {
-    const r = await fetch('/api/config'); const d = await r.json();
-    const badge = document.getElementById('configBadge');
-    const ok = d.coolify && d.github && d.anthropic;
-    badge.textContent = ok ? 'Alles bereit' : 'Config prüfen';
-    badge.className = `badge ${ok ? 'green' : ''}`;
-  } catch(e) {}
-  setStep(1);
-  loadApps();
+async function init(){
+  try{const r=await fetch('/api/config');const d=await r.json();const p=document.getElementById('cfgPill');const ok=d.coolify&&d.github;p.textContent=ok?'Ready':'Config!';p.className='pill '+(ok?'pill-g':'pill-b')}catch(e){}
+  loadApps();setS(1);
 }
 init();
 </script>
