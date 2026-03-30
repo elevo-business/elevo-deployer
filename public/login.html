@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ELEVO Deploy Center</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#05070E;color:#E2E8F0;font-family:Sora,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center}
+.login{width:340px;text-align:center}
+.logo{font-size:24px;font-weight:700;letter-spacing:.28em;margin-bottom:8px}
+.logo span{color:#3B82F6}
+.sub{color:#516179;font-size:11px;letter-spacing:.08em;margin-bottom:40px}
+input{width:100%;padding:14px 18px;background:#111827;border:1px solid #1E2A42;border-radius:12px;color:#E2E8F0;font-family:Sora;font-size:14px;outline:none;margin-bottom:16px;transition:border .2s}
+input:focus{border-color:#3B82F6}
+button{width:100%;padding:14px;background:#3B82F6;border:none;border-radius:100px;color:#fff;font-family:Sora;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
+button:hover{background:#2563EB;transform:translateY(-1px);box-shadow:0 4px 20px rgba(59,130,246,.3)}
+.err{color:#EF4444;font-size:12px;margin-top:12px;display:none}
+</style>
+</head>
+<body>
+<div class="login">
+  <div class="logo">ELE<span>V</span>O</div>
+  <div class="sub">DEPLOY CENTER</div>
+  <input type="password" id="token" placeholder="Token" autofocus>
+  <button onclick="login()">Zugang</button>
+  <div class="err" id="err">Token falsch</div>
+</div>
+<script>
+document.getElementById('token').addEventListener('keydown',e=>{if(e.key==='Enter')login()});
+async function login(){
+  const t=document.getElementById('token').value;
+  const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:t})});
+  if(r.ok){location.reload()}else{document.getElementById('err').style.display='block'}
+}
+</script>
+</body>
+</html>
