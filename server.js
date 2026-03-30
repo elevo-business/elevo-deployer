@@ -141,8 +141,12 @@ const server = http.createServer(async (req, res) => {
       const slug=toSlug(b.name), repoName=`${slug}-preview`;
 
       // GitHub repo
-      const repoR=await github('POST',`/orgs/${GITHUB_ORG}/repos`,{name:repoName,description:`Preview ${b.name} — ELEVO`,private:true,auto_init:false});
+      const repoR=await github('POST',`/orgs/${GITHUB_ORG}/repos`,{name:repoName,description:`Preview ${b.name} — ELEVO`,private:true,auto_init:true});
       const exists=repoR.status===422;
+      if(!exists&&repoR.status!==201) return json(res,500,{error:'Repo creation failed',details:repoR.data});
+
+      // Wait for GitHub to initialize the repo (auto_init needs a moment)
+      if(!exists) await new Promise(r=>setTimeout(r,2000));
 
       // Push HTML
       let sha=null;
@@ -150,7 +154,7 @@ const server = http.createServer(async (req, res) => {
       const pushP={message:exists?'Update via Deploy Center':'Initial via Deploy Center',content:Buffer.from(b.html).toString('base64'),branch:'main'};
       if(sha) pushP.sha=sha;
       const pushR=await github('PUT',`/repos/${GITHUB_ORG}/${repoName}/contents/index.html`,pushP);
-      if(pushR.status!==200&&pushR.status!==201) return json(res,500,{error:'Push failed',details:pushR.data});
+      if(pushR.status!==200&&pushR.status!==201) return json(res,500,{error:'Push failed: '+(pushR.data?.message||JSON.stringify(pushR.data)),status:pushR.status,details:pushR.data});
 
       // Coolify: check existing
       const appsR=await coolify('GET','/applications');
