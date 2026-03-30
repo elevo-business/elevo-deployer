@@ -476,6 +476,27 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Coolify API test — shows raw response for debugging
+app.get('/api/coolify-test', authenticate, async (req, res) => {
+  if (!CONFIG.coolifyToken) {
+    return res.json({ error: 'COOLIFY_TOKEN not set' });
+  }
+  try {
+    const apps = await coolifyRequest('GET', '/applications');
+    const servers = await coolifyRequest('GET', '/servers');
+    const projects = await coolifyRequest('GET', '/projects');
+    res.json({ 
+      success: true,
+      coolifyUrl: CONFIG.coolifyUrl,
+      apps: apps,
+      servers: servers,
+      projects: projects,
+    });
+  } catch (err) {
+    res.json({ error: err.message || JSON.stringify(err) });
+  }
+});
+
 // Serve frontend
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
