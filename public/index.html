@@ -456,10 +456,13 @@ async function deploy(){
       },400);
     }else{
       lg('✗ '+(d.error||JSON.stringify(d)),'er');
-      if(d.details)lg('Details: '+JSON.stringify(d.details).substring(0,300),'er');
+      if(d.status)lg('HTTP Status: '+d.status,'er');
+      lg('','l');
+      lg('<button onclick="deploy()" style="padding:8px 16px;background:var(--ac);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:Sora;font-size:12px;margin-top:4px">↻ Nochmal versuchen</button>','l');
+      setS(1);
       toast('Deploy fehlgeschlagen','te');
     }
-  }catch(e){lg('✗ '+e.message,'er');toast('Fehler','te')}
+  }catch(e){lg('✗ Netzwerk-Fehler: '+e.message,'er');toast('Fehler','te')}
 
   btn.disabled=false;btn.innerHTML='Deploy starten';
 }
