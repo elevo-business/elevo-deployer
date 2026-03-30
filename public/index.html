@@ -260,6 +260,40 @@ textarea.fi{min-height:160px;font-family:'SF Mono',Menlo,'Courier New',monospace
   <div class="grid" id="g"></div>
 </div>
 
+<!-- ═══ EDITOR ═══ -->
+<div class="sec" id="editor">
+  <div class="dw" style="max-width:100%">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <button class="ab" onclick="closeEditor()" style="padding:8px 12px">← Zurück</button>
+      <h2 id="editorTitle" style="font-family:Sora;font-size:18px;font-weight:700;margin:0">Code bearbeiten</h2>
+    </div>
+
+    <div id="editorLoading" style="text-align:center;padding:40px;color:var(--dm)">
+      <div class="sp dark" style="width:24px;height:24px;border-color:var(--bd);border-top-color:var(--ac)"></div>
+      <p style="margin-top:12px">Code wird geladen...</p>
+    </div>
+
+    <div id="editorContent" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:6px">
+        <label style="font-size:11px;color:var(--dm);text-transform:uppercase;letter-spacing:.1em;font-weight:500">HTML-CODE</label>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <button class="cpb" onclick="copyText(document.getElementById('edCode').value)" style="font-size:11px;padding:5px 10px">📋 Kopieren</button>
+          <button class="cpb" onclick="pasteToEditor()" style="font-size:11px;padding:5px 10px">📋 Einfügen</button>
+          <button class="cpb" onclick="document.getElementById('edCode').select()" style="font-size:11px;padding:5px 10px">Alles</button>
+        </div>
+      </div>
+      <textarea class="fi" id="edCode" style="min-height:50vh;font-family:'SF Mono',Menlo,'Courier New',monospace;font-size:11px;line-height:1.5"></textarea>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+        <div class="char-count" id="edCount">0 Zeichen</div>
+        <div style="display:flex;gap:8px">
+          <button class="ab" onclick="closeEditor()">Abbrechen</button>
+          <button class="ab prim" id="edSaveBtn" onclick="saveCode()">Speichern & Redeploy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </div>
 
 <!-- Modal -->
@@ -402,6 +436,7 @@ function render(){
       <span class="dot ${up?'dot-g':'dot-r'}">${up?'● Live':'○ Off'}</span>
       <div class="acts">
         <button class="ab prim" onclick="window.open('${a.fqdn}','_blank')">Öffnen</button>
+        ${!isInf&&a.git_repository?`<button class="ab" onclick="openEditor('${a.git_repository.split('/').pop()}','${h(a.name)}','${a.uuid}')">Code</button>`:''}
         <button class="ab" onclick="rd('${a.uuid}','${h(a.name)}')">Redeploy</button>
         ${!isInf?`<button class="ab x" onclick="cd('${a.uuid}','${h(a.name)}')">✕</button>`:''}
       </div>
@@ -485,6 +520,63 @@ function resetDep(){
 }
 
 // ═══ Init ═══
+let editorRepo='',editorName='',editorUuid='';
+
+// ═══ Editor ═══
+async function openEditor(repo,name,uuid){
+  editorRepo=repo;editorName=name;editorUuid=uuid;
+  document.getElementById('editorTitle').textContent=name+' — Code';
+  document.getElementById('editorLoading').style.display='block';
+  document.getElementById('editorContent').style.display='none';
+  // Switch to editor view
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.getElementById('editor').classList.add('on');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+
+  try{
+    const r=await fetch('/api/code/'+encodeURIComponent(repo));
+    const d=await r.json();
+    if(d.success&&d.html){
+      document.getElementById('edCode').value=d.html;
+      document.getElementById('edCount').textContent=d.html.length.toLocaleString('de')+' Zeichen · '+d.html.split('\n').length+' Zeilen';
+      document.getElementById('editorLoading').style.display='none';
+      document.getElementById('editorContent').style.display='block';
+    }else{
+      toast('Code laden fehlgeschlagen: '+(d.error||''),'te');
+      closeEditor();
+    }
+  }catch(e){toast('Fehler: '+e.message,'te');closeEditor()}
+}
+
+document.getElementById('edCode').addEventListener('input',function(){
+  const c=this.value.length;const l=this.value.split('\n').length;
+  document.getElementById('edCount').textContent=c.toLocaleString('de')+' Zeichen · '+l+' Zeilen';
+});
+
+async function pasteToEditor(){
+  try{const t=await navigator.clipboard.readText();if(t){document.getElementById('edCode').value=t;document.getElementById('edCode').dispatchEvent(new Event('input'));toast('Eingefügt!','ts')}}catch(e){toast('Clipboard nicht verfügbar','te')}
+}
+
+async function saveCode(){
+  const html=document.getElementById('edCode').value;
+  if(!html||html.length<100)return toast('Code zu kurz','te');
+  const btn=document.getElementById('edSaveBtn');
+  btn.disabled=true;btn.innerHTML='<span class="sp"></span> Speichern...';
+  try{
+    const r=await fetch('/api/code/'+encodeURIComponent(editorRepo),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({html})});
+    const d=await r.json();
+    if(d.success){
+      toast(editorName+' gespeichert & Redeploy gestartet!','ts');
+      closeEditor();loadApps();
+    }else{toast('Fehler: '+(d.error||''),'te')}
+  }catch(e){toast('Fehler: '+e.message,'te')}
+  btn.disabled=false;btn.innerHTML='Speichern & Redeploy';
+}
+
+function closeEditor(){
+  sw('dash');
+}
+
 async function init(){
   try{const r=await fetch('/api/config');const d=await r.json();const p=document.getElementById('cfgPill');const ok=d.coolify&&d.github;p.textContent=ok?'Ready':'Config!';p.className='pill '+(ok?'pill-g':'pill-b')}catch(e){}
   loadApps();setS(1);
