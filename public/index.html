@@ -11,796 +11,383 @@
 <style>
 :root{--bg:#05070E;--bg2:#0A0E1A;--sf:#111827;--sfh:#1A2035;--bd:#1E2A42;--tx:#E2E8F0;--mt:#8899B0;--dm:#516179;--ac:#3B82F6;--ach:#2563EB;--gn:#10B981;--og:#F59E0B;--rd:#EF4444;--vi:#818CF8;--r:14px}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--tx);font-family:Outfit,sans-serif;font-weight:300;min-height:100vh;min-height:100dvh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--tx);font-family:Outfit,sans-serif;font-weight:300;min-height:100dvh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
 ::selection{background:var(--ac);color:#fff}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
 input,textarea,button,select{font-family:inherit}
-
-/* Header */
-header{position:sticky;top:0;z-index:100;background:rgba(5,7,14,.9);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.04);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between}
-.logo{font-family:Sora;font-weight:700;font-size:16px;letter-spacing:.22em;display:flex;align-items:center;gap:8px}
-.logo b{color:var(--ac)}
-.logo svg{width:24px;height:24px}
+header{position:sticky;top:0;z-index:100;background:rgba(5,7,14,.92);backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.04);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:Sora;font-weight:700;font-size:16px;letter-spacing:.22em;display:flex;align-items:center;gap:8px}.logo b{color:var(--ac)}.logo svg{width:24px;height:24px}
 .hdr-r{display:flex;gap:6px;align-items:center}
-.pill{font-size:9px;padding:3px 8px;border-radius:100px;font-weight:600;letter-spacing:.04em}
-.pill-b{background:rgba(59,130,246,.1);color:var(--ac)}
-.pill-g{background:rgba(16,185,129,.1);color:var(--gn)}
-
-/* Tabs */
+.pill{font-size:9px;padding:3px 8px;border-radius:100px;font-weight:600;letter-spacing:.04em}.pill-b{background:rgba(59,130,246,.1);color:var(--ac)}.pill-g{background:rgba(16,185,129,.1);color:var(--gn)}
 .tabs{display:flex;padding:0 16px;background:var(--bg);border-bottom:1px solid rgba(255,255,255,.04);overflow-x:auto;-webkit-overflow-scrolling:touch}
-.tab{padding:12px 16px;font-size:13px;font-weight:500;color:var(--mt);cursor:pointer;border-bottom:2px solid transparent;transition:.2s;white-space:nowrap;min-height:44px;display:flex;align-items:center;gap:5px}
-.tab:hover{color:var(--tx)}.tab.on{color:var(--ac);border-color:var(--ac)}
+.tab{padding:12px 14px;font-size:12px;font-weight:500;color:var(--mt);cursor:pointer;border-bottom:2px solid transparent;transition:.2s;white-space:nowrap;min-height:44px;display:flex;align-items:center;gap:5px}.tab:hover{color:var(--tx)}.tab.on{color:var(--ac);border-color:var(--ac)}
 .tab-badge{font-size:9px;background:rgba(59,130,246,.15);color:var(--ac);padding:1px 6px;border-radius:100px;font-weight:600}
-
-.wrap{max-width:1200px;margin:0 auto;padding:16px}
-.sec{display:none}.sec.on{display:block}
-
-/* Stats */
+.wrap{max-width:1200px;margin:0 auto;padding:16px}.sec{display:none}.sec.on{display:block}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
-.stats-5{grid-template-columns:repeat(5,1fr)}
-.st{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:12px;cursor:pointer;transition:.15s}
-.st:hover{border-color:rgba(59,130,246,.2)}
-.st.st-on{border-color:var(--ac);background:var(--sfh)}
+.st{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:12px;cursor:pointer;transition:.15s}.st:hover{border-color:rgba(59,130,246,.15)}.st.st-on{border-color:var(--ac);background:var(--sfh)}
 .st small{font-size:9px;color:var(--dm);text-transform:uppercase;letter-spacing:.14em;display:block;margin-bottom:2px}
-.st strong{font-family:Sora;font-size:20px;font-weight:700}
-.st strong.b{color:var(--ac)}.st strong.g{color:var(--gn)}.st strong.o{color:var(--og)}.st strong.v{color:var(--vi)}.st strong.r{color:var(--rd)}
-
-/* Toolbar */
+.st strong{font-family:Sora;font-size:18px;font-weight:700}.st strong.b{color:var(--ac)}.st strong.g{color:var(--gn)}.st strong.o{color:var(--og)}.st strong.v{color:var(--vi)}.st strong.r{color:var(--rd)}
 .bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-.bar input{flex:1;min-width:140px;padding:10px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;color:var(--tx);font-size:14px;outline:none;transition:.2s;min-height:44px}
-.bar input:focus{border-color:var(--ac)}
-.bar select{padding:8px 12px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;color:var(--mt);font-size:12px;outline:none;min-height:44px;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238899B0'%3E%3Cpath d='M2 4l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
-.fbtn{padding:8px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;color:var(--mt);font-size:12px;cursor:pointer;transition:.15s;min-height:44px}
-.fbtn:hover,.fbtn.on{border-color:var(--ac);color:var(--ac)}
-
-/* Grid */
+.bar input,.bar select{flex:1;min-width:100px;padding:10px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;color:var(--tx);font-size:13px;outline:none;min-height:44px}
+.bar input:focus,.bar select:focus{border-color:var(--ac)}
+.bar select{color:var(--mt);cursor:pointer;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%238899B0'%3E%3Cpath d='M1 3l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:24px}
+.fbtn{padding:8px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;color:var(--mt);font-size:11px;cursor:pointer;transition:.15s;min-height:44px;white-space:nowrap}.fbtn:hover,.fbtn.on{border-color:var(--ac);color:var(--ac)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
-.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px;transition:.2s;position:relative;overflow:hidden}
-.card:hover{border-color:rgba(59,130,246,.2)}
-.card .tag{position:absolute;top:0;right:0;font-size:8px;padding:3px 8px;border-radius:0 0 0 8px;text-transform:uppercase;letter-spacing:.08em;font-weight:600}
-.tag-p{background:rgba(59,130,246,.08);color:var(--ac)}
-.tag-i{background:rgba(249,115,22,.08);color:var(--og)}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px;transition:.2s;position:relative;overflow:hidden}.card:hover{border-color:rgba(59,130,246,.15)}
+.card .tag{position:absolute;top:0;right:0;font-size:8px;padding:3px 8px;border-radius:0 0 0 8px;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.tag-p{background:rgba(59,130,246,.08);color:var(--ac)}.tag-i{background:rgba(249,115,22,.08);color:var(--og)}
 .card h4{font-family:Sora;font-weight:600;font-size:13px;margin-bottom:4px;padding-right:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .card .url{font-size:11px;color:var(--mt);margin-bottom:8px;display:flex;align-items:center;gap:4px;overflow:hidden}
-.card .url a{color:var(--ac);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.card .url a:hover{text-decoration:underline}
+.card .url a{color:var(--ac);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dot{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:500;padding:2px 8px;border-radius:100px}
 .dot-g{background:rgba(16,185,129,.08);color:var(--gn)}.dot-r{background:rgba(239,68,68,.08);color:var(--rd)}
+.badge{display:inline-flex;align-items:center;font-size:9px;font-weight:600;padding:3px 8px;border-radius:100px;text-transform:uppercase;letter-spacing:.04em}
+.badge-neu{background:rgba(59,130,246,.1);color:var(--ac)}.badge-preview{background:rgba(129,140,248,.1);color:var(--vi)}.badge-mail{background:rgba(249,158,11,.1);color:var(--og)}.badge-followup{background:rgba(249,115,22,.1);color:#F97316}.badge-termin{background:rgba(16,185,129,.1);color:var(--gn)}.badge-skip{background:rgba(239,68,68,.06);color:var(--rd)}
 .card .acts{display:flex;gap:5px;margin-top:10px;flex-wrap:wrap}
-.ab{padding:7px 12px;font-size:11px;border-radius:8px;border:1px solid var(--bd);background:transparent;color:var(--mt);cursor:pointer;transition:.15s;min-height:36px;display:inline-flex;align-items:center;gap:4px}
-.ab:hover{border-color:var(--ac);color:var(--ac)}
-.ab:active{transform:scale(.96)}
-.ab.x:hover{border-color:var(--rd);color:var(--rd)}
-.ab.prim{background:var(--ac);border-color:var(--ac);color:#fff}
-.ab.prim:hover{background:var(--ach)}
-
-/* Status badges */
-.badge{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:600;padding:3px 8px;border-radius:100px;text-transform:uppercase;letter-spacing:.06em}
-.badge-neu{background:rgba(59,130,246,.1);color:var(--ac)}
-.badge-preview{background:rgba(129,140,248,.1);color:var(--vi)}
-.badge-mail{background:rgba(249,158,11,.1);color:var(--og)}
-.badge-followup{background:rgba(249,115,22,.1);color:#F97316}
-.badge-termin{background:rgba(16,185,129,.1);color:var(--gn)}
-.badge-skip{background:rgba(239,68,68,.06);color:var(--rd)}
-
-/* Copy button */
-.cpb{padding:4px 8px;font-size:10px;border-radius:6px;border:1px solid var(--bd);background:transparent;color:var(--dm);cursor:pointer;transition:.15s;min-height:28px;display:inline-flex;align-items:center;gap:3px;flex-shrink:0}
-.cpb:hover{border-color:var(--ac);color:var(--ac)}
-.cpb:active{transform:scale(.93)}
-.cpb.ok{border-color:var(--gn);color:var(--gn)}
-
-/* Deploy Section */
-.dw{max-width:640px}
-.dw h2{font-family:Sora;font-size:20px;font-weight:700;margin-bottom:4px}
-.dw>p{color:var(--mt);font-size:13px;margin-bottom:20px}
-.fg{margin-bottom:14px}
-.fg label{display:block;font-size:11px;color:var(--dm);text-transform:uppercase;letter-spacing:.1em;font-weight:500;margin-bottom:5px}
-.fi{width:100%;padding:12px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;color:var(--tx);font-size:14px;outline:none;transition:.2s;resize:vertical;min-height:44px}
-.fi:focus{border-color:var(--ac)}
-textarea.fi{min-height:160px;font-family:'SF Mono',Menlo,'Courier New',monospace;font-size:12px;line-height:1.5}
-select.fi{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238899B0'%3E%3Cpath d='M2 4l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;cursor:pointer}
-
-/* Preview link box */
+.ab{padding:7px 12px;font-size:11px;border-radius:8px;border:1px solid var(--bd);background:transparent;color:var(--mt);cursor:pointer;transition:.15s;min-height:36px;display:inline-flex;align-items:center;gap:4px}.ab:hover{border-color:var(--ac);color:var(--ac)}.ab:active{transform:scale(.96)}.ab.x:hover{border-color:var(--rd);color:var(--rd)}.ab.prim{background:var(--ac);border-color:var(--ac);color:#fff}.ab.prim:hover{background:var(--ach)}
+.cpb{padding:4px 8px;font-size:10px;border-radius:6px;border:1px solid var(--bd);background:transparent;color:var(--dm);cursor:pointer;transition:.15s;min-height:28px;display:inline-flex;align-items:center;gap:3px}.cpb:hover{border-color:var(--ac);color:var(--ac)}
+.dw{max-width:640px}.dw h2{font-family:Sora;font-size:20px;font-weight:700;margin-bottom:4px}.dw>p{color:var(--mt);font-size:13px;margin-bottom:20px}
+.fg{margin-bottom:14px}.fg label{display:block;font-size:11px;color:var(--dm);text-transform:uppercase;letter-spacing:.1em;font-weight:500;margin-bottom:5px}
+.fi{width:100%;padding:12px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;color:var(--tx);font-size:14px;outline:none;transition:.2s;resize:vertical;min-height:44px}.fi:focus{border-color:var(--ac)}
+textarea.fi{min-height:140px;font-family:'SF Mono',Menlo,monospace;font-size:12px;line-height:1.5}
+select.fi{-webkit-appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%238899B0'%3E%3Cpath d='M1 3l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:28px}
 .preview-box{margin:8px 0 16px;padding:12px 14px;background:var(--bg2);border:1px solid var(--bd);border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px}
-.preview-box .link{font-size:13px;color:var(--ac);font-family:Sora;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.preview-box.empty .link{color:var(--dm)}
+.preview-box .link{font-size:13px;color:var(--ac);font-family:Sora;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.preview-box.empty .link{color:var(--dm)}
 .char-count{font-size:10px;color:var(--dm);text-align:right;margin-top:4px}
-
-/* Buttons */
 .btn{padding:14px 24px;border-radius:100px;font-family:Sora;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:.2s;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:48px;width:100%}
 .btn-p{background:var(--ac);color:#fff}.btn-p:hover{background:var(--ach);box-shadow:0 4px 16px rgba(59,130,246,.3)}
-.btn-s{background:transparent;border:1px solid var(--bd);color:var(--mt);width:auto}.btn-s:hover{border-color:var(--ac);color:var(--ac)}
-.btn:disabled{opacity:.4;cursor:not-allowed}
-.btn:active:not(:disabled){transform:scale(.97)}
-
-/* Steps */
-.steps{display:flex;gap:6px;margin-bottom:18px;align-items:center}
-.step{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--dm);font-weight:500}
-.step .n{width:22px;height:22px;border-radius:50%;background:var(--sf);border:1.5px solid var(--bd);display:flex;align-items:center;justify-content:center;font-family:Sora;font-size:10px;font-weight:700;transition:.3s;flex-shrink:0}
-.step.done .n{background:var(--gn);border-color:var(--gn);color:#fff}
-.step.act .n{background:var(--ac);border-color:var(--ac);color:#fff;box-shadow:0 0 10px rgba(59,130,246,.3)}
-.step::after{content:'→';color:var(--bd);margin:0 2px;font-size:10px}
-.step:last-child::after{display:none}
-
-/* Log */
-.log{margin-top:14px;padding:12px;background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);font-size:11px;line-height:1.7;max-height:200px;overflow-y:auto;white-space:pre-wrap;font-family:'SF Mono',Menlo,monospace;display:none}
-.log .l{color:var(--dm)}.log .ok{color:var(--gn)}.log .er{color:var(--rd)}.log .i{color:var(--ac)}
-
-/* Success card */
+.btn:disabled{opacity:.4;cursor:not-allowed}.btn:active:not(:disabled){transform:scale(.97)}
+.steps{display:flex;gap:6px;margin-bottom:18px;align-items:center;flex-wrap:wrap}
+.step{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--dm);font-weight:500}
+.step .n{width:22px;height:22px;border-radius:50%;background:var(--sf);border:1.5px solid var(--bd);display:flex;align-items:center;justify-content:center;font-family:Sora;font-size:10px;font-weight:700;flex-shrink:0}
+.step.done .n{background:var(--gn);border-color:var(--gn);color:#fff}.step.act .n{background:var(--ac);border-color:var(--ac);color:#fff}
+.step::after{content:'→';color:var(--bd);margin:0 2px;font-size:10px}.step:last-child::after{display:none}
+.log{margin-top:14px;padding:12px;background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);font-size:11px;line-height:1.7;max-height:200px;overflow-y:auto;white-space:pre-wrap;font-family:monospace;display:none}
+.log .ok{color:var(--gn)}.log .er{color:var(--rd)}.log .i{color:var(--ac)}.log .l{color:var(--dm)}
 .success-card{background:var(--sf);border:1px solid rgba(16,185,129,.2);border-radius:16px;padding:28px 20px;text-align:center;display:none}
 .success-card .check{width:56px;height:56px;border-radius:50%;background:rgba(16,185,129,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px}
 .success-card h3{font-family:Sora;font-size:18px;font-weight:700;margin-bottom:12px}
 .success-card .link-box{background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:16px}
 .success-card .link-box a{color:var(--ac);font-size:14px;font-weight:500;word-break:break-all;text-decoration:none}
-.success-card .link-box a:hover{text-decoration:underline}
-.success-card .btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
-
-/* Modal */
-.mo{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:flex-end;justify-content:center;padding:0}
-.mo.show{display:flex}
-.mo-box{background:var(--sf);border:1px solid var(--bd);border-radius:16px 16px 0 0;max-width:480px;width:100%;padding:20px;max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.mo-box h3{font-family:Sora;font-size:16px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
-.mo-box h3 .close-x{font-size:18px;color:var(--dm);cursor:pointer;padding:4px 8px;border-radius:6px}
-.mo-box h3 .close-x:hover{color:var(--tx);background:rgba(255,255,255,.04)}
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:flex-end;justify-content:center;padding:0}.mo.show{display:flex}
+.mo-box{background:var(--sf);border:1px solid var(--bd);border-radius:16px 16px 0 0;max-width:480px;width:100%;padding:20px;max-height:90vh;overflow-y:auto}
+.mo-box h3{font-family:Sora;font-size:15px;font-weight:700;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.mo-box h3 .cx{font-size:18px;color:var(--dm);cursor:pointer;padding:4px 8px;border-radius:6px}.mo-box h3 .cx:hover{color:var(--tx)}
 @media(min-width:641px){.mo{align-items:center;padding:16px}.mo-box{border-radius:16px;max-height:85vh}}
-
-/* Mail preview */
-.mail-preview{background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:14px;margin-bottom:14px}
-.mail-preview .mp-label{font-size:9px;color:var(--dm);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:4px}
-.mail-preview .mp-val{font-size:13px;color:var(--tx);margin-bottom:10px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
-.mail-preview .mp-val:last-child{margin-bottom:0}
-
-/* Prospect detail row */
-.pd-row{display:flex;gap:8px;align-items:center;margin-bottom:6px;font-size:12px}
-.pd-row .pd-label{color:var(--dm);min-width:60px;font-weight:500}
-.pd-row .pd-val{color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pd-row .pd-val a{color:var(--ac);text-decoration:none}
-
-/* Toast */
-.toast{position:fixed;bottom:16px;left:16px;right:16px;max-width:360px;margin:0 auto;padding:12px 16px;border-radius:10px;font-size:12px;font-weight:500;z-index:300;transform:translateY(80px);opacity:0;transition:.3s;text-align:center}
-.toast.show{transform:translateY(0);opacity:1}
-.toast.ts{background:var(--gn);color:#fff}.toast.te{background:var(--rd);color:#fff}.toast.ti{background:var(--ac);color:#fff}
-
-@keyframes spin{to{transform:rotate(360deg)}}
-.sp{width:16px;height:16px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .5s linear infinite;display:inline-block}
-
-/* File input styled */
-.file-label{display:flex;align-items:center;justify-content:center;padding:12px;border:2px dashed var(--bd);border-radius:10px;color:var(--dm);font-size:12px;cursor:pointer;transition:.2s;min-height:48px;text-align:center}
-.file-label:hover{border-color:var(--ac);color:var(--ac)}
-.file-label.has{border-color:var(--gn);color:var(--gn);border-style:solid}
-#dFile{display:none}
-
-/* Empty state */
-.empty-state{text-align:center;padding:48px 20px;color:var(--dm)}
-.empty-state .es-icon{font-size:36px;margin-bottom:12px;opacity:.4}
-.empty-state p{font-size:13px;margin-bottom:16px}
-
-/* Mobile */
-@media(max-width:640px){
-  .wrap{padding:12px}
-  .stats{grid-template-columns:repeat(2,1fr);gap:6px}
-  .stats-5{grid-template-columns:repeat(3,1fr)}
-  .grid{grid-template-columns:1fr}
-  .tab{padding:10px 12px;font-size:12px}
-  header{padding:0 12px;height:48px}
-  .dw h2{font-size:18px}
-  .steps{flex-wrap:wrap;gap:4px}
-  .btn{padding:12px 20px;font-size:12px}
-  textarea.fi{min-height:120px;font-size:11px}
-  .success-card{padding:20px 16px}
-  .st strong{font-size:16px}
-}
+.sig-block{background:var(--bg2);border:1px solid var(--bd);border-radius:0 0 10px 10px;padding:12px 14px;font-size:12px;color:var(--mt);line-height:1.6;white-space:pre-wrap;border-top:1px dashed var(--bd);margin-top:-1px}
+.act-card{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:14px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:12px}
+.act-card:hover{border-color:var(--ac)}.act-card .ac-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.act-card .ac-text{flex:1}.act-card .ac-text strong{font-family:Sora;font-size:13px;font-weight:600;display:block}.act-card .ac-text span{font-size:11px;color:var(--dm)}
+.pd-row{display:flex;gap:8px;align-items:center;margin-bottom:6px;font-size:12px}.pd-row .pd-l{color:var(--dm);min-width:55px;font-weight:500}.pd-row .pd-v{color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pd-row .pd-v a{color:var(--ac);text-decoration:none}
+.file-label{display:flex;align-items:center;justify-content:center;padding:12px;border:2px dashed var(--bd);border-radius:10px;color:var(--dm);font-size:12px;cursor:pointer;transition:.2s;min-height:48px;text-align:center}.file-label:hover{border-color:var(--ac);color:var(--ac)}.file-label.has{border-color:var(--gn);color:var(--gn);border-style:solid}
+#dFile,#csvFile{display:none}
+.toast{position:fixed;bottom:16px;left:16px;right:16px;max-width:360px;margin:0 auto;padding:12px 16px;border-radius:10px;font-size:12px;font-weight:500;z-index:300;transform:translateY(80px);opacity:0;transition:.3s;text-align:center}.toast.show{transform:translateY(0);opacity:1}.toast.ts{background:var(--gn);color:#fff}.toast.te{background:var(--rd);color:#fff}.toast.ti{background:var(--ac);color:#fff}
+@keyframes spin{to{transform:rotate(360deg)}}.sp{width:16px;height:16px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .5s linear infinite;display:inline-block}
+@media(max-width:640px){.wrap{padding:12px}.stats{grid-template-columns:repeat(2,1fr);gap:6px}.grid{grid-template-columns:1fr}.tab{padding:10px 10px;font-size:11px}.dw h2{font-size:18px}.btn{padding:12px 20px;font-size:12px}.st strong{font-size:16px}}
 </style>
 </head>
 <body>
-
 <header>
-  <div class="logo">
-    <svg viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="16.5" stroke="rgba(59,130,246,.18)" stroke-width="1"/><path d="M18 8L25.5 19" stroke="#3B82F6" stroke-width="2.2" stroke-linecap="round"/><path d="M18 8L10.5 19" stroke="#3B82F6" stroke-width="2.2" stroke-linecap="round"/><path d="M18 14L22.5 21.5" stroke="rgba(59,130,246,.3)" stroke-width="1.4" stroke-linecap="round"/><path d="M18 14L13.5 21.5" stroke="rgba(59,130,246,.3)" stroke-width="1.4" stroke-linecap="round"/><line x1="11" y1="26" x2="25" y2="26" stroke="rgba(59,130,246,.15)" stroke-width="1" stroke-linecap="round"/></svg>
-    ELE<b>V</b>O
-  </div>
-  <div class="hdr-r">
-    <div class="pill pill-b" id="cfgPill">...</div>
-    <div class="pill pill-g" id="cntPill">0</div>
-  </div>
+  <div class="logo"><svg viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="16.5" stroke="rgba(59,130,246,.18)" stroke-width="1"/><path d="M18 8L25.5 19" stroke="#3B82F6" stroke-width="2.2" stroke-linecap="round"/><path d="M18 8L10.5 19" stroke="#3B82F6" stroke-width="2.2" stroke-linecap="round"/><path d="M18 14L22.5 21.5" stroke="rgba(59,130,246,.3)" stroke-width="1.4" stroke-linecap="round"/><path d="M18 14L13.5 21.5" stroke="rgba(59,130,246,.3)" stroke-width="1.4" stroke-linecap="round"/><line x1="11" y1="26" x2="25" y2="26" stroke="rgba(59,130,246,.15)" stroke-width="1" stroke-linecap="round"/></svg>ELE<b>V</b>O</div>
+  <div class="hdr-r"><div class="pill pill-b" id="cfgPill">...</div></div>
 </header>
-
 <div class="tabs">
-  <div class="tab on" data-t="dep">Deploy</div>
+  <div class="tab on" data-t="home">Dashboard</div>
+  <div class="tab" data-t="outreach">Outreach <span class="tab-badge" id="oBadge">0</span></div>
+  <div class="tab" data-t="dep">Deploy</div>
   <div class="tab" data-t="dash">Apps</div>
-  <div class="tab" data-t="outreach">Outreach <span class="tab-badge" id="outreachBadge">0</span></div>
 </div>
-
 <div class="wrap">
 
-<!-- ═══ DEPLOY ═══ -->
-<div class="sec on" id="dep">
+<!-- DASHBOARD -->
+<div class="sec on" id="home">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <h2 style="font-family:Sora;font-size:20px;font-weight:700">Guten Abend</h2>
+    <button class="ab" onclick="loadDashboard()" id="syncBtn">↻ Sync</button>
+  </div>
+  <div class="stats" id="dashStats">
+    <div class="st"><small>Prospects</small><strong class="b" id="dAll">-</strong></div>
+    <div class="st"><small>Preview</small><strong class="v" id="dPrev">-</strong></div>
+    <div class="st"><small>Gesendet</small><strong class="o" id="dMail">-</strong></div>
+    <div class="st"><small>Termine</small><strong class="g" id="dTerm">-</strong></div>
+  </div>
+  <div id="dashActions" style="display:grid;gap:8px;margin-bottom:20px"></div>
+  <div id="dashActivities"></div>
+</div>
+
+<!-- OUTREACH -->
+<div class="sec" id="outreach">
+  <div class="stats" style="grid-template-columns:repeat(5,1fr)" id="oStats">
+    <div class="st st-on" onclick="oPF('all')" data-pf="all"><small>Gesamt</small><strong class="b" id="oAll">0</strong></div>
+    <div class="st" onclick="oPF('neu')" data-pf="neu"><small>Neu</small><strong class="b" id="oNeu">0</strong></div>
+    <div class="st" onclick="oPF('preview')" data-pf="preview"><small>Preview</small><strong class="v" id="oPrv">0</strong></div>
+    <div class="st" onclick="oPF('mail')" data-pf="mail"><small>Mail</small><strong class="o" id="oMl">0</strong></div>
+    <div class="st" onclick="oPF('termin')" data-pf="termin"><small>Termin</small><strong class="g" id="oTm">0</strong></div>
+  </div>
+  <div class="bar">
+    <input type="text" id="oq" placeholder="Suchen..." oninput="renderP()">
+    <select onchange="oBranch=this.value;renderP()"><option value="">Alle</option><option value="makler">Makler</option><option value="kueche">Küche</option><option value="handwerk">Handwerk</option><option value="gastro">Gastro</option><option value="solar">Solar</option><option value="sonstige">Sonst</option></select>
+    <button class="fbtn" onclick="openCSV()">CSV</button>
+    <button class="fbtn" onclick="openAddP()" style="background:var(--ac);border-color:var(--ac);color:#fff">+</button>
+  </div>
+  <div class="grid" id="pGrid"></div>
+</div>
+
+<!-- DEPLOY -->
+<div class="sec" id="dep">
   <div class="dw">
-    <h2>Website deployen</h2>
-    <p>In Claude bauen → HTML kopieren → hier pasten → live.</p>
-
-    <div class="steps">
-      <div class="step act" id="s1"><span class="n">1</span>Eingabe</div>
-      <div class="step" id="s2"><span class="n">2</span>GitHub</div>
-      <div class="step" id="s3"><span class="n">3</span>Coolify</div>
-      <div class="step" id="s4"><span class="n">4</span>Live</div>
-    </div>
-
+    <h2>Website deployen</h2><p>HTML kopieren → hier pasten → live.</p>
+    <div class="steps"><div class="step act" id="s1"><span class="n">1</span>Eingabe</div><div class="step" id="s2"><span class="n">2</span>GitHub</div><div class="step" id="s3"><span class="n">3</span>Coolify</div><div class="step" id="s4"><span class="n">4</span>Live</div></div>
     <div id="depForm">
+      <div class="fg"><label>Firmenname</label><input type="text" class="fi" id="dName" placeholder="z.B. Mueller Sanitaer" autocomplete="off"></div>
+      <div class="preview-box empty" id="pvBox"><span class="link" id="pvLink">Subdomain erscheint hier...</span><button class="cpb" onclick="copyT(gid('pvLink').textContent)" id="pvCopy" style="display:none">📋</button></div>
       <div class="fg">
-        <label>Firmenname</label>
-        <input type="text" class="fi" id="dName" placeholder="z.B. Mueller Sanitaer" autocomplete="off" autocapitalize="words">
-      </div>
-
-      <div class="preview-box empty" id="previewBox">
-        <span class="link" id="previewLink">Subdomain erscheint hier...</span>
-        <button class="cpb" onclick="copyText(document.getElementById('previewLink').textContent)" id="previewCopy" style="display:none">Kopieren</button>
-      </div>
-
-      <div class="fg">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-          <label style="margin:0">HTML-Code</label>
-          <div style="display:flex;gap:5px">
-            <button class="cpb" onclick="pasteCode()" style="font-size:11px;padding:5px 10px">📋 Einfügen</button>
-            <button class="cpb" onclick="document.getElementById('dHtml').select()" style="font-size:11px;padding:5px 10px">Alles</button>
-            <button class="cpb" onclick="document.getElementById('dHtml').value='';document.getElementById('dHtml').dispatchEvent(new Event('input'))" style="font-size:11px;padding:5px 10px">✕</button>
-          </div>
-        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><label style="margin:0">HTML-Code</label><div style="display:flex;gap:5px"><button class="cpb" onclick="pasteF()" style="font-size:11px;padding:5px 10px">📋</button><button class="cpb" onclick="gid('dHtml').value='';gid('dHtml').dispatchEvent(new Event('input'))" style="font-size:11px;padding:5px 10px">✕</button></div></div>
         <textarea class="fi" id="dHtml" placeholder="<!DOCTYPE html>..."></textarea>
-        <div class="char-count" id="charCount">0 Zeichen</div>
+        <div class="char-count" id="chCnt">0 Zeichen</div>
       </div>
-
-      <div class="fg">
-        <label for="dFile" class="file-label" id="fileLabel">
-          HTML-Datei wählen oder hierhin ziehen
-        </label>
-        <input type="file" accept=".html,.htm" id="dFile">
-      </div>
-
-      <button class="btn btn-p" id="depBtn" onclick="deploy()">
-        Deploy starten
-      </button>
+      <div class="fg"><label for="dFile" class="file-label" id="fLabel">HTML-Datei wählen</label><input type="file" accept=".html,.htm" id="dFile"></div>
+      <button class="btn btn-p" id="depBtn" onclick="deploy()">Deploy starten</button>
     </div>
-
-    <div class="success-card" id="depDone">
-      <div class="check">✓</div>
-      <h3 id="doneTitle">Live!</h3>
-      <div class="link-box">
-        <a id="doneLink" href="#" target="_blank"></a>
-        <button class="cpb" onclick="copyText(document.getElementById('doneLink').textContent)">Kopieren</button>
-      </div>
-      <div class="btns">
-        <button class="ab prim" onclick="window.open(document.getElementById('doneLink').href,'_blank')">Öffnen</button>
-        <button class="ab" onclick="resetDep()">Nächste Website</button>
-        <button class="ab" onclick="sw('dash');loadApps()">Apps</button>
-      </div>
-    </div>
-
+    <div class="success-card" id="depDone"><div class="check">✓</div><h3 id="doneT">Live!</h3><div class="link-box"><a id="doneL" href="#" target="_blank"></a><button class="cpb" onclick="copyT(gid('doneL').textContent)">📋</button></div><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="ab prim" onclick="window.open(gid('doneL').href,'_blank')">Öffnen</button><button class="ab" onclick="resetDep()">Nächste</button></div></div>
     <div class="log" id="log"></div>
   </div>
 </div>
 
-<!-- ═══ APPS ═══ -->
+<!-- APPS -->
 <div class="sec" id="dash">
-  <div class="stats">
-    <div class="st"><small>Previews</small><strong class="b" id="nPrev">-</strong></div>
-    <div class="st"><small>Infra</small><strong class="o" id="nInfra">-</strong></div>
-    <div class="st"><small>Running</small><strong class="g" id="nRun">-</strong></div>
-    <div class="st"><small>Total</small><strong id="nTotal">-</strong></div>
-  </div>
+  <div class="stats"><div class="st"><small>Previews</small><strong class="b" id="nPv">-</strong></div><div class="st"><small>Infra</small><strong class="o" id="nIn">-</strong></div><div class="st"><small>Running</small><strong class="g" id="nRn">-</strong></div><div class="st"><small>Total</small><strong id="nTo">-</strong></div></div>
   <div class="bar">
-    <input type="text" id="q" placeholder="Suchen..." autocomplete="off">
-    <button class="fbtn on" data-f="all">Alle</button>
-    <button class="fbtn" data-f="preview">Previews</button>
-    <button class="fbtn" data-f="infra">Infra</button>
-    <button class="fbtn" onclick="loadApps()" title="Refresh">↻</button>
+    <input type="text" id="q" placeholder="Suchen..." oninput="renderA()">
+    <select id="appSort" onchange="renderA()"><option value="name">Name</option><option value="newest">Neueste</option><option value="oldest">Älteste</option></select>
+    <button class="fbtn on" data-f="all">Alle</button><button class="fbtn" data-f="preview">Previews</button><button class="fbtn" data-f="infra">Infra</button>
+    <button class="fbtn" onclick="loadApps()">↻</button>
   </div>
   <div class="grid" id="g"></div>
 </div>
 
-<!-- ═══ OUTREACH ═══ -->
-<div class="sec" id="outreach">
-  <div class="stats stats-5" id="outreachStats">
-    <div class="st st-on" onclick="setProspectFilter('all')" data-pf="all"><small>Gesamt</small><strong class="b" id="oAll">0</strong></div>
-    <div class="st" onclick="setProspectFilter('neu')" data-pf="neu"><small>Neu</small><strong class="b" id="oNeu">0</strong></div>
-    <div class="st" onclick="setProspectFilter('preview')" data-pf="preview"><small>Preview</small><strong class="v" id="oPrev">0</strong></div>
-    <div class="st" onclick="setProspectFilter('mail')" data-pf="mail"><small>Mail</small><strong class="o" id="oMail">0</strong></div>
-    <div class="st" onclick="setProspectFilter('termin')" data-pf="termin"><small>Termin</small><strong class="g" id="oTermin">0</strong></div>
-  </div>
-  <div class="bar">
-    <input type="text" id="oq" placeholder="Prospect suchen..." autocomplete="off" oninput="renderProspects()">
-    <select onchange="prospectBranch=this.value;renderProspects()" style="padding:8px 12px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;color:var(--mt);font-size:12px;min-height:44px;cursor:pointer">
-      <option value="">Alle Branchen</option>
-      <option value="makler">Makler</option>
-      <option value="kueche">Küchenstudio</option>
-      <option value="handwerk">Handwerk</option>
-      <option value="gastro">Gastronomie</option>
-      <option value="solar">Solar</option>
-      <option value="sonstige">Sonstige</option>
-    </select>
-    <button class="fbtn" onclick="openAddProspect()" style="background:var(--ac);border-color:var(--ac);color:#fff;font-weight:600">+ Neu</button>
-  </div>
-  <div class="grid" id="prospectGrid"></div>
-</div>
-
-<!-- ═══ EDITOR ═══ -->
+<!-- EDITOR -->
 <div class="sec" id="editor">
-  <div class="dw" style="max-width:100%">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-      <button class="ab" onclick="closeEditor()" style="padding:8px 12px">← Zurück</button>
-      <h2 id="editorTitle" style="font-family:Sora;font-size:18px;font-weight:700;margin:0">Code bearbeiten</h2>
-    </div>
-    <div id="editorLoading" style="text-align:center;padding:40px;color:var(--dm)">
-      <div class="sp dark" style="width:24px;height:24px;border-color:var(--bd);border-top-color:var(--ac)"></div>
-      <p style="margin-top:12px">Code wird geladen...</p>
-    </div>
-    <div id="editorContent" style="display:none">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:6px">
-        <label style="font-size:11px;color:var(--dm);text-transform:uppercase;letter-spacing:.1em;font-weight:500">HTML-CODE</label>
-        <div style="display:flex;gap:5px;flex-wrap:wrap">
-          <button class="cpb" onclick="copyText(document.getElementById('edCode').value)" style="font-size:11px;padding:5px 10px">📋 Kopieren</button>
-          <button class="cpb" onclick="pasteToEditor()" style="font-size:11px;padding:5px 10px">📋 Einfügen</button>
-          <button class="cpb" onclick="document.getElementById('edCode').select()" style="font-size:11px;padding:5px 10px">Alles</button>
-        </div>
-      </div>
-      <textarea class="fi" id="edCode" style="min-height:50vh;font-family:'SF Mono',Menlo,'Courier New',monospace;font-size:11px;line-height:1.5"></textarea>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
-        <div class="char-count" id="edCount">0 Zeichen</div>
-        <div style="display:flex;gap:8px">
-          <button class="ab" onclick="closeEditor()">Abbrechen</button>
-          <button class="ab prim" id="edSaveBtn" onclick="saveCode()">Speichern & Redeploy</button>
-        </div>
-      </div>
+  <div style="max-width:100%">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><button class="ab" onclick="sw('dash')">← Zurück</button><h2 id="edTitle" style="font-family:Sora;font-size:18px;font-weight:700;margin:0"></h2></div>
+    <div id="edLoad" style="text-align:center;padding:40px;color:var(--dm)"><div class="sp" style="width:24px;height:24px;border-color:var(--bd);border-top-color:var(--ac)"></div></div>
+    <div id="edCont" style="display:none">
+      <textarea class="fi" id="edCode" style="min-height:50vh;font-family:monospace;font-size:11px;line-height:1.5"></textarea>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px"><div class="char-count" id="edCnt">0</div><div style="display:flex;gap:8px"><button class="ab" onclick="sw('dash')">Abbrechen</button><button class="ab prim" id="edSave" onclick="saveCode()">Speichern</button></div></div>
     </div>
   </div>
 </div>
-
 </div>
 
-<!-- ═══ MODALS ═══ -->
+<!-- MODALS -->
+<div class="mo" id="cMo"><div class="mo-box"><h3>Löschen? <span class="cx" onclick="gid('cMo').classList.remove('show')">✕</span></h3><p id="cP" style="color:var(--mt);margin-bottom:14px;font-size:13px"></p><div style="display:flex;gap:8px;justify-content:flex-end"><button class="ab" onclick="gid('cMo').classList.remove('show')">Abbrechen</button><button class="ab" id="cBtn" style="border-color:var(--rd);color:var(--rd)">Löschen</button></div></div></div>
 
-<!-- Confirm Modal -->
-<div class="mo" id="cMo">
-  <div class="mo-box">
-    <h3>Löschen? <span class="close-x" onclick="cMo()">✕</span></h3>
-    <p id="cP" style="color:var(--mt);margin-bottom:14px;font-size:13px"></p>
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button class="ab" onclick="cMo()" style="min-height:40px">Abbrechen</button>
-      <button class="ab" id="cBtn" style="min-height:40px;border-color:var(--rd);color:var(--rd)">Löschen</button>
+<div class="mo" id="pMo"><div class="mo-box"><h3 id="pmT">Prospect <span class="cx" onclick="closePM()">✕</span></h3>
+  <div class="fg"><label>Firmenname *</label><input class="fi" id="pmN" placeholder="Weber Immobilien"></div>
+  <div class="fg"><label>Website</label><input class="fi" id="pmU" placeholder="weber-immobilien.de" inputmode="url"></div>
+  <div class="fg"><label>E-Mail</label><input class="fi" id="pmE" placeholder="info@..." inputmode="email"></div>
+  <div class="fg"><label>Ansprechpartner</label><input class="fi" id="pmC" placeholder="Thomas Weber"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div class="fg"><label>Branche</label><select class="fi" id="pmB"><option value="">–</option><option value="makler">Makler</option><option value="kueche">Küche</option><option value="handwerk">Handwerk</option><option value="gastro">Gastro</option><option value="solar">Solar</option><option value="sonstige">Sonst</option></select></div>
+    <div class="fg"><label>Anrede</label><select class="fi" id="pmA"><option value="Sie">Sie</option><option value="du">Du</option></select></div>
+  </div>
+  <div class="fg"><label>Score (0-10)</label><input class="fi" id="pmS" type="number" min="0" max="10" value="0" inputmode="numeric"></div>
+  <div class="fg"><label>Notizen</label><textarea class="fi" id="pmNo" style="min-height:50px" placeholder="..."></textarea></div>
+  <div style="display:flex;gap:8px"><button class="ab" onclick="closePM()" style="flex:1;justify-content:center;min-height:44px">Abbrechen</button><button class="ab prim" onclick="saveP()" style="flex:2;justify-content:center;min-height:44px" id="pmSv">Speichern</button></div>
+</div></div>
+
+<div class="mo" id="mailMo"><div class="mo-box"><h3>Cold Mail <span class="cx" onclick="closeMM()">✕</span></h3>
+  <div id="mailLoad" style="text-align:center;padding:20px"><div class="sp" style="border-color:var(--bd);border-top-color:var(--ac)"></div></div>
+  <div id="mailCont" style="display:none">
+    <div class="fg"><label>An</label><div id="mailTo" style="font-size:13px;color:var(--mt);padding:8px 0"></div></div>
+    <div class="fg"><label>Betreff</label><input class="fi" id="mailSub" style="font-weight:500"></div>
+    <div class="fg"><label>Text (editierbar)</label>
+      <textarea class="fi" id="mailBody" style="min-height:160px;font-family:Outfit,sans-serif;font-size:13px;line-height:1.6;border-radius:10px 10px 0 0"></textarea>
+      <div class="sig-block" id="mailSig"></div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="ab prim" onclick="sendPD()" id="pdSend" style="flex:2;justify-content:center;min-height:44px">Via Pipedrive senden</button>
+      <button class="ab" onclick="copyMail()" style="flex:1;justify-content:center;min-height:44px">📋</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="ab" onclick="openMailto()" style="flex:1;justify-content:center;min-height:44px">✉ Mail-App</button>
+      <button class="ab" onclick="markSent()" style="flex:1;justify-content:center;min-height:44px;color:var(--dm)">Manuell markieren</button>
     </div>
   </div>
-</div>
+</div></div>
 
-<!-- Add/Edit Prospect Modal -->
-<div class="mo" id="prospectMo">
-  <div class="mo-box">
-    <h3 id="pmTitle">Prospect hinzufügen <span class="close-x" onclick="closeProspectModal()">✕</span></h3>
-    <div class="fg"><label>Firmenname *</label><input type="text" class="fi" id="pmName" placeholder="z.B. Weber Immobilien" autocomplete="off"></div>
-    <div class="fg"><label>Website</label><input type="text" class="fi" id="pmUrl" placeholder="weber-immobilien.de" autocomplete="off" inputmode="url"></div>
-    <div class="fg"><label>E-Mail</label><input type="email" class="fi" id="pmEmail" placeholder="info@weber-immobilien.de" autocomplete="off" inputmode="email"></div>
-    <div class="fg"><label>Ansprechpartner</label><input type="text" class="fi" id="pmContact" placeholder="Thomas Weber" autocomplete="off"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="fg"><label>Branche</label>
-        <select class="fi" id="pmBranch">
-          <option value="">–</option>
-          <option value="makler">Makler</option>
-          <option value="kueche">Küchenstudio</option>
-          <option value="handwerk">Handwerk</option>
-          <option value="gastro">Gastronomie</option>
-          <option value="solar">Solar</option>
-          <option value="sonstige">Sonstige</option>
-        </select>
-      </div>
-      <div class="fg"><label>Anrede</label>
-        <select class="fi" id="pmAnrede">
-          <option value="Sie">Sie</option>
-          <option value="du">Du</option>
-        </select>
-      </div>
-    </div>
-    <div class="fg"><label>Score (0-10)</label><input type="number" class="fi" id="pmScore" min="0" max="10" value="0" inputmode="numeric"></div>
-    <div class="fg"><label>Notizen</label><textarea class="fi" id="pmNotes" placeholder="Optionale Notizen..." style="min-height:60px"></textarea></div>
-    <div style="display:flex;gap:8px;margin-top:4px">
-      <button class="ab" onclick="closeProspectModal()" style="flex:1;justify-content:center;min-height:44px">Abbrechen</button>
-      <button class="ab prim" id="pmSave" onclick="saveProspect()" style="flex:2;justify-content:center;min-height:44px">Speichern</button>
-    </div>
-  </div>
-</div>
+<div class="mo" id="csvMo"><div class="mo-box"><h3>CSV Import <span class="cx" onclick="closeCSV()">✕</span></h3>
+  <p style="font-size:12px;color:var(--dm);margin-bottom:12px">Spalten: name/firma, url/website, email, kontakt, branche, score, anrede, notizen</p>
+  <div class="fg"><label for="csvFile" class="file-label" id="csvLabel">CSV-Datei wählen</label><input type="file" accept=".csv,.txt" id="csvFile"></div>
+  <div class="fg"><label>Oder Text einfügen</label><textarea class="fi" id="csvText" placeholder="name;email;url;branche&#10;Weber Immobilien;info@weber.de;weber.de;makler" style="min-height:80px"></textarea></div>
+  <div id="csvPreview" style="display:none;margin-bottom:14px;max-height:200px;overflow-y:auto"></div>
+  <button class="ab prim" onclick="importCSV()" id="csvBtn" style="width:100%;justify-content:center;min-height:44px">Importieren</button>
+</div></div>
 
-<!-- Mail Preview Modal -->
-<div class="mo" id="mailMo">
-  <div class="mo-box">
-    <h3>Cold Mail <span class="close-x" onclick="closeMailModal()">✕</span></h3>
-    <div id="mailLoading" style="text-align:center;padding:20px;color:var(--dm)"><div class="sp" style="border-color:var(--bd);border-top-color:var(--ac)"></div></div>
-    <div id="mailContent" style="display:none">
-      <div class="mail-preview">
-        <div class="mp-label">An</div>
-        <div class="mp-val" id="mailTo"></div>
-        <div class="mp-label">Betreff</div>
-        <div class="mp-val" id="mailSubject" style="font-weight:500"></div>
-        <div class="mp-label">Text</div>
-        <div class="mp-val" id="mailBody"></div>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="ab prim" onclick="sendViaPipedrive()" id="pdSendBtn" style="flex:2;justify-content:center;min-height:44px">Via Pipedrive senden</button>
-        <button class="ab" onclick="copyMail()" style="flex:1;justify-content:center;min-height:44px">📋 Kopieren</button>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-        <button class="ab" onclick="openMailto()" style="flex:1;justify-content:center;min-height:44px">✉ Mail-App</button>
-        <button class="ab" onclick="markMailSent()" style="flex:1;justify-content:center;min-height:44px;color:var(--dm)">Manuell markieren</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Prospect Detail Modal -->
-<div class="mo" id="detailMo">
-  <div class="mo-box">
-    <h3 id="detailTitle">Prospect <span class="close-x" onclick="closeDetailModal()">✕</span></h3>
-    <div id="detailContent"></div>
-  </div>
-</div>
+<div class="mo" id="detMo"><div class="mo-box"><h3 id="detT">Detail <span class="cx" onclick="gid('detMo').classList.remove('show')">✕</span></h3><div id="detC"></div></div></div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-let apps=[],filt='all',prospects=[],prospectFilter='all',prospectBranch='',editingSlug=null,currentMailSlug=null;
+const gid=id=>document.getElementById(id);
+let apps=[],filt='all',prospects=[],pFilter='all',oBranch='',editSlug=null,mailSlug=null,edRepo='',edName='';
 
-// ═══ COPY HELPER ═══
-function copyText(text){
-  if(!text||text.includes('erscheint'))return;
-  navigator.clipboard.writeText(text).then(()=>toast('Kopiert!','ts')).catch(()=>{
-    const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;left:-9999px';
-    document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('Kopiert!','ts');
-  });
-}
-
-async function pasteCode(){
-  try{const text=await navigator.clipboard.readText();if(text){document.getElementById('dHtml').value=text;document.getElementById('dHtml').dispatchEvent(new Event('input'));toast('Eingefügt! '+text.length.toLocaleString('de')+' Zeichen','ts')}}catch(e){toast('Clipboard-Zugriff verweigert','te')}
-}
-
+function copyT(t){if(!t||t.includes('erscheint'))return;navigator.clipboard.writeText(t).then(()=>toast('Kopiert!','ts')).catch(()=>toast('Fehler','te'))}
+async function pasteF(){try{const t=await navigator.clipboard.readText();if(t){gid('dHtml').value=t;gid('dHtml').dispatchEvent(new Event('input'));toast('Eingefügt!','ts')}}catch(e){toast('Clipboard verweigert','te')}}
 function toSlug(n){return n.toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')}
-function h(s){return(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;').replace(/</g,'&lt;')}
-function hh(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function h(s){return(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function toast(m,t='ti'){const e=gid('toast');e.textContent=m;e.className=`toast ${t} show`;setTimeout(()=>e.classList.remove('show'),2800)}
+function statusL(s){return{neu:'Neu',preview:'Preview',mail:'Gesendet',followup:'Follow-up',termin:'Termin',skip:'Skip'}[s]||s}
 
-// ═══ TABS ═══
-document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{sw(t.dataset.t);if(t.dataset.t==='dash')loadApps();if(t.dataset.t==='outreach')loadProspects()});
+// TABS
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{sw(t.dataset.t);if(t.dataset.t==='dash')loadApps();if(t.dataset.t==='outreach')loadP();if(t.dataset.t==='home')loadDashboard()});
 function sw(id){document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.t===id));document.querySelectorAll('.sec').forEach(s=>s.classList.toggle('on',s.id===id))}
 
-function toast(m,t='ti'){const e=document.getElementById('toast');e.textContent=m;e.className=`toast ${t} show`;setTimeout(()=>e.classList.remove('show'),2500)}
-
-// ═══ DEPLOY TAB ═══
-document.getElementById('dName').addEventListener('input',function(){
-  const v=this.value.trim();const box=document.getElementById('previewBox');const link=document.getElementById('previewLink');const cp=document.getElementById('previewCopy');
-  if(v.length>0){link.textContent=toSlug(v)+'-preview.elevo.solutions';box.classList.remove('empty');cp.style.display='inline-flex'}
-  else{link.textContent='Subdomain erscheint hier...';box.classList.add('empty');cp.style.display='none'}
-});
-
-document.getElementById('dHtml').addEventListener('input',function(){
-  const c=this.value.length;const l=this.value.split('\n').length;
-  document.getElementById('charCount').textContent=c.toLocaleString('de')+' Zeichen · '+l+' Zeilen';
-});
-
-const fileInput=document.getElementById('dFile');const fileLabel=document.getElementById('fileLabel');
-fileInput.addEventListener('change',function(){
-  const f=this.files[0];if(!f)return;
-  const r=new FileReader();r.onload=e=>{document.getElementById('dHtml').value=e.target.result;document.getElementById('dHtml').dispatchEvent(new Event('input'));fileLabel.textContent='✓ '+f.name;fileLabel.classList.add('has');
-  if(!document.getElementById('dName').value){document.getElementById('dName').value=f.name.replace(/\.html?$/i,'').replace(/[-_]/g,' ');document.getElementById('dName').dispatchEvent(new Event('input'))}};r.readAsText(f);
-});
-fileLabel.addEventListener('dragover',e=>{e.preventDefault();fileLabel.style.borderColor='var(--ac)'});
-fileLabel.addEventListener('dragleave',()=>{fileLabel.style.borderColor=''});
-fileLabel.addEventListener('drop',e=>{e.preventDefault();fileLabel.style.borderColor='';if(e.dataTransfer.files.length){fileInput.files=e.dataTransfer.files;fileInput.dispatchEvent(new Event('change'))}});
-
-function setS(n){[1,2,3,4].forEach(i=>{const e=document.getElementById('s'+i);e.classList.remove('act','done');if(i<n)e.classList.add('done');if(i===n)e.classList.add('act')})}
-function lg(m,c='l'){const e=document.getElementById('log');e.style.display='block';e.innerHTML+=`<span class="${c}">${m}</span>\n`;e.scrollTop=e.scrollHeight}
-
-async function deploy(){
-  const name=document.getElementById('dName').value.trim();const html=document.getElementById('dHtml').value.trim();
-  if(!name)return toast('Firmenname eingeben','te');if(!html)return toast('HTML-Code eingeben','te');if(html.length<100)return toast('HTML zu kurz','te');
-  const btn=document.getElementById('depBtn');btn.disabled=true;btn.innerHTML='<span class="sp"></span> Deploying...';
-  document.getElementById('log').innerHTML='';document.getElementById('log').style.display='block';setS(2);
-  const slug=toSlug(name);lg('▸ Deploy: '+name+' → '+slug+'-preview.elevo.solutions','i');lg('▸ HTML: '+html.length.toLocaleString('de')+' Zeichen','l');
+// ═══ DASHBOARD ═══
+async function loadDashboard(){
+  gid('syncBtn').innerHTML='<span class="sp" style="width:12px;height:12px;border-color:var(--bd);border-top-color:var(--ac)"></span>';
   try{
-    const r=await fetch('/api/deploy-full',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,html})});const d=await r.json();
-    if(d.success){setS(3);lg('✓ GitHub: OK','ok');lg('✓ Coolify: '+(d.action==='created'?'Erstellt':'Aktualisiert'),'ok');setS(4);lg('✓ Live: '+d.domain,'ok');
-      const domain=d.domain||'https://'+slug+'-preview.elevo.solutions';
-      setTimeout(()=>{document.getElementById('depForm').style.display='none';const sc=document.getElementById('depDone');sc.style.display='block';
-      document.getElementById('doneTitle').textContent=name+' ist live!';const lnk=document.getElementById('doneLink');lnk.href=domain;lnk.textContent=domain.replace('https://','');
-      toast('Deploy erfolgreich!','ts');
-      // Auto-update prospect status if exists
-      const p=prospects.find(x=>x.slug===slug);if(p&&p.status==='neu'){fetch('/api/prospect/'+slug+'/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'preview'})}).then(()=>loadProspects())}
-      },400);
-    }else{lg('✗ '+(d.error||JSON.stringify(d)),'er');if(d.status)lg('HTTP Status: '+d.status,'er');setS(1);toast('Deploy fehlgeschlagen','te')}
-  }catch(e){lg('✗ Netzwerk-Fehler: '+e.message,'er');toast('Fehler','te')}
+    const r=await fetch('/api/dashboard');const d=await r.json();
+    gid('dAll').textContent=d.local.total;gid('dPrev').textContent=d.local.preview;
+    gid('dMail').textContent=d.local.mail+d.local.followup;gid('dTerm').textContent=d.local.termin;
+
+    // Actions
+    let ah='';
+    if(!d.actions.length)ah='<div style="text-align:center;color:var(--dm);padding:20px;font-size:13px">Keine offenen Aufgaben</div>';
+    for(const a of d.actions){
+      const colors={preview:'rgba(59,130,246,.1)',mail:'rgba(249,158,11,.1)',followup:'rgba(239,68,68,.1)'};
+      const icons={preview:'🔨',mail:'✉',followup:'📞'};
+      const tabs={preview:'outreach',mail:'outreach',followup:'outreach'};
+      ah+=`<div class="act-card" onclick="sw('${tabs[a.type]}');loadP()"><div class="ac-icon" style="background:${colors[a.type]}">${icons[a.type]}</div><div class="ac-text"><strong>${a.label}</strong><span>Klicken zum Anzeigen</span></div></div>`;
+    }
+    gid('dashActions').innerHTML=ah;
+
+    // Pipedrive activities
+    let ph='';
+    if(d.pipedrive.synced&&d.pipedrive.activities.length){
+      ph='<h3 style="font-family:Sora;font-size:14px;font-weight:600;margin-bottom:10px">Pipedrive Aktivitäten</h3>';
+      for(const a of d.pipedrive.activities){
+        const od=a.overdue?'color:var(--rd)':'color:var(--dm)';
+        ph+=`<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:12px"><span style="font-weight:500">${h(a.subject)}</span> <span style="${od}">${a.due_date||''}</span>${a.person_name?` · <span style="color:var(--mt)">${h(a.person_name)}</span>`:''}</div>`;
+      }
+    } else if(d.pipedrive.synced){ph='<div style="color:var(--dm);font-size:12px;padding:8px 0">Keine offenen Aktivitäten in Pipedrive</div>';}
+    else if(!d.pipedrive.synced&&!d.pipedrive.error){ph='<div style="color:var(--dm);font-size:12px">Pipedrive nicht verbunden</div>';}
+    gid('dashActivities').innerHTML=ph;
+  }catch(e){toast('Dashboard Fehler','te')}
+  gid('syncBtn').innerHTML='↻ Sync';
+}
+
+// ═══ DEPLOY ═══
+gid('dName').addEventListener('input',function(){const v=this.value.trim();if(v){gid('pvLink').textContent=toSlug(v)+'-preview.elevo.solutions';gid('pvBox').classList.remove('empty');gid('pvCopy').style.display='inline-flex'}else{gid('pvLink').textContent='Subdomain erscheint hier...';gid('pvBox').classList.add('empty');gid('pvCopy').style.display='none'}});
+gid('dHtml').addEventListener('input',function(){gid('chCnt').textContent=this.value.length.toLocaleString('de')+' Zeichen'});
+gid('dFile').addEventListener('change',function(){const f=this.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{gid('dHtml').value=e.target.result;gid('dHtml').dispatchEvent(new Event('input'));gid('fLabel').textContent='✓ '+f.name;gid('fLabel').classList.add('has');if(!gid('dName').value){gid('dName').value=f.name.replace(/\.html?$/i,'').replace(/[-_]/g,' ');gid('dName').dispatchEvent(new Event('input'))}};r.readAsText(f)});
+function setS(n){[1,2,3,4].forEach(i=>{const e=gid('s'+i);e.classList.remove('act','done');if(i<n)e.classList.add('done');if(i===n)e.classList.add('act')})}
+function lg(m,c='l'){const e=gid('log');e.style.display='block';e.innerHTML+=`<span class="${c}">${m}</span>\n`;e.scrollTop=e.scrollHeight}
+async function deploy(){
+  const name=gid('dName').value.trim(),html=gid('dHtml').value.trim();
+  if(!name)return toast('Name fehlt','te');if(!html||html.length<100)return toast('HTML fehlt/zu kurz','te');
+  const btn=gid('depBtn');btn.disabled=true;btn.innerHTML='<span class="sp"></span> Deploying...';gid('log').innerHTML='';gid('log').style.display='block';setS(2);
+  const slug=toSlug(name);lg('▸ '+name+' → '+slug+'-preview.elevo.solutions','i');
+  try{const r=await fetch('/api/deploy-full',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,html})});const d=await r.json();
+    if(d.success){setS(4);lg('✓ Live: '+d.domain,'ok');setTimeout(()=>{gid('depForm').style.display='none';gid('depDone').style.display='block';gid('doneT').textContent=name+' ist live!';const l=gid('doneL');l.href=d.domain||'https://'+slug+'-preview.elevo.solutions';l.textContent=(d.domain||'').replace('https://','');toast('Live!','ts');const p=prospects.find(x=>x.slug===slug);if(p&&p.status==='neu')fetch('/api/prospect/'+slug+'/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'preview'})}).then(()=>loadP())},400)}
+    else{lg('✗ '+(d.error||'Fehler'),'er');setS(1);toast('Fehler','te')}
+  }catch(e){lg('✗ '+e.message,'er');toast('Fehler','te')}
   btn.disabled=false;btn.innerHTML='Deploy starten';
 }
+function resetDep(){gid('depForm').style.display='block';gid('depDone').style.display='none';gid('log').style.display='none';gid('dName').value='';gid('dHtml').value='';gid('chCnt').textContent='0 Zeichen';gid('pvLink').textContent='Subdomain erscheint hier...';gid('pvBox').classList.add('empty');gid('pvCopy').style.display='none';gid('fLabel').textContent='HTML-Datei wählen';gid('fLabel').classList.remove('has');setS(1)}
 
-function resetDep(){
-  document.getElementById('depForm').style.display='block';document.getElementById('depDone').style.display='none';
-  document.getElementById('log').style.display='none';document.getElementById('log').innerHTML='';
-  document.getElementById('dName').value='';document.getElementById('dHtml').value='';
-  document.getElementById('charCount').textContent='0 Zeichen';document.getElementById('previewLink').textContent='Subdomain erscheint hier...';
-  document.getElementById('previewBox').classList.add('empty');document.getElementById('previewCopy').style.display='none';
-  document.getElementById('fileLabel').textContent='HTML-Datei wählen oder hierhin ziehen';document.getElementById('fileLabel').classList.remove('has');document.getElementById('dFile').value='';setS(1);
-}
-
-// ═══ APPS TAB ═══
-document.querySelectorAll('.fbtn[data-f]').forEach(b=>b.onclick=()=>{filt=b.dataset.f;document.querySelectorAll('.fbtn[data-f]').forEach(x=>x.classList.toggle('on',x===b));renderApps()});
-document.getElementById('q').oninput=renderApps;
-
+// ═══ APPS ═══
 const INFRA=[1,2,4,5,7];
-async function loadApps(){
-  try{const r=await fetch('/api/apps');const d=await r.json();apps=d.apps||[];renderApps();document.getElementById('cntPill').textContent=apps.length}catch(e){toast('Laden fehlgeschlagen','te')}
+document.querySelectorAll('.fbtn[data-f]').forEach(b=>b.onclick=()=>{filt=b.dataset.f;document.querySelectorAll('.fbtn[data-f]').forEach(x=>x.classList.toggle('on',x===b));renderA()});
+async function loadApps(){try{const r=await fetch('/api/apps');const d=await r.json();apps=d.apps||[];renderA()}catch(e){toast('Apps Fehler','te')}}
+function renderA(){
+  const q=gid('q').value.toLowerCase(),sort=gid('appSort').value;
+  let f=apps.filter(a=>{const inf=INFRA.includes(a.environment_id);if(filt==='preview'&&inf)return false;if(filt==='infra'&&!inf)return false;if(q&&!a.name.toLowerCase().includes(q)&&!(a.fqdn||'').toLowerCase().includes(q))return false;return true});
+  if(sort==='newest')f.sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
+  else if(sort==='oldest')f.sort((a,b)=>new Date(a.created_at||0)-new Date(b.created_at||0));
+  else f.sort((a,b)=>{if(a.environment_id===3&&b.environment_id!==3)return-1;if(a.environment_id!==3&&b.environment_id===3)return 1;return a.name.localeCompare(b.name)});
+  const pv=apps.filter(a=>a.environment_id===3).length;gid('nPv').textContent=pv;gid('nIn').textContent=apps.filter(a=>INFRA.includes(a.environment_id)).length;gid('nRn').textContent=apps.filter(a=>(a.status||'').includes('running')).length;gid('nTo').textContent=apps.length;
+  gid('g').innerHTML=f.map(a=>{const inf=INFRA.includes(a.environment_id);const dom=(a.fqdn||'').replace(/^https?:\/\//,'').replace(/\/$/,'');const up=(a.status||'').includes('running');const dt=a.created_at?new Date(a.created_at).toLocaleDateString('de'):'';
+    return`<div class="card"><div class="tag ${inf?'tag-i':'tag-p'}">${inf?'Infra':'Preview'}</div><h4>${h(a.name)}</h4><div class="url"><a href="${a.fqdn}" target="_blank">${dom}</a></div><span class="dot ${up?'dot-g':'dot-r'}">${up?'● Live':'○ Off'}</span>${dt?`<div style="font-size:10px;color:var(--dm);margin-top:4px">${dt}</div>`:''}<div class="acts"><button class="ab prim" onclick="window.open('${a.fqdn}','_blank')">Öffnen</button>${!inf&&a.git_repository?`<button class="ab" onclick="openEd('${a.git_repository.split('/').pop()}','${h(a.name)}')">Code</button>`:''}<button class="ab" onclick="reD('${a.uuid}','${h(a.name)}')">↻</button>${!inf?`<button class="ab x" onclick="delA('${a.uuid}','${h(a.name)}')">✕</button>`:''}</div></div>`}).join('')||'<p style="color:var(--dm);text-align:center;padding:40px">Keine Apps</p>';
 }
+async function reD(u,n){toast(n+' redeploying...','ti');await fetch('/api/deploy/'+u);toast('Gestartet','ts')}
+function delA(u,n){gid('cP').textContent=`"${n}" löschen?`;gid('cBtn').onclick=async()=>{gid('cMo').classList.remove('show');await fetch('/api/app/'+u,{method:'DELETE'});toast('Gelöscht','ts');setTimeout(loadApps,1000)};gid('cMo').classList.add('show')}
 
-function renderApps(){
-  const q=document.getElementById('q').value.toLowerCase();
-  let f=apps.filter(a=>{const inf=INFRA.includes(a.environment_id);if(filt==='preview'&&inf)return false;if(filt==='infra'&&!inf)return false;if(q&&!a.name.toLowerCase().includes(q)&&!(a.fqdn||'').toLowerCase().includes(q))return false;return true}).sort((a,b)=>{if(a.environment_id===3&&b.environment_id!==3)return -1;if(a.environment_id!==3&&b.environment_id===3)return 1;return a.name.localeCompare(b.name)});
-  const pv=apps.filter(a=>a.environment_id===3).length;const inf=apps.filter(a=>INFRA.includes(a.environment_id)).length;const run=apps.filter(a=>(a.status||'').includes('running')).length;
-  document.getElementById('nPrev').textContent=pv;document.getElementById('nInfra').textContent=inf;document.getElementById('nRun').textContent=run;document.getElementById('nTotal').textContent=apps.length;
-  document.getElementById('g').innerHTML=f.map(a=>{const isInf=INFRA.includes(a.environment_id);const dom=(a.fqdn||'').replace(/^https?:\/\//,'').replace(/\/$/,'');const up=(a.status||'').includes('running');
-    return`<div class="card"><div class="tag ${isInf?'tag-i':'tag-p'}">${isInf?'Infra':'Preview'}</div><h4>${hh(a.name)}</h4><div class="url"><a href="${a.fqdn}" target="_blank">${dom}</a><button class="cpb" onclick="event.stopPropagation();copyText('${h(dom)}')">📋</button></div><span class="dot ${up?'dot-g':'dot-r'}">${up?'● Live':'○ Off'}</span><div class="acts"><button class="ab prim" onclick="window.open('${h(a.fqdn)}','_blank')">Öffnen</button>${!isInf&&a.git_repository?`<button class="ab" onclick="openEditor('${h(a.git_repository.split('/').pop())}','${hh(a.name)}','${a.uuid}')">Code</button>`:''}<button class="ab" onclick="rd('${a.uuid}','${hh(a.name)}')">Redeploy</button>${!isInf?`<button class="ab x" onclick="cd('${a.uuid}','${hh(a.name)}')">✕</button>`:''}</div></div>`}).join('')||'<p style="color:var(--dm);text-align:center;padding:40px">Keine Apps gefunden</p>';
-}
+// EDITOR
+async function openEd(repo,name){edRepo=repo;edName=name;gid('edTitle').textContent=name;gid('edLoad').style.display='block';gid('edCont').style.display='none';document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));gid('editor').classList.add('on');document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  try{const r=await fetch('/api/code/'+encodeURIComponent(repo));const d=await r.json();if(d.success){gid('edCode').value=d.html;gid('edCnt').textContent=d.html.length.toLocaleString('de')+' Z';gid('edLoad').style.display='none';gid('edCont').style.display='block'}else{toast('Fehler','te');sw('dash')}}catch(e){toast(e.message,'te');sw('dash')}}
+gid('edCode').addEventListener('input',function(){gid('edCnt').textContent=this.value.length.toLocaleString('de')+' Z'});
+async function saveCode(){const html=gid('edCode').value;if(!html||html.length<100)return toast('Zu kurz','te');const btn=gid('edSave');btn.disabled=true;btn.innerHTML='<span class="sp"></span>';try{const r=await fetch('/api/code/'+encodeURIComponent(edRepo),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({html})});if((await r.json()).success){toast('Gespeichert!','ts');sw('dash');loadApps()}else toast('Fehler','te')}catch(e){toast(e.message,'te')}btn.disabled=false;btn.innerHTML='Speichern'}
 
-async function rd(u,n){toast(n+' wird redeployed...','ti');try{await fetch('/api/deploy/'+u);toast(n+' Redeploy gestartet','ts')}catch(e){toast('Fehler','te')}}
-function cd(u,n){document.getElementById('cP').textContent=`"${n}" wirklich löschen?`;document.getElementById('cBtn').onclick=()=>da(u,n);document.getElementById('cMo').classList.add('show')}
-function cMo(){document.getElementById('cMo').classList.remove('show')}
-async function da(u,n){cMo();toast('Lösche...','ti');try{await fetch('/api/app/'+u,{method:'DELETE'});toast(n+' gelöscht','ts');setTimeout(loadApps,1000)}catch(e){toast('Fehler','te')}}
+// ═══ OUTREACH ═══
+async function loadP(){try{const r=await fetch('/api/prospects');prospects=(await r.json()).prospects||[];renderP();gid('oBadge').textContent=prospects.length}catch(e){toast('Fehler','te')}}
+function oPF(f){pFilter=f;document.querySelectorAll('#oStats .st').forEach(s=>s.classList.toggle('st-on',s.dataset.pf===f));renderP()}
+function renderP(){
+  const q=(gid('oq').value||'').toLowerCase();
+  let f=prospects.filter(p=>{if(pFilter!=='all'&&p.status!==pFilter&&!(pFilter==='mail'&&p.status==='followup'))return false;if(oBranch&&p.branch!==oBranch)return false;if(q&&!p.name.toLowerCase().includes(q)&&!(p.contact||'').toLowerCase().includes(q)&&!(p.url||'').toLowerCase().includes(q))return false;return true});
+  const o={neu:0,preview:1,mail:2,followup:3,termin:4,skip:5};f.sort((a,b)=>o[a.status]-o[b.status]||new Date(b.created)-new Date(a.created));
+  const c={neu:0,preview:0,mail:0,followup:0,termin:0,skip:0};prospects.forEach(p=>c[p.status]++);
+  gid('oAll').textContent=prospects.length;gid('oNeu').textContent=c.neu;gid('oPrv').textContent=c.preview;gid('oMl').textContent=c.mail+c.followup;gid('oTm').textContent=c.termin;
+  if(!f.length){gid('pGrid').innerHTML=`<div style="text-align:center;padding:48px;color:var(--dm);grid-column:1/-1"><p style="font-size:13px;margin-bottom:12px">${prospects.length?'Kein Treffer':'Noch keine Prospects'}</p>${!prospects.length?'<button class="ab prim" onclick="openAddP()">+ Ersten anlegen</button>':''}</div>`;return}
+  gid('pGrid').innerHTML=f.map(p=>{const dom=(p.url||'').replace(/^https?:\/\//,'').replace(/\/$/,'');
+    return`<div class="card" onclick="openDet('${p.slug}')"><div class="tag tag-p" style="font-size:9px">${p.score?'● '+p.score:''}</div><h4>${h(p.name)}</h4><div class="url">${dom?`<a href="https://${h(dom)}" target="_blank" onclick="event.stopPropagation()">${h(dom)}</a>`:'<span style="color:var(--dm)">—</span>'}</div><div style="display:flex;gap:6px;align-items:center;margin:6px 0"><span class="badge badge-${p.status}">${statusL(p.status)}</span>${p.contact?`<span style="font-size:10px;color:var(--mt)">${h(p.contact)}</span>`:''}</div><div class="acts" onclick="event.stopPropagation()">${p.status==='neu'?`<button class="ab prim" onclick="deployP('${p.slug}')">Website</button>`:p.status==='preview'?`<button class="ab prim" onclick="openMail('${p.slug}')">Mail</button>`:p.status==='mail'?`<button class="ab" onclick="setSt('${p.slug}','followup')" style="border-color:var(--og);color:var(--og)">Follow-up</button>`:p.status==='followup'?`<button class="ab" onclick="setSt('${p.slug}','termin')" style="border-color:var(--gn);color:var(--gn)">Termin!</button>`:''}<button class="ab" onclick="openMail('${p.slug}')">✉</button><button class="ab" onclick="editP('${p.slug}')">✎</button><button class="ab x" onclick="delP('${p.slug}')">✕</button></div></div>`}).join('')}
 
-// ═══ EDITOR ═══
-let editorRepo='',editorName='',editorUuid='';
-async function openEditor(repo,name,uuid){
-  editorRepo=repo;editorName=name;editorUuid=uuid;
-  document.getElementById('editorTitle').textContent=name+' — Code';
-  document.getElementById('editorLoading').style.display='block';document.getElementById('editorContent').style.display='none';
-  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));document.getElementById('editor').classList.add('on');
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
-  try{const r=await fetch('/api/code/'+encodeURIComponent(repo));const d=await r.json();
-    if(d.success&&d.html){document.getElementById('edCode').value=d.html;document.getElementById('edCount').textContent=d.html.length.toLocaleString('de')+' Zeichen · '+d.html.split('\n').length+' Zeilen';document.getElementById('editorLoading').style.display='none';document.getElementById('editorContent').style.display='block'}
-    else{toast('Code laden fehlgeschlagen','te');closeEditor()}
-  }catch(e){toast('Fehler: '+e.message,'te');closeEditor()}
-}
-document.getElementById('edCode').addEventListener('input',function(){const c=this.value.length;const l=this.value.split('\n').length;document.getElementById('edCount').textContent=c.toLocaleString('de')+' Zeichen · '+l+' Zeilen'});
-async function pasteToEditor(){try{const t=await navigator.clipboard.readText();if(t){document.getElementById('edCode').value=t;document.getElementById('edCode').dispatchEvent(new Event('input'));toast('Eingefügt!','ts')}}catch(e){toast('Clipboard nicht verfügbar','te')}}
-async function saveCode(){
-  const html=document.getElementById('edCode').value;if(!html||html.length<100)return toast('Code zu kurz','te');
-  const btn=document.getElementById('edSaveBtn');btn.disabled=true;btn.innerHTML='<span class="sp"></span> Speichern...';
-  try{const r=await fetch('/api/code/'+encodeURIComponent(editorRepo),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({html})});const d=await r.json();
-    if(d.success){toast(editorName+' gespeichert & Redeploy gestartet!','ts');closeEditor();loadApps()}else{toast('Fehler: '+(d.error||''),'te')}
-  }catch(e){toast('Fehler: '+e.message,'te')}
-  btn.disabled=false;btn.innerHTML='Speichern & Redeploy';
-}
-function closeEditor(){sw('dash')}
+function openAddP(){editSlug=null;gid('pmT').innerHTML='Hinzufügen <span class="cx" onclick="closePM()">✕</span>';gid('pmN').value='';gid('pmU').value='';gid('pmE').value='';gid('pmC').value='';gid('pmB').value='';gid('pmA').value='Sie';gid('pmS').value='0';gid('pmNo').value='';gid('pMo').classList.add('show');setTimeout(()=>gid('pmN').focus(),100)}
+function editP(slug){const p=prospects.find(x=>x.slug===slug);if(!p)return;editSlug=slug;gid('pmT').innerHTML='Bearbeiten <span class="cx" onclick="closePM()">✕</span>';gid('pmN').value=p.name;gid('pmU').value=p.url;gid('pmE').value=p.email;gid('pmC').value=p.contact;gid('pmB').value=p.branch;gid('pmA').value=p.anrede||'Sie';gid('pmS').value=p.score;gid('pmNo').value=p.notes;gid('pMo').classList.add('show')}
+function closePM(){gid('pMo').classList.remove('show')}
+async function saveP(){const d={name:gid('pmN').value.trim(),url:gid('pmU').value.trim(),email:gid('pmE').value.trim(),contact:gid('pmC').value.trim(),branch:gid('pmB').value,anrede:gid('pmA').value,score:parseInt(gid('pmS').value)||0,notes:gid('pmNo').value.trim()};if(!d.name)return toast('Name fehlt','te');
+  const r=editSlug?await fetch('/api/prospect/'+editSlug,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}):await fetch('/api/prospect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+  const j=await r.json();if(j.success||j.prospect){toast(editSlug?'Aktualisiert':'Angelegt','ts');closePM();loadP()}else toast(j.error||'Fehler','te')}
+async function delP(slug){if(!confirm('Löschen?'))return;await fetch('/api/prospect/'+slug,{method:'DELETE'});toast('Gelöscht','ts');loadP()}
+async function setSt(slug,st){await fetch('/api/prospect/'+slug+'/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:st})});toast(statusL(st),'ts');loadP()}
+function deployP(slug){const p=prospects.find(x=>x.slug===slug);if(!p)return;sw('dep');gid('dName').value=p.name;gid('dName').dispatchEvent(new Event('input'));toast('Name übernommen — HTML einfügen','ti')}
 
-// ═══ OUTREACH TAB ═══
-async function loadProspects(){
-  try{const r=await fetch('/api/prospects');const d=await r.json();prospects=d.prospects||[];renderProspects();document.getElementById('outreachBadge').textContent=prospects.length}catch(e){toast('Prospects laden fehlgeschlagen','te')}
-}
+// MAIL (editable)
+async function openMail(slug){mailSlug=slug;gid('mailLoad').style.display='block';gid('mailCont').style.display='none';gid('mailMo').classList.add('show');
+  try{const r=await fetch('/api/prospect/'+slug+'/mail-generate');const d=await r.json();if(d.success){gid('mailTo').textContent=d.mail.to;gid('mailSub').value=d.mail.subject;gid('mailBody').value=d.mail.body;gid('mailSig').textContent=d.mail.signature;gid('mailLoad').style.display='none';gid('mailCont').style.display='block';gid('pdSend').disabled=false;gid('pdSend').innerHTML='Via Pipedrive senden'}else{toast(d.error||'Fehler','te');closeMM()}}catch(e){toast(e.message,'te');closeMM()}}
+function closeMM(){gid('mailMo').classList.remove('show');mailSlug=null}
+function copyMail(){const full=gid('mailBody').value+'\n\n'+gid('mailSig').textContent;copyT(full);toast('Kopiert! Betreff: '+gid('mailSub').value,'ts')}
+function openMailto(){const to=gid('mailTo').textContent,sub=encodeURIComponent(gid('mailSub').value),body=encodeURIComponent(gid('mailBody').value+'\n\n'+gid('mailSig').textContent);window.open(`mailto:${to}?subject=${sub}&body=${body}`)}
+async function markSent(){if(!mailSlug)return;await fetch('/api/prospect/'+mailSlug+'/mail-sent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mailText:gid('mailBody').value})});toast('Markiert','ts');closeMM();loadP()}
+async function sendPD(){if(!mailSlug)return;const btn=gid('pdSend');btn.disabled=true;btn.innerHTML='<span class="sp" style="width:14px;height:14px"></span> Sende...';
+  try{const r=await fetch('/api/prospect/'+mailSlug+'/send-mail',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subject:gid('mailSub').value,body:gid('mailBody').value})});const d=await r.json();
+    if(d.success){const s=d.steps||[];toast([s.includes('person')?'Person':'',s.includes('mail')?'Mail':'',s.includes('activity')?'Activity':''].filter(Boolean).join(' · ')||'Gesendet!','ts');closeMM();loadP()}
+    else{toast(d.error||'Fehler','te');btn.disabled=false;btn.innerHTML='Via Pipedrive senden'}
+  }catch(e){toast(e.message,'te');btn.disabled=false;btn.innerHTML='Via Pipedrive senden'}}
 
-function setProspectFilter(f){
-  prospectFilter=f;
-  document.querySelectorAll('#outreachStats .st').forEach(s=>s.classList.toggle('st-on',s.dataset.pf===f));
-  renderProspects();
-}
+// CSV
+function openCSV(){gid('csvText').value='';gid('csvLabel').textContent='CSV-Datei wählen';gid('csvLabel').classList.remove('has');gid('csvPreview').style.display='none';gid('csvMo').classList.add('show')}
+function closeCSV(){gid('csvMo').classList.remove('show')}
+gid('csvFile').addEventListener('change',function(){const f=this.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{gid('csvText').value=e.target.result;gid('csvLabel').textContent='✓ '+f.name;gid('csvLabel').classList.add('has');previewCSV()};r.readAsText(f)});
+gid('csvText').addEventListener('input',previewCSV);
+function previewCSV(){const t=gid('csvText').value.trim();if(!t){gid('csvPreview').style.display='none';return}const lines=t.split(/\r?\n/).filter(l=>l.trim());if(lines.length<2){gid('csvPreview').innerHTML='<div style="color:var(--dm);font-size:11px">Mindestens Header + 1 Zeile</div>';gid('csvPreview').style.display='block';return}
+  gid('csvPreview').innerHTML=`<div style="font-size:11px;color:var(--gn);margin-bottom:4px">${lines.length-1} Zeilen erkannt</div><div style="font-size:10px;color:var(--dm)">Header: ${h(lines[0].substring(0,100))}</div>`;gid('csvPreview').style.display='block'}
+async function importCSV(){const csv=gid('csvText').value.trim();if(!csv)return toast('CSV fehlt','te');gid('csvBtn').disabled=true;gid('csvBtn').innerHTML='<span class="sp" style="width:12px;height:12px"></span>';
+  try{const r=await fetch('/api/prospects/import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({csv})});const d=await r.json();if(d.success){toast(`${d.imported} importiert, ${d.skipped} übersprungen`,'ts');closeCSV();loadP()}else toast(d.error||'Fehler','te')}catch(e){toast(e.message,'te')}
+  gid('csvBtn').disabled=false;gid('csvBtn').innerHTML='Importieren'}
 
-function renderProspects(){
-  const q=(document.getElementById('oq').value||'').toLowerCase();
-  let f=prospects.filter(p=>{
-    if(prospectFilter!=='all'&&p.status!==prospectFilter){
-      if(prospectFilter==='termin'&&p.status!=='termin')return false;
-      if(prospectFilter!=='termin'&&p.status!==prospectFilter)return false;
-    }
-    if(prospectBranch&&p.branch!==prospectBranch)return false;
-    if(q&&!p.name.toLowerCase().includes(q)&&!(p.contact||'').toLowerCase().includes(q)&&!(p.url||'').toLowerCase().includes(q))return false;
-    return true;
-  });
+// DETAIL
+function openDet(slug){const p=prospects.find(x=>x.slug===slug);if(!p)return;gid('detT').innerHTML=`${h(p.name)} <span class="cx" onclick="gid('detMo').classList.remove('show')">✕</span>`;const dom=(p.url||'').replace(/^https?:\/\//,'').replace(/\/$/,'');const pv='https://'+p.preview;const age=Math.floor((Date.now()-new Date(p.created))/864e5);
+  gid('detC').innerHTML=`<div style="margin-bottom:12px"><span class="badge badge-${p.status}">${statusL(p.status)}</span>${p.score?` <span style="font-size:11px;color:var(--dm)">Score ${p.score}/10</span>`:''} <span style="font-size:11px;color:var(--dm)">${age}d</span></div>
+    <div class="pd-row"><span class="pd-l">Kontakt</span><span class="pd-v">${h(p.contact)||'–'}</span></div>
+    <div class="pd-row"><span class="pd-l">E-Mail</span><span class="pd-v">${p.email?`<a href="mailto:${h(p.email)}">${h(p.email)}</a>`:'–'}</span></div>
+    <div class="pd-row"><span class="pd-l">URL</span><span class="pd-v">${dom?`<a href="https://${h(dom)}" target="_blank">${h(dom)}</a>`:'–'}</span></div>
+    <div class="pd-row"><span class="pd-l">Branche</span><span class="pd-v">${h(p.branch)||'–'}</span></div>
+    <div class="pd-row"><span class="pd-l">Preview</span><span class="pd-v"><a href="${pv}" target="_blank">${p.preview}</a></span></div>
+    ${p.mailSent?`<div class="pd-row"><span class="pd-l">Mail</span><span class="pd-v" style="color:var(--gn)">${new Date(p.mailSent).toLocaleDateString('de')}</span></div>`:''}
+    ${p.pipedrivePersonId?`<div class="pd-row"><span class="pd-l">PD</span><span class="pd-v" style="color:var(--gn)">Person #${p.pipedrivePersonId}</span></div>`:''}
+    ${p.notes?`<div style="margin-top:10px;padding:10px;background:var(--bg2);border-radius:8px;font-size:11px;color:var(--mt);line-height:1.5">${h(p.notes)}</div>`:''}
+    <div style="display:flex;gap:6px;margin-top:14px;flex-wrap:wrap">
+      ${p.status==='neu'?`<button class="ab prim" onclick="gid('detMo').classList.remove('show');deployP('${p.slug}')">Website</button>`:''}
+      <button class="ab" onclick="gid('detMo').classList.remove('show');openMail('${p.slug}')">✉ Mail</button>
+      <button class="ab" onclick="window.open('${pv}','_blank')">Preview</button>
+      <button class="ab" onclick="gid('detMo').classList.remove('show');editP('${p.slug}')">✎</button>
+      ${p.status!=='skip'?`<button class="ab x" onclick="gid('detMo').classList.remove('show');setSt('${p.slug}','skip')">Skip</button>`:`<button class="ab" onclick="gid('detMo').classList.remove('show');setSt('${p.slug}','neu')">Reaktivieren</button>`}
+    </div>`;
+  gid('detMo').classList.add('show')}
 
-  // Sort: newest first, termin/skip at bottom
-  const order={neu:0,preview:1,mail:2,followup:3,termin:4,skip:5};
-  f.sort((a,b)=>order[a.status]-order[b.status]||new Date(b.created)-new Date(a.created));
-
-  // Stats
-  const counts={all:prospects.length,neu:0,preview:0,mail:0,followup:0,termin:0,skip:0};
-  prospects.forEach(p=>counts[p.status]=(counts[p.status]||0)+1);
-  document.getElementById('oAll').textContent=counts.all;
-  document.getElementById('oNeu').textContent=counts.neu;
-  document.getElementById('oPrev').textContent=counts.preview;
-  document.getElementById('oMail').textContent=counts.mail+counts.followup;
-  document.getElementById('oTermin').textContent=counts.termin;
-
-  const grid=document.getElementById('prospectGrid');
-  if(!f.length){
-    grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="es-icon">📋</div><p>${prospects.length?'Keine Prospects mit diesem Filter.':'Noch keine Prospects. Leg los!'}</p>${!prospects.length?'<button class="ab prim" onclick="openAddProspect()">+ Ersten Prospect anlegen</button>':''}</div>`;
-    return;
-  }
-
-  grid.innerHTML=f.map(p=>{
-    const domain=(p.url||'').replace(/^https?:\/\//,'').replace(/\/$/,'');
-    const badge=`<span class="badge badge-${p.status}">${statusLabel(p.status)}</span>`;
-    const scoreColor=p.score>=8?'var(--gn)':p.score>=5?'var(--og)':'var(--dm)';
-    return`<div class="card" onclick="openDetail('${p.slug}')">
-      <div class="tag tag-p" style="font-size:9px">${p.score?'⬤ '+p.score:''}</div>
-      <h4>${hh(p.name)}</h4>
-      <div class="url">${domain?`<a href="https://${hh(domain)}" target="_blank" onclick="event.stopPropagation()">${hh(domain)}</a>`:`<span style="color:var(--dm)">Keine URL</span>`}</div>
-      <div style="display:flex;gap:6px;align-items:center;margin:6px 0">${badge}${p.contact?`<span style="font-size:10px;color:var(--mt)">${hh(p.contact)}</span>`:''}</div>
-      <div class="acts" onclick="event.stopPropagation()">
-        ${p.status==='neu'?`<button class="ab prim" onclick="deployProspect('${p.slug}')">Website bauen</button>`:''}
-        ${p.status==='preview'?`<button class="ab prim" onclick="openMail('${p.slug}')">Mail</button>`:''}
-        ${p.status==='mail'?`<button class="ab" onclick="setStatus('${p.slug}','followup')" style="border-color:var(--og);color:var(--og)">Follow-up</button>`:''}
-        ${p.status==='followup'?`<button class="ab" onclick="setStatus('${p.slug}','termin')" style="border-color:var(--gn);color:var(--gn)">Termin!</button>`:''}
-        ${['neu','preview','mail','followup'].includes(p.status)?`<button class="ab" onclick="openMail('${p.slug}')">✉</button>`:''}
-        <button class="ab" onclick="editProspect('${p.slug}')">✎</button>
-        <button class="ab x" onclick="deleteProspect('${p.slug}')">✕</button>
-      </div>
-    </div>`}).join('');
-}
-
-function statusLabel(s){return{neu:'Neu',preview:'Preview',mail:'Mail gesendet',followup:'Follow-up',termin:'Termin',skip:'Skip'}[s]||s}
-
-// ═══ PROSPECT CRUD ═══
-function openAddProspect(){
-  editingSlug=null;
-  document.getElementById('pmTitle').innerHTML='Prospect hinzufügen <span class="close-x" onclick="closeProspectModal()">✕</span>';
-  document.getElementById('pmName').value='';document.getElementById('pmUrl').value='';document.getElementById('pmEmail').value='';
-  document.getElementById('pmContact').value='';document.getElementById('pmBranch').value='';document.getElementById('pmAnrede').value='Sie';
-  document.getElementById('pmScore').value='0';document.getElementById('pmNotes').value='';
-  document.getElementById('pmSave').textContent='Speichern';
-  document.getElementById('prospectMo').classList.add('show');
-  setTimeout(()=>document.getElementById('pmName').focus(),100);
-}
-
-function editProspect(slug){
-  const p=prospects.find(x=>x.slug===slug);if(!p)return;
-  editingSlug=slug;
-  document.getElementById('pmTitle').innerHTML='Prospect bearbeiten <span class="close-x" onclick="closeProspectModal()">✕</span>';
-  document.getElementById('pmName').value=p.name;document.getElementById('pmUrl').value=p.url||'';document.getElementById('pmEmail').value=p.email||'';
-  document.getElementById('pmContact').value=p.contact||'';document.getElementById('pmBranch').value=p.branch||'';document.getElementById('pmAnrede').value=p.anrede||'Sie';
-  document.getElementById('pmScore').value=p.score||0;document.getElementById('pmNotes').value=p.notes||'';
-  document.getElementById('pmSave').textContent='Aktualisieren';
-  document.getElementById('prospectMo').classList.add('show');
-}
-
-function closeProspectModal(){document.getElementById('prospectMo').classList.remove('show')}
-
-async function saveProspect(){
-  const data={
-    name:document.getElementById('pmName').value.trim(),
-    url:document.getElementById('pmUrl').value.trim(),
-    email:document.getElementById('pmEmail').value.trim(),
-    contact:document.getElementById('pmContact').value.trim(),
-    branch:document.getElementById('pmBranch').value,
-    anrede:document.getElementById('pmAnrede').value,
-    score:parseInt(document.getElementById('pmScore').value)||0,
-    notes:document.getElementById('pmNotes').value.trim()
-  };
-  if(!data.name)return toast('Name fehlt','te');
-  try{
-    let r;
-    if(editingSlug){r=await fetch('/api/prospect/'+editingSlug,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})}
-    else{r=await fetch('/api/prospect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})}
-    const d=await r.json();
-    if(d.success||d.prospect){toast(editingSlug?'Aktualisiert!':'Prospect angelegt!','ts');closeProspectModal();loadProspects()}
-    else{toast(d.error||'Fehler','te')}
-  }catch(e){toast('Fehler: '+e.message,'te')}
-}
-
-async function deleteProspect(slug){
-  const p=prospects.find(x=>x.slug===slug);if(!p)return;
-  if(!confirm(`"${p.name}" wirklich löschen?`))return;
-  try{await fetch('/api/prospect/'+slug,{method:'DELETE'});toast('Gelöscht','ts');loadProspects()}catch(e){toast('Fehler','te')}
-}
-
-async function setStatus(slug,status){
-  try{const r=await fetch('/api/prospect/'+slug+'/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})});const d=await r.json();
-    if(d.success){toast(statusLabel(status)+'!','ts');loadProspects()}else{toast(d.error||'Fehler','te')}
-  }catch(e){toast('Fehler','te')}
-}
-
-// ═══ DEPLOY FROM PROSPECT ═══
-function deployProspect(slug){
-  const p=prospects.find(x=>x.slug===slug);if(!p)return;
-  sw('dep');
-  document.getElementById('dName').value=p.name;document.getElementById('dName').dispatchEvent(new Event('input'));
-  toast('Firmenname übernommen — HTML einfügen und deployen','ti');
-}
-
-// ═══ MAIL ═══
-async function openMail(slug){
-  currentMailSlug=slug;
-  document.getElementById('mailLoading').style.display='block';document.getElementById('mailContent').style.display='none';
-  document.getElementById('mailMo').classList.add('show');
-  try{const r=await fetch('/api/prospect/'+slug+'/mail-generate');const d=await r.json();
-    if(d.success&&d.mail){
-      document.getElementById('mailTo').textContent=d.mail.to;
-      document.getElementById('mailSubject').textContent=d.mail.subject;
-      document.getElementById('mailBody').textContent=d.mail.body;
-      document.getElementById('mailLoading').style.display='none';document.getElementById('mailContent').style.display='block';
-    }else{toast(d.error||'Mail-Fehler','te');closeMailModal()}
-  }catch(e){toast('Fehler: '+e.message,'te');closeMailModal()}
-}
-
-function closeMailModal(){document.getElementById('mailMo').classList.remove('show');currentMailSlug=null}
-
-function copyMail(){
-  const subject=document.getElementById('mailSubject').textContent;
-  const body=document.getElementById('mailBody').textContent;
-  copyText(body);
-  toast('Mail-Text kopiert! Betreff: '+subject,'ts');
-}
-
-function openMailto(){
-  const to=document.getElementById('mailTo').textContent;
-  const subject=encodeURIComponent(document.getElementById('mailSubject').textContent);
-  const body=encodeURIComponent(document.getElementById('mailBody').textContent);
-  window.open(`mailto:${to}?subject=${subject}&body=${body}`);
-}
-
-async function markMailSent(){
-  if(!currentMailSlug)return;
-  const body=document.getElementById('mailBody').textContent;
-  try{const r=await fetch('/api/prospect/'+currentMailSlug+'/mail-sent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mailText:body})});const d=await r.json();
-    if(d.success){toast('Als gesendet markiert!','ts');closeMailModal();loadProspects()}else{toast(d.error||'Fehler','te')}
-  }catch(e){toast('Fehler','te')}
-}
-
-async function sendViaPipedrive(){
-  if(!currentMailSlug)return;
-  const btn=document.getElementById('pdSendBtn');
-  const origText=btn.innerHTML;
-  btn.disabled=true;btn.innerHTML='<span class="sp" style="width:14px;height:14px"></span> Sende...';
-  try{
-    const r=await fetch('/api/prospect/'+currentMailSlug+'/send-mail',{method:'POST'});
-    const d=await r.json();
-    if(d.success){
-      const steps=d.steps||[];
-      let parts=[];
-      if(steps.includes('person'))parts.push('Person angelegt');
-      if(steps.includes('status-update'))parts.push('Status gesetzt');
-      if(steps.includes('mail'))parts.push('Mail gesendet');
-      if(steps.includes('activity'))parts.push('Activity erstellt');
-      toast(parts.join(' · ')||'Gesendet!','ts');
-      closeMailModal();loadProspects();
-    }else{
-      toast(d.error||'Fehler beim Senden','te');
-      btn.disabled=false;btn.innerHTML=origText;
-    }
-  }catch(e){toast('Netzwerk-Fehler: '+e.message,'te');btn.disabled=false;btn.innerHTML=origText}
-}
-
-// ═══ PROSPECT DETAIL ═══
-function openDetail(slug){
-  const p=prospects.find(x=>x.slug===slug);if(!p)return;
-  document.getElementById('detailTitle').innerHTML=`${hh(p.name)} <span class="close-x" onclick="closeDetailModal()">✕</span>`;
-  const domain=(p.url||'').replace(/^https?:\/\//,'').replace(/\/$/,'');
-  const preview=`https://${p.preview}`;
-  const age=Math.floor((Date.now()-new Date(p.created))/(1000*60*60*24));
-  document.getElementById('detailContent').innerHTML=`
-    <div style="margin-bottom:14px"><span class="badge badge-${p.status}">${statusLabel(p.status)}</span> ${p.score?`<span style="font-size:11px;color:var(--dm);margin-left:6px">Score: ${p.score}/10</span>`:''} <span style="font-size:11px;color:var(--dm);margin-left:6px">${age}d</span></div>
-    <div class="pd-row"><span class="pd-label">Kontakt</span><span class="pd-val">${hh(p.contact)||'–'}</span></div>
-    <div class="pd-row"><span class="pd-label">E-Mail</span><span class="pd-val">${p.email?`<a href="mailto:${hh(p.email)}">${hh(p.email)}</a>`:'–'}</span></div>
-    <div class="pd-row"><span class="pd-label">URL</span><span class="pd-val">${domain?`<a href="https://${hh(domain)}" target="_blank">${hh(domain)}</a>`:'–'}</span></div>
-    <div class="pd-row"><span class="pd-label">Branche</span><span class="pd-val">${hh(p.branch)||'–'}</span></div>
-    <div class="pd-row"><span class="pd-label">Anrede</span><span class="pd-val">${p.anrede||'Sie'}</span></div>
-    <div class="pd-row"><span class="pd-label">Preview</span><span class="pd-val"><a href="${preview}" target="_blank">${p.preview}</a></span></div>
-    ${p.mailSent?`<div class="pd-row"><span class="pd-label">Mail</span><span class="pd-val" style="color:var(--gn)">Gesendet ${new Date(p.mailSent).toLocaleDateString('de')}</span></div>`:''}
-    ${p.pipedrivePersonId?`<div class="pd-row"><span class="pd-label">Pipedrive</span><span class="pd-val" style="color:var(--gn)">Person #${p.pipedrivePersonId}</span></div>`:''}
-    ${p.notes?`<div style="margin-top:12px;padding:10px;background:var(--bg2);border-radius:8px;font-size:12px;color:var(--mt);line-height:1.5">${hh(p.notes)}</div>`:''}
-    <div style="display:flex;gap:6px;margin-top:16px;flex-wrap:wrap">
-      ${p.status==='neu'?`<button class="ab prim" onclick="closeDetailModal();deployProspect('${p.slug}')">Website bauen</button>`:''}
-      <button class="ab" onclick="closeDetailModal();openMail('${p.slug}')">✉ Mail</button>
-      <button class="ab" onclick="window.open('${preview}','_blank')">Preview öffnen</button>
-      <button class="ab" onclick="closeDetailModal();editProspect('${p.slug}')">✎ Bearbeiten</button>
-      ${p.status!=='skip'?`<button class="ab x" onclick="closeDetailModal();setStatus('${p.slug}','skip')">Skip</button>`:`<button class="ab" onclick="closeDetailModal();setStatus('${p.slug}','neu')" style="border-color:var(--ac);color:var(--ac)">Reaktivieren</button>`}
-    </div>
-  `;
-  document.getElementById('detailMo').classList.add('show');
-}
-function closeDetailModal(){document.getElementById('detailMo').classList.remove('show')}
-
-// ═══ INIT ═══
-async function init(){
-  try{const r=await fetch('/api/config');const d=await r.json();const p=document.getElementById('cfgPill');const ok=d.coolify&&d.github;p.textContent=ok?'Ready':'Config!';p.className='pill '+(ok?'pill-g':'pill-b')}catch(e){}
-  loadApps();loadProspects();setS(1);
-}
+// INIT
+async function init(){try{const r=await fetch('/api/config');const d=await r.json();const ok=d.coolify&&d.github;gid('cfgPill').textContent=ok?'Ready':'Config!';gid('cfgPill').className='pill '+(ok?'pill-g':'pill-b')}catch(e){}loadDashboard();loadP();setS(1)}
 init();
 </script>
 </body>
