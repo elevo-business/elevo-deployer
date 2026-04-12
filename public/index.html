@@ -9,7 +9,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg viewBox='0 0 36 36' xmlns='http://www.w3.org/2000/svg'><circle cx='18' cy='18' r='16' fill='%2305070E' stroke='%233B82F6' stroke-width='1'/><path d='M18 8L25 19' stroke='%233B82F6' stroke-width='2.2' stroke-linecap='round'/><path d='M18 8L11 19' stroke='%233B82F6' stroke-width='2.2' stroke-linecap='round'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#05070E;--bg2:#0A0E1A;--sf:#111827;--sfh:#1A2035;--bd:#1E2A42;--tx:#E2E8F0;--mt:#8899B0;--dm:#516179;--ac:#3B82F6;--ach:#2563EB;--gn:#10B981;--og:#F59E0B;--rd:#EF4444;--r:14px}
+:root{--bg:#05070E;--bg2:#0A0E1A;--sf:#111827;--sfh:#1A2035;--bd:#1E2A42;--tx:#E2E8F0;--mt:#8899B0;--dm:#516179;--ac:#3B82F6;--ach:#2563EB;--gn:#10B981;--og:#F59E0B;--rd:#EF4444;--vi:#818CF8;--r:14px}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--bg);color:var(--tx);font-family:Outfit,sans-serif;font-weight:300;min-height:100vh;min-height:100dvh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
 ::selection{background:var(--ac);color:#fff}
@@ -28,23 +28,28 @@ header{position:sticky;top:0;z-index:100;background:rgba(5,7,14,.9);backdrop-fil
 
 /* Tabs */
 .tabs{display:flex;padding:0 16px;background:var(--bg);border-bottom:1px solid rgba(255,255,255,.04);overflow-x:auto;-webkit-overflow-scrolling:touch}
-.tab{padding:12px 16px;font-size:13px;font-weight:500;color:var(--mt);cursor:pointer;border-bottom:2px solid transparent;transition:.2s;white-space:nowrap;min-height:44px;display:flex;align-items:center}
+.tab{padding:12px 16px;font-size:13px;font-weight:500;color:var(--mt);cursor:pointer;border-bottom:2px solid transparent;transition:.2s;white-space:nowrap;min-height:44px;display:flex;align-items:center;gap:5px}
 .tab:hover{color:var(--tx)}.tab.on{color:var(--ac);border-color:var(--ac)}
+.tab-badge{font-size:9px;background:rgba(59,130,246,.15);color:var(--ac);padding:1px 6px;border-radius:100px;font-weight:600}
 
 .wrap{max-width:1200px;margin:0 auto;padding:16px}
 .sec{display:none}.sec.on{display:block}
 
 /* Stats */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
-.st{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:12px}
+.stats-5{grid-template-columns:repeat(5,1fr)}
+.st{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:12px;cursor:pointer;transition:.15s}
+.st:hover{border-color:rgba(59,130,246,.2)}
+.st.st-on{border-color:var(--ac);background:var(--sfh)}
 .st small{font-size:9px;color:var(--dm);text-transform:uppercase;letter-spacing:.14em;display:block;margin-bottom:2px}
 .st strong{font-family:Sora;font-size:20px;font-weight:700}
-.st strong.b{color:var(--ac)}.st strong.g{color:var(--gn)}.st strong.o{color:var(--og)}
+.st strong.b{color:var(--ac)}.st strong.g{color:var(--gn)}.st strong.o{color:var(--og)}.st strong.v{color:var(--vi)}.st strong.r{color:var(--rd)}
 
 /* Toolbar */
 .bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
 .bar input{flex:1;min-width:140px;padding:10px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;color:var(--tx);font-size:14px;outline:none;transition:.2s;min-height:44px}
 .bar input:focus{border-color:var(--ac)}
+.bar select{padding:8px 12px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;color:var(--mt);font-size:12px;outline:none;min-height:44px;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238899B0'%3E%3Cpath d='M2 4l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
 .fbtn{padding:8px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;color:var(--mt);font-size:12px;cursor:pointer;transition:.15s;min-height:44px}
 .fbtn:hover,.fbtn.on{border-color:var(--ac);color:var(--ac)}
 
@@ -68,6 +73,15 @@ header{position:sticky;top:0;z-index:100;background:rgba(5,7,14,.9);backdrop-fil
 .ab.prim{background:var(--ac);border-color:var(--ac);color:#fff}
 .ab.prim:hover{background:var(--ach)}
 
+/* Status badges */
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:600;padding:3px 8px;border-radius:100px;text-transform:uppercase;letter-spacing:.06em}
+.badge-neu{background:rgba(59,130,246,.1);color:var(--ac)}
+.badge-preview{background:rgba(129,140,248,.1);color:var(--vi)}
+.badge-mail{background:rgba(249,158,11,.1);color:var(--og)}
+.badge-followup{background:rgba(249,115,22,.1);color:#F97316}
+.badge-termin{background:rgba(16,185,129,.1);color:var(--gn)}
+.badge-skip{background:rgba(239,68,68,.06);color:var(--rd)}
+
 /* Copy button */
 .cpb{padding:4px 8px;font-size:10px;border-radius:6px;border:1px solid var(--bd);background:transparent;color:var(--dm);cursor:pointer;transition:.15s;min-height:28px;display:inline-flex;align-items:center;gap:3px;flex-shrink:0}
 .cpb:hover{border-color:var(--ac);color:var(--ac)}
@@ -83,6 +97,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(5,7,14,.9);backdrop-fil
 .fi{width:100%;padding:12px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;color:var(--tx);font-size:14px;outline:none;transition:.2s;resize:vertical;min-height:44px}
 .fi:focus{border-color:var(--ac)}
 textarea.fi{min-height:160px;font-family:'SF Mono',Menlo,'Courier New',monospace;font-size:12px;line-height:1.5}
+select.fi{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238899B0'%3E%3Cpath d='M2 4l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;cursor:pointer}
 
 /* Preview link box */
 .preview-box{margin:8px 0 16px;padding:12px 14px;background:var(--bg2);border:1px solid var(--bd);border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px}
@@ -120,10 +135,25 @@ textarea.fi{min-height:160px;font-family:'SF Mono',Menlo,'Courier New',monospace
 .success-card .btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 
 /* Modal */
-.mo{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:flex-end;justify-content:center;padding:0}
 .mo.show{display:flex}
-.mo-box{background:var(--sf);border:1px solid var(--bd);border-radius:16px;max-width:380px;width:100%;padding:20px}
-.mo-box h3{font-family:Sora;font-size:16px;font-weight:700;margin-bottom:10px}
+.mo-box{background:var(--sf);border:1px solid var(--bd);border-radius:16px 16px 0 0;max-width:480px;width:100%;padding:20px;max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.mo-box h3{font-family:Sora;font-size:16px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.mo-box h3 .close-x{font-size:18px;color:var(--dm);cursor:pointer;padding:4px 8px;border-radius:6px}
+.mo-box h3 .close-x:hover{color:var(--tx);background:rgba(255,255,255,.04)}
+@media(min-width:641px){.mo{align-items:center;padding:16px}.mo-box{border-radius:16px;max-height:85vh}}
+
+/* Mail preview */
+.mail-preview{background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:14px;margin-bottom:14px}
+.mail-preview .mp-label{font-size:9px;color:var(--dm);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:4px}
+.mail-preview .mp-val{font-size:13px;color:var(--tx);margin-bottom:10px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.mail-preview .mp-val:last-child{margin-bottom:0}
+
+/* Prospect detail row */
+.pd-row{display:flex;gap:8px;align-items:center;margin-bottom:6px;font-size:12px}
+.pd-row .pd-label{color:var(--dm);min-width:60px;font-weight:500}
+.pd-row .pd-val{color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pd-row .pd-val a{color:var(--ac);text-decoration:none}
 
 /* Toast */
 .toast{position:fixed;bottom:16px;left:16px;right:16px;max-width:360px;margin:0 auto;padding:12px 16px;border-radius:10px;font-size:12px;font-weight:500;z-index:300;transform:translateY(80px);opacity:0;transition:.3s;text-align:center}
@@ -139,10 +169,16 @@ textarea.fi{min-height:160px;font-family:'SF Mono',Menlo,'Courier New',monospace
 .file-label.has{border-color:var(--gn);color:var(--gn);border-style:solid}
 #dFile{display:none}
 
+/* Empty state */
+.empty-state{text-align:center;padding:48px 20px;color:var(--dm)}
+.empty-state .es-icon{font-size:36px;margin-bottom:12px;opacity:.4}
+.empty-state p{font-size:13px;margin-bottom:16px}
+
 /* Mobile */
 @media(max-width:640px){
   .wrap{padding:12px}
   .stats{grid-template-columns:repeat(2,1fr);gap:6px}
+  .stats-5{grid-template-columns:repeat(3,1fr)}
   .grid{grid-template-columns:1fr}
   .tab{padding:10px 12px;font-size:12px}
   header{padding:0 12px;height:48px}
@@ -151,6 +187,7 @@ textarea.fi{min-height:160px;font-family:'SF Mono',Menlo,'Courier New',monospace
   .btn{padding:12px 20px;font-size:12px}
   textarea.fi{min-height:120px;font-size:11px}
   .success-card{padding:20px 16px}
+  .st strong{font-size:16px}
 }
 </style>
 </head>
@@ -170,6 +207,7 @@ textarea.fi{min-height:160px;font-family:'SF Mono',Menlo,'Courier New',monospace
 <div class="tabs">
   <div class="tab on" data-t="dep">Deploy</div>
   <div class="tab" data-t="dash">Apps</div>
+  <div class="tab" data-t="outreach">Outreach <span class="tab-badge" id="outreachBadge">0</span></div>
 </div>
 
 <div class="wrap">
@@ -223,7 +261,6 @@ textarea.fi{min-height:160px;font-family:'SF Mono',Menlo,'Courier New',monospace
       </button>
     </div>
 
-    <!-- Success -->
     <div class="success-card" id="depDone">
       <div class="check">✓</div>
       <h3 id="doneTitle">Live!</h3>
@@ -242,7 +279,7 @@ textarea.fi{min-height:160px;font-family:'SF Mono',Menlo,'Courier New',monospace
   </div>
 </div>
 
-<!-- ═══ DASHBOARD ═══ -->
+<!-- ═══ APPS ═══ -->
 <div class="sec" id="dash">
   <div class="stats">
     <div class="st"><small>Previews</small><strong class="b" id="nPrev">-</strong></div>
@@ -260,6 +297,31 @@ textarea.fi{min-height:160px;font-family:'SF Mono',Menlo,'Courier New',monospace
   <div class="grid" id="g"></div>
 </div>
 
+<!-- ═══ OUTREACH ═══ -->
+<div class="sec" id="outreach">
+  <div class="stats stats-5" id="outreachStats">
+    <div class="st st-on" onclick="setProspectFilter('all')" data-pf="all"><small>Gesamt</small><strong class="b" id="oAll">0</strong></div>
+    <div class="st" onclick="setProspectFilter('neu')" data-pf="neu"><small>Neu</small><strong class="b" id="oNeu">0</strong></div>
+    <div class="st" onclick="setProspectFilter('preview')" data-pf="preview"><small>Preview</small><strong class="v" id="oPrev">0</strong></div>
+    <div class="st" onclick="setProspectFilter('mail')" data-pf="mail"><small>Mail</small><strong class="o" id="oMail">0</strong></div>
+    <div class="st" onclick="setProspectFilter('termin')" data-pf="termin"><small>Termin</small><strong class="g" id="oTermin">0</strong></div>
+  </div>
+  <div class="bar">
+    <input type="text" id="oq" placeholder="Prospect suchen..." autocomplete="off" oninput="renderProspects()">
+    <select onchange="prospectBranch=this.value;renderProspects()" style="padding:8px 12px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;color:var(--mt);font-size:12px;min-height:44px;cursor:pointer">
+      <option value="">Alle Branchen</option>
+      <option value="makler">Makler</option>
+      <option value="kueche">Küchenstudio</option>
+      <option value="handwerk">Handwerk</option>
+      <option value="gastro">Gastronomie</option>
+      <option value="solar">Solar</option>
+      <option value="sonstige">Sonstige</option>
+    </select>
+    <button class="fbtn" onclick="openAddProspect()" style="background:var(--ac);border-color:var(--ac);color:#fff;font-weight:600">+ Neu</button>
+  </div>
+  <div class="grid" id="prospectGrid"></div>
+</div>
+
 <!-- ═══ EDITOR ═══ -->
 <div class="sec" id="editor">
   <div class="dw" style="max-width:100%">
@@ -267,12 +329,10 @@ textarea.fi{min-height:160px;font-family:'SF Mono',Menlo,'Courier New',monospace
       <button class="ab" onclick="closeEditor()" style="padding:8px 12px">← Zurück</button>
       <h2 id="editorTitle" style="font-family:Sora;font-size:18px;font-weight:700;margin:0">Code bearbeiten</h2>
     </div>
-
     <div id="editorLoading" style="text-align:center;padding:40px;color:var(--dm)">
       <div class="sp dark" style="width:24px;height:24px;border-color:var(--bd);border-top-color:var(--ac)"></div>
       <p style="margin-top:12px">Code wird geladen...</p>
     </div>
-
     <div id="editorContent" style="display:none">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:6px">
         <label style="font-size:11px;color:var(--dm);text-transform:uppercase;letter-spacing:.1em;font-weight:500">HTML-CODE</label>
@@ -296,10 +356,12 @@ textarea.fi{min-height:160px;font-family:'SF Mono',Menlo,'Courier New',monospace
 
 </div>
 
-<!-- Modal -->
+<!-- ═══ MODALS ═══ -->
+
+<!-- Confirm Modal -->
 <div class="mo" id="cMo">
   <div class="mo-box">
-    <h3>Löschen?</h3>
+    <h3>Löschen? <span class="close-x" onclick="cMo()">✕</span></h3>
     <p id="cP" style="color:var(--mt);margin-bottom:14px;font-size:13px"></p>
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="ab" onclick="cMo()" style="min-height:40px">Abbrechen</button>
@@ -308,10 +370,80 @@ textarea.fi{min-height:160px;font-family:'SF Mono',Menlo,'Courier New',monospace
   </div>
 </div>
 
+<!-- Add/Edit Prospect Modal -->
+<div class="mo" id="prospectMo">
+  <div class="mo-box">
+    <h3 id="pmTitle">Prospect hinzufügen <span class="close-x" onclick="closeProspectModal()">✕</span></h3>
+    <div class="fg"><label>Firmenname *</label><input type="text" class="fi" id="pmName" placeholder="z.B. Weber Immobilien" autocomplete="off"></div>
+    <div class="fg"><label>Website</label><input type="text" class="fi" id="pmUrl" placeholder="weber-immobilien.de" autocomplete="off" inputmode="url"></div>
+    <div class="fg"><label>E-Mail</label><input type="email" class="fi" id="pmEmail" placeholder="info@weber-immobilien.de" autocomplete="off" inputmode="email"></div>
+    <div class="fg"><label>Ansprechpartner</label><input type="text" class="fi" id="pmContact" placeholder="Thomas Weber" autocomplete="off"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg"><label>Branche</label>
+        <select class="fi" id="pmBranch">
+          <option value="">–</option>
+          <option value="makler">Makler</option>
+          <option value="kueche">Küchenstudio</option>
+          <option value="handwerk">Handwerk</option>
+          <option value="gastro">Gastronomie</option>
+          <option value="solar">Solar</option>
+          <option value="sonstige">Sonstige</option>
+        </select>
+      </div>
+      <div class="fg"><label>Anrede</label>
+        <select class="fi" id="pmAnrede">
+          <option value="Sie">Sie</option>
+          <option value="du">Du</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg"><label>Score (0-10)</label><input type="number" class="fi" id="pmScore" min="0" max="10" value="0" inputmode="numeric"></div>
+    <div class="fg"><label>Notizen</label><textarea class="fi" id="pmNotes" placeholder="Optionale Notizen..." style="min-height:60px"></textarea></div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="ab" onclick="closeProspectModal()" style="flex:1;justify-content:center;min-height:44px">Abbrechen</button>
+      <button class="ab prim" id="pmSave" onclick="saveProspect()" style="flex:2;justify-content:center;min-height:44px">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Mail Preview Modal -->
+<div class="mo" id="mailMo">
+  <div class="mo-box">
+    <h3>Cold Mail <span class="close-x" onclick="closeMailModal()">✕</span></h3>
+    <div id="mailLoading" style="text-align:center;padding:20px;color:var(--dm)"><div class="sp" style="border-color:var(--bd);border-top-color:var(--ac)"></div></div>
+    <div id="mailContent" style="display:none">
+      <div class="mail-preview">
+        <div class="mp-label">An</div>
+        <div class="mp-val" id="mailTo"></div>
+        <div class="mp-label">Betreff</div>
+        <div class="mp-val" id="mailSubject" style="font-weight:500"></div>
+        <div class="mp-label">Text</div>
+        <div class="mp-val" id="mailBody"></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="ab prim" onclick="copyMail()" style="flex:1;justify-content:center;min-height:44px">📋 Mail kopieren</button>
+        <button class="ab" onclick="openMailto()" style="flex:1;justify-content:center;min-height:44px">✉ Mail-App</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <button class="ab" onclick="markMailSent()" style="flex:1;justify-content:center;min-height:44px;border-color:var(--gn);color:var(--gn)">✓ Als gesendet markieren</button>
+        <button class="ab" onclick="createPipedriveLead()" id="pdBtn" style="flex:1;justify-content:center;min-height:44px">Pipedrive Lead</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Prospect Detail Modal -->
+<div class="mo" id="detailMo">
+  <div class="mo-box">
+    <h3 id="detailTitle">Prospect <span class="close-x" onclick="closeDetailModal()">✕</span></h3>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
-let apps=[],filt='all';
+let apps=[],filt='all',prospects=[],prospectFilter='all',prospectBranch='',editingSlug=null,currentMailSlug=null;
 
 // ═══ COPY HELPER ═══
 function copyText(text){
@@ -322,264 +454,337 @@ function copyText(text){
   });
 }
 
-// ═══ PASTE HELPER ═══
 async function pasteCode(){
-  try{
-    const text=await navigator.clipboard.readText();
-    if(text){
-      document.getElementById('dHtml').value=text;
-      document.getElementById('dHtml').dispatchEvent(new Event('input'));
-      toast('Eingefügt! '+text.length.toLocaleString('de')+' Zeichen','ts');
-    }
-  }catch(e){
-    toast('Clipboard-Zugriff verweigert — manuell einfügen (lange drücken)','te');
-  }
+  try{const text=await navigator.clipboard.readText();if(text){document.getElementById('dHtml').value=text;document.getElementById('dHtml').dispatchEvent(new Event('input'));toast('Eingefügt! '+text.length.toLocaleString('de')+' Zeichen','ts')}}catch(e){toast('Clipboard-Zugriff verweigert','te')}
 }
 
-// ═══ SLUG ═══
 function toSlug(n){return n.toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')}
+function h(s){return(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;').replace(/</g,'&lt;')}
+function hh(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
-// ═══ Tabs ═══
-document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>sw(t.dataset.t));
+// ═══ TABS ═══
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{sw(t.dataset.t);if(t.dataset.t==='dash')loadApps();if(t.dataset.t==='outreach')loadProspects()});
 function sw(id){document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.t===id));document.querySelectorAll('.sec').forEach(s=>s.classList.toggle('on',s.id===id))}
 
-// ═══ Toast ═══
 function toast(m,t='ti'){const e=document.getElementById('toast');e.textContent=m;e.className=`toast ${t} show`;setTimeout(()=>e.classList.remove('show'),2500)}
 
-// ═══ Live Preview Link ═══
+// ═══ DEPLOY TAB ═══
 document.getElementById('dName').addEventListener('input',function(){
-  const v=this.value.trim();
-  const box=document.getElementById('previewBox');
-  const link=document.getElementById('previewLink');
-  const cp=document.getElementById('previewCopy');
-  if(v.length>0){
-    const slug=toSlug(v);
-    link.textContent=slug+'-preview.elevo.solutions';
-    box.classList.remove('empty');
-    cp.style.display='inline-flex';
-  }else{
-    link.textContent='Subdomain erscheint hier...';
-    box.classList.add('empty');
-    cp.style.display='none';
-  }
+  const v=this.value.trim();const box=document.getElementById('previewBox');const link=document.getElementById('previewLink');const cp=document.getElementById('previewCopy');
+  if(v.length>0){link.textContent=toSlug(v)+'-preview.elevo.solutions';box.classList.remove('empty');cp.style.display='inline-flex'}
+  else{link.textContent='Subdomain erscheint hier...';box.classList.add('empty');cp.style.display='none'}
 });
 
-// ═══ Char Counter ═══
 document.getElementById('dHtml').addEventListener('input',function(){
-  const c=this.value.length;
-  const lines=this.value.split('\n').length;
-  document.getElementById('charCount').textContent=c.toLocaleString('de')+' Zeichen · '+lines+' Zeilen';
+  const c=this.value.length;const l=this.value.split('\n').length;
+  document.getElementById('charCount').textContent=c.toLocaleString('de')+' Zeichen · '+l+' Zeilen';
 });
 
-// ═══ File Upload ═══
-const fileInput=document.getElementById('dFile');
-const fileLabel=document.getElementById('fileLabel');
+const fileInput=document.getElementById('dFile');const fileLabel=document.getElementById('fileLabel');
 fileInput.addEventListener('change',function(){
   const f=this.files[0];if(!f)return;
-  const r=new FileReader();
-  r.onload=e=>{
-    document.getElementById('dHtml').value=e.target.result;
-    document.getElementById('dHtml').dispatchEvent(new Event('input'));
-    fileLabel.textContent='✓ '+f.name;
-    fileLabel.classList.add('has');
-    if(!document.getElementById('dName').value){
-      document.getElementById('dName').value=f.name.replace(/\.html?$/i,'').replace(/[-_]/g,' ');
-      document.getElementById('dName').dispatchEvent(new Event('input'));
-    }
-  };
-  r.readAsText(f);
+  const r=new FileReader();r.onload=e=>{document.getElementById('dHtml').value=e.target.result;document.getElementById('dHtml').dispatchEvent(new Event('input'));fileLabel.textContent='✓ '+f.name;fileLabel.classList.add('has');
+  if(!document.getElementById('dName').value){document.getElementById('dName').value=f.name.replace(/\.html?$/i,'').replace(/[-_]/g,' ');document.getElementById('dName').dispatchEvent(new Event('input'))}};r.readAsText(f);
 });
-
-// Drag & Drop
 fileLabel.addEventListener('dragover',e=>{e.preventDefault();fileLabel.style.borderColor='var(--ac)'});
 fileLabel.addEventListener('dragleave',()=>{fileLabel.style.borderColor=''});
-fileLabel.addEventListener('drop',e=>{
-  e.preventDefault();fileLabel.style.borderColor='';
-  if(e.dataTransfer.files.length){fileInput.files=e.dataTransfer.files;fileInput.dispatchEvent(new Event('change'))}
-});
+fileLabel.addEventListener('drop',e=>{e.preventDefault();fileLabel.style.borderColor='';if(e.dataTransfer.files.length){fileInput.files=e.dataTransfer.files;fileInput.dispatchEvent(new Event('change'))}});
 
-// ═══ Filter ═══
-document.querySelectorAll('.fbtn[data-f]').forEach(b=>b.onclick=()=>{filt=b.dataset.f;document.querySelectorAll('.fbtn[data-f]').forEach(x=>x.classList.toggle('on',x===b));render()});
-document.getElementById('q').oninput=render;
+function setS(n){[1,2,3,4].forEach(i=>{const e=document.getElementById('s'+i);e.classList.remove('act','done');if(i<n)e.classList.add('done');if(i===n)e.classList.add('act')})}
+function lg(m,c='l'){const e=document.getElementById('log');e.style.display='block';e.innerHTML+=`<span class="${c}">${m}</span>\n`;e.scrollTop=e.scrollHeight}
 
-// ═══ Apps ═══
+async function deploy(){
+  const name=document.getElementById('dName').value.trim();const html=document.getElementById('dHtml').value.trim();
+  if(!name)return toast('Firmenname eingeben','te');if(!html)return toast('HTML-Code eingeben','te');if(html.length<100)return toast('HTML zu kurz','te');
+  const btn=document.getElementById('depBtn');btn.disabled=true;btn.innerHTML='<span class="sp"></span> Deploying...';
+  document.getElementById('log').innerHTML='';document.getElementById('log').style.display='block';setS(2);
+  const slug=toSlug(name);lg('▸ Deploy: '+name+' → '+slug+'-preview.elevo.solutions','i');lg('▸ HTML: '+html.length.toLocaleString('de')+' Zeichen','l');
+  try{
+    const r=await fetch('/api/deploy-full',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,html})});const d=await r.json();
+    if(d.success){setS(3);lg('✓ GitHub: OK','ok');lg('✓ Coolify: '+(d.action==='created'?'Erstellt':'Aktualisiert'),'ok');setS(4);lg('✓ Live: '+d.domain,'ok');
+      const domain=d.domain||'https://'+slug+'-preview.elevo.solutions';
+      setTimeout(()=>{document.getElementById('depForm').style.display='none';const sc=document.getElementById('depDone');sc.style.display='block';
+      document.getElementById('doneTitle').textContent=name+' ist live!';const lnk=document.getElementById('doneLink');lnk.href=domain;lnk.textContent=domain.replace('https://','');
+      toast('Deploy erfolgreich!','ts');
+      // Auto-update prospect status if exists
+      const p=prospects.find(x=>x.slug===slug);if(p&&p.status==='neu'){fetch('/api/prospect/'+slug+'/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'preview'})}).then(()=>loadProspects())}
+      },400);
+    }else{lg('✗ '+(d.error||JSON.stringify(d)),'er');if(d.status)lg('HTTP Status: '+d.status,'er');setS(1);toast('Deploy fehlgeschlagen','te')}
+  }catch(e){lg('✗ Netzwerk-Fehler: '+e.message,'er');toast('Fehler','te')}
+  btn.disabled=false;btn.innerHTML='Deploy starten';
+}
+
+function resetDep(){
+  document.getElementById('depForm').style.display='block';document.getElementById('depDone').style.display='none';
+  document.getElementById('log').style.display='none';document.getElementById('log').innerHTML='';
+  document.getElementById('dName').value='';document.getElementById('dHtml').value='';
+  document.getElementById('charCount').textContent='0 Zeichen';document.getElementById('previewLink').textContent='Subdomain erscheint hier...';
+  document.getElementById('previewBox').classList.add('empty');document.getElementById('previewCopy').style.display='none';
+  document.getElementById('fileLabel').textContent='HTML-Datei wählen oder hierhin ziehen';document.getElementById('fileLabel').classList.remove('has');document.getElementById('dFile').value='';setS(1);
+}
+
+// ═══ APPS TAB ═══
+document.querySelectorAll('.fbtn[data-f]').forEach(b=>b.onclick=()=>{filt=b.dataset.f;document.querySelectorAll('.fbtn[data-f]').forEach(x=>x.classList.toggle('on',x===b));renderApps()});
+document.getElementById('q').oninput=renderApps;
+
 const INFRA=[1,2,4,5,7];
 async function loadApps(){
-  try{const r=await fetch('/api/apps');const d=await r.json();apps=d.apps||[];render();document.getElementById('cntPill').textContent=apps.length}catch(e){toast('Laden fehlgeschlagen','te')}
+  try{const r=await fetch('/api/apps');const d=await r.json();apps=d.apps||[];renderApps();document.getElementById('cntPill').textContent=apps.length}catch(e){toast('Laden fehlgeschlagen','te')}
 }
 
-function render(){
+function renderApps(){
   const q=document.getElementById('q').value.toLowerCase();
-  let f=apps.filter(a=>{
-    const inf=INFRA.includes(a.environment_id);
-    if(filt==='preview'&&inf)return false;if(filt==='infra'&&!inf)return false;
-    if(q&&!a.name.toLowerCase().includes(q)&&!(a.fqdn||'').toLowerCase().includes(q))return false;
-    return true;
-  }).sort((a,b)=>{if(a.environment_id===3&&b.environment_id!==3)return -1;if(a.environment_id!==3&&b.environment_id===3)return 1;return a.name.localeCompare(b.name)});
-
-  const pv=apps.filter(a=>a.environment_id===3).length;
-  const inf=apps.filter(a=>INFRA.includes(a.environment_id)).length;
-  const run=apps.filter(a=>(a.status||'').includes('running')).length;
-  document.getElementById('nPrev').textContent=pv;
-  document.getElementById('nInfra').textContent=inf;
-  document.getElementById('nRun').textContent=run;
-  document.getElementById('nTotal').textContent=apps.length;
-
-  document.getElementById('g').innerHTML=f.map(a=>{
-    const isInf=INFRA.includes(a.environment_id);
-    const dom=(a.fqdn||'').replace(/^https?:\/\//,'').replace(/\/$/,'');
-    const up=(a.status||'').includes('running');
-    return`<div class="card">
-      <div class="tag ${isInf?'tag-i':'tag-p'}">${isInf?'Infra':'Preview'}</div>
-      <h4>${h(a.name)}</h4>
-      <div class="url"><a href="${a.fqdn}" target="_blank">${dom}</a><button class="cpb" onclick="event.stopPropagation();copyText('${dom}')">📋</button></div>
-      <span class="dot ${up?'dot-g':'dot-r'}">${up?'● Live':'○ Off'}</span>
-      <div class="acts">
-        <button class="ab prim" onclick="window.open('${a.fqdn}','_blank')">Öffnen</button>
-        ${!isInf&&a.git_repository?`<button class="ab" onclick="openEditor('${a.git_repository.split('/').pop()}','${h(a.name)}','${a.uuid}')">Code</button>`:''}
-        <button class="ab" onclick="rd('${a.uuid}','${h(a.name)}')">Redeploy</button>
-        ${!isInf?`<button class="ab x" onclick="cd('${a.uuid}','${h(a.name)}')">✕</button>`:''}
-      </div>
-    </div>`
-  }).join('')||'<p style="color:var(--dm);text-align:center;padding:40px">Keine Apps gefunden</p>';
+  let f=apps.filter(a=>{const inf=INFRA.includes(a.environment_id);if(filt==='preview'&&inf)return false;if(filt==='infra'&&!inf)return false;if(q&&!a.name.toLowerCase().includes(q)&&!(a.fqdn||'').toLowerCase().includes(q))return false;return true}).sort((a,b)=>{if(a.environment_id===3&&b.environment_id!==3)return -1;if(a.environment_id!==3&&b.environment_id===3)return 1;return a.name.localeCompare(b.name)});
+  const pv=apps.filter(a=>a.environment_id===3).length;const inf=apps.filter(a=>INFRA.includes(a.environment_id)).length;const run=apps.filter(a=>(a.status||'').includes('running')).length;
+  document.getElementById('nPrev').textContent=pv;document.getElementById('nInfra').textContent=inf;document.getElementById('nRun').textContent=run;document.getElementById('nTotal').textContent=apps.length;
+  document.getElementById('g').innerHTML=f.map(a=>{const isInf=INFRA.includes(a.environment_id);const dom=(a.fqdn||'').replace(/^https?:\/\//,'').replace(/\/$/,'');const up=(a.status||'').includes('running');
+    return`<div class="card"><div class="tag ${isInf?'tag-i':'tag-p'}">${isInf?'Infra':'Preview'}</div><h4>${hh(a.name)}</h4><div class="url"><a href="${a.fqdn}" target="_blank">${dom}</a><button class="cpb" onclick="event.stopPropagation();copyText('${h(dom)}')">📋</button></div><span class="dot ${up?'dot-g':'dot-r'}">${up?'● Live':'○ Off'}</span><div class="acts"><button class="ab prim" onclick="window.open('${h(a.fqdn)}','_blank')">Öffnen</button>${!isInf&&a.git_repository?`<button class="ab" onclick="openEditor('${h(a.git_repository.split('/').pop())}','${hh(a.name)}','${a.uuid}')">Code</button>`:''}<button class="ab" onclick="rd('${a.uuid}','${hh(a.name)}')">Redeploy</button>${!isInf?`<button class="ab x" onclick="cd('${a.uuid}','${hh(a.name)}')">✕</button>`:''}</div></div>`}).join('')||'<p style="color:var(--dm);text-align:center;padding:40px">Keine Apps gefunden</p>';
 }
-function h(s){return(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;').replace(/</g,'&lt;')}
 
 async function rd(u,n){toast(n+' wird redeployed...','ti');try{await fetch('/api/deploy/'+u);toast(n+' Redeploy gestartet','ts')}catch(e){toast('Fehler','te')}}
 function cd(u,n){document.getElementById('cP').textContent=`"${n}" wirklich löschen?`;document.getElementById('cBtn').onclick=()=>da(u,n);document.getElementById('cMo').classList.add('show')}
 function cMo(){document.getElementById('cMo').classList.remove('show')}
 async function da(u,n){cMo();toast('Lösche...','ti');try{await fetch('/api/app/'+u,{method:'DELETE'});toast(n+' gelöscht','ts');setTimeout(loadApps,1000)}catch(e){toast('Fehler','te')}}
 
-// ═══ Deploy ═══
-function setS(n){[1,2,3,4].forEach(i=>{const e=document.getElementById('s'+i);e.classList.remove('act','done');if(i<n)e.classList.add('done');if(i===n)e.classList.add('act')})}
-function lg(m,c='l'){const e=document.getElementById('log');e.style.display='block';e.innerHTML+=`<span class="${c}">${m}</span>\n`;e.scrollTop=e.scrollHeight}
-
-async function deploy(){
-  const name=document.getElementById('dName').value.trim();
-  const html=document.getElementById('dHtml').value.trim();
-  if(!name)return toast('Firmenname eingeben','te');
-  if(!html)return toast('HTML-Code eingeben','te');
-  if(html.length<100)return toast('HTML zu kurz — mindestens 100 Zeichen','te');
-
-  const btn=document.getElementById('depBtn');
-  btn.disabled=true;btn.innerHTML='<span class="sp"></span> Deploying...';
-  document.getElementById('log').innerHTML='';
-  document.getElementById('log').style.display='block';
-  setS(2);
-
-  const slug=toSlug(name);
-  lg('▸ Deploy: '+name+' → '+slug+'-preview.elevo.solutions','i');
-  lg('▸ HTML: '+html.length.toLocaleString('de')+' Zeichen','l');
-
-  try{
-    const r=await fetch('/api/deploy-full',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,html})});
-    const d=await r.json();
-
-    if(d.success){
-      setS(3);lg('✓ GitHub: OK','ok');
-      lg('✓ Coolify: '+(d.action==='created'?'Erstellt':'Aktualisiert'),'ok');
-      setS(4);lg('✓ Live: '+d.domain,'ok');
-
-      const domain=d.domain||'https://'+slug+'-preview.elevo.solutions';
-      setTimeout(()=>{
-        document.getElementById('depForm').style.display='none';
-        const sc=document.getElementById('depDone');sc.style.display='block';
-        document.getElementById('doneTitle').textContent=name+' ist live!';
-        const lnk=document.getElementById('doneLink');
-        lnk.href=domain;lnk.textContent=domain.replace('https://','');
-        toast('Deploy erfolgreich!','ts');
-      },400);
-    }else{
-      lg('✗ '+(d.error||JSON.stringify(d)),'er');
-      if(d.status)lg('HTTP Status: '+d.status,'er');
-      lg('','l');
-      lg('<button onclick="deploy()" style="padding:8px 16px;background:var(--ac);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:Sora;font-size:12px;margin-top:4px">↻ Nochmal versuchen</button>','l');
-      setS(1);
-      toast('Deploy fehlgeschlagen','te');
-    }
-  }catch(e){lg('✗ Netzwerk-Fehler: '+e.message,'er');toast('Fehler','te')}
-
-  btn.disabled=false;btn.innerHTML='Deploy starten';
-}
-
-function resetDep(){
-  document.getElementById('depForm').style.display='block';
-  document.getElementById('depDone').style.display='none';
-  document.getElementById('log').style.display='none';
-  document.getElementById('log').innerHTML='';
-  document.getElementById('dName').value='';
-  document.getElementById('dHtml').value='';
-  document.getElementById('charCount').textContent='0 Zeichen';
-  document.getElementById('previewLink').textContent='Subdomain erscheint hier...';
-  document.getElementById('previewBox').classList.add('empty');
-  document.getElementById('previewCopy').style.display='none';
-  document.getElementById('fileLabel').textContent='HTML-Datei wählen oder hierhin ziehen';
-  document.getElementById('fileLabel').classList.remove('has');
-  document.getElementById('dFile').value='';
-  setS(1);
-}
-
-// ═══ Init ═══
+// ═══ EDITOR ═══
 let editorRepo='',editorName='',editorUuid='';
-
-// ═══ Editor ═══
 async function openEditor(repo,name,uuid){
   editorRepo=repo;editorName=name;editorUuid=uuid;
   document.getElementById('editorTitle').textContent=name+' — Code';
-  document.getElementById('editorLoading').style.display='block';
-  document.getElementById('editorContent').style.display='none';
-  // Switch to editor view
-  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
-  document.getElementById('editor').classList.add('on');
+  document.getElementById('editorLoading').style.display='block';document.getElementById('editorContent').style.display='none';
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));document.getElementById('editor').classList.add('on');
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
-
-  try{
-    const r=await fetch('/api/code/'+encodeURIComponent(repo));
-    const d=await r.json();
-    if(d.success&&d.html){
-      document.getElementById('edCode').value=d.html;
-      document.getElementById('edCount').textContent=d.html.length.toLocaleString('de')+' Zeichen · '+d.html.split('\n').length+' Zeilen';
-      document.getElementById('editorLoading').style.display='none';
-      document.getElementById('editorContent').style.display='block';
-    }else{
-      toast('Code laden fehlgeschlagen: '+(d.error||''),'te');
-      closeEditor();
-    }
+  try{const r=await fetch('/api/code/'+encodeURIComponent(repo));const d=await r.json();
+    if(d.success&&d.html){document.getElementById('edCode').value=d.html;document.getElementById('edCount').textContent=d.html.length.toLocaleString('de')+' Zeichen · '+d.html.split('\n').length+' Zeilen';document.getElementById('editorLoading').style.display='none';document.getElementById('editorContent').style.display='block'}
+    else{toast('Code laden fehlgeschlagen','te');closeEditor()}
   }catch(e){toast('Fehler: '+e.message,'te');closeEditor()}
 }
-
-document.getElementById('edCode').addEventListener('input',function(){
-  const c=this.value.length;const l=this.value.split('\n').length;
-  document.getElementById('edCount').textContent=c.toLocaleString('de')+' Zeichen · '+l+' Zeilen';
-});
-
-async function pasteToEditor(){
-  try{const t=await navigator.clipboard.readText();if(t){document.getElementById('edCode').value=t;document.getElementById('edCode').dispatchEvent(new Event('input'));toast('Eingefügt!','ts')}}catch(e){toast('Clipboard nicht verfügbar','te')}
-}
-
+document.getElementById('edCode').addEventListener('input',function(){const c=this.value.length;const l=this.value.split('\n').length;document.getElementById('edCount').textContent=c.toLocaleString('de')+' Zeichen · '+l+' Zeilen'});
+async function pasteToEditor(){try{const t=await navigator.clipboard.readText();if(t){document.getElementById('edCode').value=t;document.getElementById('edCode').dispatchEvent(new Event('input'));toast('Eingefügt!','ts')}}catch(e){toast('Clipboard nicht verfügbar','te')}}
 async function saveCode(){
-  const html=document.getElementById('edCode').value;
-  if(!html||html.length<100)return toast('Code zu kurz','te');
-  const btn=document.getElementById('edSaveBtn');
-  btn.disabled=true;btn.innerHTML='<span class="sp"></span> Speichern...';
-  try{
-    const r=await fetch('/api/code/'+encodeURIComponent(editorRepo),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({html})});
-    const d=await r.json();
-    if(d.success){
-      toast(editorName+' gespeichert & Redeploy gestartet!','ts');
-      closeEditor();loadApps();
-    }else{toast('Fehler: '+(d.error||''),'te')}
+  const html=document.getElementById('edCode').value;if(!html||html.length<100)return toast('Code zu kurz','te');
+  const btn=document.getElementById('edSaveBtn');btn.disabled=true;btn.innerHTML='<span class="sp"></span> Speichern...';
+  try{const r=await fetch('/api/code/'+encodeURIComponent(editorRepo),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({html})});const d=await r.json();
+    if(d.success){toast(editorName+' gespeichert & Redeploy gestartet!','ts');closeEditor();loadApps()}else{toast('Fehler: '+(d.error||''),'te')}
   }catch(e){toast('Fehler: '+e.message,'te')}
   btn.disabled=false;btn.innerHTML='Speichern & Redeploy';
 }
+function closeEditor(){sw('dash')}
 
-function closeEditor(){
-  sw('dash');
+// ═══ OUTREACH TAB ═══
+async function loadProspects(){
+  try{const r=await fetch('/api/prospects');const d=await r.json();prospects=d.prospects||[];renderProspects();document.getElementById('outreachBadge').textContent=prospects.length}catch(e){toast('Prospects laden fehlgeschlagen','te')}
 }
 
+function setProspectFilter(f){
+  prospectFilter=f;
+  document.querySelectorAll('#outreachStats .st').forEach(s=>s.classList.toggle('st-on',s.dataset.pf===f));
+  renderProspects();
+}
+
+function renderProspects(){
+  const q=(document.getElementById('oq').value||'').toLowerCase();
+  let f=prospects.filter(p=>{
+    if(prospectFilter!=='all'&&p.status!==prospectFilter){
+      if(prospectFilter==='termin'&&p.status!=='termin')return false;
+      if(prospectFilter!=='termin'&&p.status!==prospectFilter)return false;
+    }
+    if(prospectBranch&&p.branch!==prospectBranch)return false;
+    if(q&&!p.name.toLowerCase().includes(q)&&!(p.contact||'').toLowerCase().includes(q)&&!(p.url||'').toLowerCase().includes(q))return false;
+    return true;
+  });
+
+  // Sort: newest first, termin/skip at bottom
+  const order={neu:0,preview:1,mail:2,followup:3,termin:4,skip:5};
+  f.sort((a,b)=>order[a.status]-order[b.status]||new Date(b.created)-new Date(a.created));
+
+  // Stats
+  const counts={all:prospects.length,neu:0,preview:0,mail:0,followup:0,termin:0,skip:0};
+  prospects.forEach(p=>counts[p.status]=(counts[p.status]||0)+1);
+  document.getElementById('oAll').textContent=counts.all;
+  document.getElementById('oNeu').textContent=counts.neu;
+  document.getElementById('oPrev').textContent=counts.preview;
+  document.getElementById('oMail').textContent=counts.mail+counts.followup;
+  document.getElementById('oTermin').textContent=counts.termin;
+
+  const grid=document.getElementById('prospectGrid');
+  if(!f.length){
+    grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="es-icon">📋</div><p>${prospects.length?'Keine Prospects mit diesem Filter.':'Noch keine Prospects. Leg los!'}</p>${!prospects.length?'<button class="ab prim" onclick="openAddProspect()">+ Ersten Prospect anlegen</button>':''}</div>`;
+    return;
+  }
+
+  grid.innerHTML=f.map(p=>{
+    const domain=(p.url||'').replace(/^https?:\/\//,'').replace(/\/$/,'');
+    const badge=`<span class="badge badge-${p.status}">${statusLabel(p.status)}</span>`;
+    const scoreColor=p.score>=8?'var(--gn)':p.score>=5?'var(--og)':'var(--dm)';
+    return`<div class="card" onclick="openDetail('${p.slug}')">
+      <div class="tag tag-p" style="font-size:9px">${p.score?'⬤ '+p.score:''}</div>
+      <h4>${hh(p.name)}</h4>
+      <div class="url">${domain?`<a href="https://${hh(domain)}" target="_blank" onclick="event.stopPropagation()">${hh(domain)}</a>`:`<span style="color:var(--dm)">Keine URL</span>`}</div>
+      <div style="display:flex;gap:6px;align-items:center;margin:6px 0">${badge}${p.contact?`<span style="font-size:10px;color:var(--mt)">${hh(p.contact)}</span>`:''}</div>
+      <div class="acts" onclick="event.stopPropagation()">
+        ${p.status==='neu'?`<button class="ab prim" onclick="deployProspect('${p.slug}')">Website bauen</button>`:''}
+        ${p.status==='preview'?`<button class="ab prim" onclick="openMail('${p.slug}')">Mail</button>`:''}
+        ${p.status==='mail'?`<button class="ab" onclick="setStatus('${p.slug}','followup')" style="border-color:var(--og);color:var(--og)">Follow-up</button>`:''}
+        ${p.status==='followup'?`<button class="ab" onclick="setStatus('${p.slug}','termin')" style="border-color:var(--gn);color:var(--gn)">Termin!</button>`:''}
+        ${['neu','preview','mail','followup'].includes(p.status)?`<button class="ab" onclick="openMail('${p.slug}')">✉</button>`:''}
+        <button class="ab" onclick="editProspect('${p.slug}')">✎</button>
+        <button class="ab x" onclick="deleteProspect('${p.slug}')">✕</button>
+      </div>
+    </div>`}).join('');
+}
+
+function statusLabel(s){return{neu:'Neu',preview:'Preview',mail:'Mail gesendet',followup:'Follow-up',termin:'Termin',skip:'Skip'}[s]||s}
+
+// ═══ PROSPECT CRUD ═══
+function openAddProspect(){
+  editingSlug=null;
+  document.getElementById('pmTitle').innerHTML='Prospect hinzufügen <span class="close-x" onclick="closeProspectModal()">✕</span>';
+  document.getElementById('pmName').value='';document.getElementById('pmUrl').value='';document.getElementById('pmEmail').value='';
+  document.getElementById('pmContact').value='';document.getElementById('pmBranch').value='';document.getElementById('pmAnrede').value='Sie';
+  document.getElementById('pmScore').value='0';document.getElementById('pmNotes').value='';
+  document.getElementById('pmSave').textContent='Speichern';
+  document.getElementById('prospectMo').classList.add('show');
+  setTimeout(()=>document.getElementById('pmName').focus(),100);
+}
+
+function editProspect(slug){
+  const p=prospects.find(x=>x.slug===slug);if(!p)return;
+  editingSlug=slug;
+  document.getElementById('pmTitle').innerHTML='Prospect bearbeiten <span class="close-x" onclick="closeProspectModal()">✕</span>';
+  document.getElementById('pmName').value=p.name;document.getElementById('pmUrl').value=p.url||'';document.getElementById('pmEmail').value=p.email||'';
+  document.getElementById('pmContact').value=p.contact||'';document.getElementById('pmBranch').value=p.branch||'';document.getElementById('pmAnrede').value=p.anrede||'Sie';
+  document.getElementById('pmScore').value=p.score||0;document.getElementById('pmNotes').value=p.notes||'';
+  document.getElementById('pmSave').textContent='Aktualisieren';
+  document.getElementById('prospectMo').classList.add('show');
+}
+
+function closeProspectModal(){document.getElementById('prospectMo').classList.remove('show')}
+
+async function saveProspect(){
+  const data={
+    name:document.getElementById('pmName').value.trim(),
+    url:document.getElementById('pmUrl').value.trim(),
+    email:document.getElementById('pmEmail').value.trim(),
+    contact:document.getElementById('pmContact').value.trim(),
+    branch:document.getElementById('pmBranch').value,
+    anrede:document.getElementById('pmAnrede').value,
+    score:parseInt(document.getElementById('pmScore').value)||0,
+    notes:document.getElementById('pmNotes').value.trim()
+  };
+  if(!data.name)return toast('Name fehlt','te');
+  try{
+    let r;
+    if(editingSlug){r=await fetch('/api/prospect/'+editingSlug,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})}
+    else{r=await fetch('/api/prospect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})}
+    const d=await r.json();
+    if(d.success||d.prospect){toast(editingSlug?'Aktualisiert!':'Prospect angelegt!','ts');closeProspectModal();loadProspects()}
+    else{toast(d.error||'Fehler','te')}
+  }catch(e){toast('Fehler: '+e.message,'te')}
+}
+
+async function deleteProspect(slug){
+  const p=prospects.find(x=>x.slug===slug);if(!p)return;
+  if(!confirm(`"${p.name}" wirklich löschen?`))return;
+  try{await fetch('/api/prospect/'+slug,{method:'DELETE'});toast('Gelöscht','ts');loadProspects()}catch(e){toast('Fehler','te')}
+}
+
+async function setStatus(slug,status){
+  try{const r=await fetch('/api/prospect/'+slug+'/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})});const d=await r.json();
+    if(d.success){toast(statusLabel(status)+'!','ts');loadProspects()}else{toast(d.error||'Fehler','te')}
+  }catch(e){toast('Fehler','te')}
+}
+
+// ═══ DEPLOY FROM PROSPECT ═══
+function deployProspect(slug){
+  const p=prospects.find(x=>x.slug===slug);if(!p)return;
+  sw('dep');
+  document.getElementById('dName').value=p.name;document.getElementById('dName').dispatchEvent(new Event('input'));
+  toast('Firmenname übernommen — HTML einfügen und deployen','ti');
+}
+
+// ═══ MAIL ═══
+async function openMail(slug){
+  currentMailSlug=slug;
+  document.getElementById('mailLoading').style.display='block';document.getElementById('mailContent').style.display='none';
+  document.getElementById('mailMo').classList.add('show');
+  try{const r=await fetch('/api/prospect/'+slug+'/mail-generate');const d=await r.json();
+    if(d.success&&d.mail){
+      document.getElementById('mailTo').textContent=d.mail.to;
+      document.getElementById('mailSubject').textContent=d.mail.subject;
+      document.getElementById('mailBody').textContent=d.mail.body;
+      document.getElementById('mailLoading').style.display='none';document.getElementById('mailContent').style.display='block';
+    }else{toast(d.error||'Mail-Fehler','te');closeMailModal()}
+  }catch(e){toast('Fehler: '+e.message,'te');closeMailModal()}
+}
+
+function closeMailModal(){document.getElementById('mailMo').classList.remove('show');currentMailSlug=null}
+
+function copyMail(){
+  const subject=document.getElementById('mailSubject').textContent;
+  const body=document.getElementById('mailBody').textContent;
+  copyText(body);
+  toast('Mail-Text kopiert! Betreff: '+subject,'ts');
+}
+
+function openMailto(){
+  const to=document.getElementById('mailTo').textContent;
+  const subject=encodeURIComponent(document.getElementById('mailSubject').textContent);
+  const body=encodeURIComponent(document.getElementById('mailBody').textContent);
+  window.open(`mailto:${to}?subject=${subject}&body=${body}`);
+}
+
+async function markMailSent(){
+  if(!currentMailSlug)return;
+  const body=document.getElementById('mailBody').textContent;
+  try{const r=await fetch('/api/prospect/'+currentMailSlug+'/mail-sent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mailText:body})});const d=await r.json();
+    if(d.success){toast('Als gesendet markiert!','ts');closeMailModal();loadProspects()}else{toast(d.error||'Fehler','te')}
+  }catch(e){toast('Fehler','te')}
+}
+
+async function createPipedriveLead(){
+  if(!currentMailSlug)return;
+  const btn=document.getElementById('pdBtn');btn.disabled=true;btn.innerHTML='<span class="sp" style="width:12px;height:12px"></span>';
+  try{const r=await fetch('/api/prospect/'+currentMailSlug+'/pipedrive',{method:'POST'});const d=await r.json();
+    if(d.success){toast('Pipedrive Lead erstellt!','ts');btn.innerHTML='✓ Erstellt';btn.style.borderColor='var(--gn)';btn.style.color='var(--gn)'}
+    else{toast(d.error||'Pipedrive Fehler','te');btn.disabled=false;btn.innerHTML='Pipedrive Lead'}
+  }catch(e){toast('Fehler','te');btn.disabled=false;btn.innerHTML='Pipedrive Lead'}
+}
+
+// ═══ PROSPECT DETAIL ═══
+function openDetail(slug){
+  const p=prospects.find(x=>x.slug===slug);if(!p)return;
+  document.getElementById('detailTitle').innerHTML=`${hh(p.name)} <span class="close-x" onclick="closeDetailModal()">✕</span>`;
+  const domain=(p.url||'').replace(/^https?:\/\//,'').replace(/\/$/,'');
+  const preview=`https://${p.preview}`;
+  const age=Math.floor((Date.now()-new Date(p.created))/(1000*60*60*24));
+  document.getElementById('detailContent').innerHTML=`
+    <div style="margin-bottom:14px"><span class="badge badge-${p.status}">${statusLabel(p.status)}</span> ${p.score?`<span style="font-size:11px;color:var(--dm);margin-left:6px">Score: ${p.score}/10</span>`:''} <span style="font-size:11px;color:var(--dm);margin-left:6px">${age}d</span></div>
+    <div class="pd-row"><span class="pd-label">Kontakt</span><span class="pd-val">${hh(p.contact)||'–'}</span></div>
+    <div class="pd-row"><span class="pd-label">E-Mail</span><span class="pd-val">${p.email?`<a href="mailto:${hh(p.email)}">${hh(p.email)}</a>`:'–'}</span></div>
+    <div class="pd-row"><span class="pd-label">URL</span><span class="pd-val">${domain?`<a href="https://${hh(domain)}" target="_blank">${hh(domain)}</a>`:'–'}</span></div>
+    <div class="pd-row"><span class="pd-label">Branche</span><span class="pd-val">${hh(p.branch)||'–'}</span></div>
+    <div class="pd-row"><span class="pd-label">Anrede</span><span class="pd-val">${p.anrede||'Sie'}</span></div>
+    <div class="pd-row"><span class="pd-label">Preview</span><span class="pd-val"><a href="${preview}" target="_blank">${p.preview}</a></span></div>
+    ${p.mailSent?`<div class="pd-row"><span class="pd-label">Mail</span><span class="pd-val" style="color:var(--gn)">Gesendet ${new Date(p.mailSent).toLocaleDateString('de')}</span></div>`:''}
+    ${p.pipedriveId?`<div class="pd-row"><span class="pd-label">Pipedrive</span><span class="pd-val" style="color:var(--gn)">Lead #${p.pipedriveId}</span></div>`:''}
+    ${p.notes?`<div style="margin-top:12px;padding:10px;background:var(--bg2);border-radius:8px;font-size:12px;color:var(--mt);line-height:1.5">${hh(p.notes)}</div>`:''}
+    <div style="display:flex;gap:6px;margin-top:16px;flex-wrap:wrap">
+      ${p.status==='neu'?`<button class="ab prim" onclick="closeDetailModal();deployProspect('${p.slug}')">Website bauen</button>`:''}
+      <button class="ab" onclick="closeDetailModal();openMail('${p.slug}')">✉ Mail</button>
+      <button class="ab" onclick="window.open('${preview}','_blank')">Preview öffnen</button>
+      <button class="ab" onclick="closeDetailModal();editProspect('${p.slug}')">✎ Bearbeiten</button>
+      ${p.status!=='skip'?`<button class="ab x" onclick="closeDetailModal();setStatus('${p.slug}','skip')">Skip</button>`:`<button class="ab" onclick="closeDetailModal();setStatus('${p.slug}','neu')" style="border-color:var(--ac);color:var(--ac)">Reaktivieren</button>`}
+    </div>
+  `;
+  document.getElementById('detailMo').classList.add('show');
+}
+function closeDetailModal(){document.getElementById('detailMo').classList.remove('show')}
+
+// ═══ INIT ═══
 async function init(){
   try{const r=await fetch('/api/config');const d=await r.json();const p=document.getElementById('cfgPill');const ok=d.coolify&&d.github;p.textContent=ok?'Ready':'Config!';p.className='pill '+(ok?'pill-g':'pill-b')}catch(e){}
-  loadApps();setS(1);
+  loadApps();loadProspects();setS(1);
 }
 init();
 </script>
