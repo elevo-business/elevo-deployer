@@ -752,10 +752,12 @@ async function sendViaPipedrive(){
     const d=await r.json();
     if(d.success){
       const steps=d.steps||[];
-      let msg='Mail gesendet via Pipedrive!';
-      if(steps.includes('person'))msg+=' Person erstellt.';
-      if(steps.includes('lead'))msg+=' Lead erstellt.';
-      toast(msg,'ts');
+      let parts=[];
+      if(steps.includes('person'))parts.push('Person angelegt');
+      if(steps.includes('status-update'))parts.push('Status gesetzt');
+      if(steps.includes('mail'))parts.push('Mail gesendet');
+      if(steps.includes('activity'))parts.push('Activity erstellt');
+      toast(parts.join(' · ')||'Gesendet!','ts');
       closeMailModal();loadProspects();
     }else{
       toast(d.error||'Fehler beim Senden','te');
@@ -780,7 +782,7 @@ function openDetail(slug){
     <div class="pd-row"><span class="pd-label">Anrede</span><span class="pd-val">${p.anrede||'Sie'}</span></div>
     <div class="pd-row"><span class="pd-label">Preview</span><span class="pd-val"><a href="${preview}" target="_blank">${p.preview}</a></span></div>
     ${p.mailSent?`<div class="pd-row"><span class="pd-label">Mail</span><span class="pd-val" style="color:var(--gn)">Gesendet ${new Date(p.mailSent).toLocaleDateString('de')}</span></div>`:''}
-    ${p.pipedriveId?`<div class="pd-row"><span class="pd-label">Pipedrive</span><span class="pd-val" style="color:var(--gn)">Lead #${p.pipedriveId}</span></div>`:''}
+    ${p.pipedrivePersonId?`<div class="pd-row"><span class="pd-label">Pipedrive</span><span class="pd-val" style="color:var(--gn)">Person #${p.pipedrivePersonId}</span></div>`:''}
     ${p.notes?`<div style="margin-top:12px;padding:10px;background:var(--bg2);border-radius:8px;font-size:12px;color:var(--mt);line-height:1.5">${hh(p.notes)}</div>`:''}
     <div style="display:flex;gap:6px;margin-top:16px;flex-wrap:wrap">
       ${p.status==='neu'?`<button class="ab prim" onclick="closeDetailModal();deployProspect('${p.slug}')">Website bauen</button>`:''}
