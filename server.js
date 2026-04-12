@@ -18,6 +18,8 @@ const GITHUB_ORG = process.env.GITHUB_ORG || 'elevo-business';
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 const DEPLOY_SECRET = process.env.DEPLOY_SECRET || '';
 const PIPEDRIVE_API_KEY = process.env.PIPEDRIVE_API_KEY || '';
+const PIPEDRIVE_OUTREACH_FIELD = process.env.PIPEDRIVE_OUTREACH_FIELD || ''; // Custom field key for outreach status
+const PIPEDRIVE_OUTREACH_VALUE = process.env.PIPEDRIVE_OUTREACH_VALUE || ''; // Value that triggers flow (e.g. option ID for "Neu")
 
 let ghAppUuid = GITHUB_APP_UUID;
 
@@ -191,7 +193,7 @@ const server = http.createServer(async (req, res) => {
 
   try {
     // Config
-    if (p === '/api/config') return json(res, 200, { coolify: !!COOLIFY_TOKEN, github: !!GITHUB_TOKEN, anthropic: !!ANTHROPIC_API_KEY, pipedrive: !!PIPEDRIVE_API_KEY, ghApp: ghAppUuid || 'pending' });
+    if (p === '/api/config') return json(res, 200, { coolify: !!COOLIFY_TOKEN, github: !!GITHUB_TOKEN, anthropic: !!ANTHROPIC_API_KEY, pipedrive: !!PIPEDRIVE_API_KEY, outreachField: !!PIPEDRIVE_OUTREACH_FIELD, ghApp: ghAppUuid || 'pending' });
 
     // ═══ PROSPECT ROUTES ═══
 
@@ -287,7 +289,7 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, { success: true, mail });
     }
 
-    // Send mail via Pipedrive (Person + Lead + Mail in one action)
+    // Send mail via Pipedrive (Person + Outreach Status + Mail + Activity)
     const sendMailMatch = p.match(/^\/api\/prospect\/([a-z0-9-]+)\/send-mail$/);
     if (sendMailMatch && req.method === 'POST') {
       const slug = sendMailMatch[1];
@@ -299,58 +301,78 @@ const server = http.createServer(async (req, res) => {
       if (!prospect.email) return json(res, 400, { error: 'Keine E-Mail hinterlegt' });
 
       const mail = generateMail(prospect);
+      const previewUrl = `https://${prospect.preview}`;
       const steps = [];
 
-      // Step 1: Create person (if not yet in Pipedrive)
+      // Step 1: Create person in Pipedrive (if not yet exists)
       let personId = prospect.pipedrivePersonId || null;
       if (!personId) {
         const personData = { name: prospect.contact || prospect.name };
         personData.email = [{ value: prospect.email, primary: true }];
+        // Set outreach status custom field if configured
+        if (PIPEDRIVE_OUTREACH_FIELD && PIPEDRIVE_OUTREACH_VALUE) {
+          personData[PIPEDRIVE_OUTREACH_FIELD] = PIPEDRIVE_OUTREACH_VALUE;
+        }
         const personR = await pipedrive('POST', '/persons', personData);
         if (personR.status !== 201 && personR.status !== 200) return json(res, 500, { error: 'Pipedrive Person fehlgeschlagen', details: personR.data });
         personId = personR.data && personR.data.data ? personR.data.data.id : null;
         steps.push('person');
+      } else if (PIPEDRIVE_OUTREACH_FIELD && PIPEDRIVE_OUTREACH_VALUE) {
+        // Person exists but update outreach status
+        await pipedrive('PUT', `/persons/${personId}`, { [PIPEDRIVE_OUTREACH_FIELD]: PIPEDRIVE_OUTREACH_VALUE });
+        steps.push('status-update');
       }
 
-      // Step 2: Create lead (if not yet created)
-      let leadId = prospect.pipedriveId || null;
-      if (!leadId) {
-        const leadData = { title: `ELEVO Preview — ${prospect.name}`, person_id: personId };
-        const leadR = await pipedrive('POST', '/leads', leadData);
-        if (leadR.status !== 201 && leadR.status !== 200) return json(res, 500, { error: 'Pipedrive Lead fehlgeschlagen', details: leadR.data });
-        leadId = leadR.data && leadR.data.data ? leadR.data.data.id : null;
-        steps.push('lead');
-      }
-
-      // Step 3: Send email via Pipedrive Mail API
+      // Step 2: Send email via Pipedrive Mail API (auto-links to person by email match)
       const htmlBody = mail.body.replace(/\n/g, '<br>');
       const mailData = {
         subject: mail.subject,
         body: htmlBody,
-        to: [{ email: prospect.email, name: prospect.contact || prospect.name }],
-        lead_id: leadId
+        to: [{ email: prospect.email, name: prospect.contact || prospect.name }]
       };
       const mailR = await pipedrive('POST', '/mailbox/mailMessages', mailData);
       if (mailR.status !== 200 && mailR.status !== 201) {
-        // Save person+lead even if mail fails
+        // Save person even if mail fails
         prospects[idx].pipedrivePersonId = personId;
-        prospects[idx].pipedriveId = leadId;
         prospects[idx].updated = new Date().toISOString();
         saveProspects(prospects);
-        return json(res, 500, { error: 'Mail-Versand fehlgeschlagen — Lead wurde erstellt', details: mailR.data, personId, leadId, steps });
+        return json(res, 500, { error: 'Mail-Versand fehlgeschlagen — Person wurde erstellt. Ist E-Mail-Sync in Pipedrive aktiv?', details: mailR.data, personId, steps });
       }
       steps.push('mail');
 
-      // Step 4: Update prospect
+      // Step 3: Create activity "Cold Mail gesendet" linked to person
+      const actData = {
+        subject: `Cold Mail: ${prospect.name}`,
+        type: 'email',
+        done: 1,
+        person_id: personId,
+        note: `Preview: ${previewUrl}\nBetreff: ${mail.subject}\n\n${mail.body}`
+      };
+      const actR = await pipedrive('POST', '/activities', actData);
+      if (actR.status === 200 || actR.status === 201) steps.push('activity');
+
+      // Step 4: Update prospect locally
       prospects[idx].pipedrivePersonId = personId;
-      prospects[idx].pipedriveId = leadId;
       prospects[idx].mailSent = new Date().toISOString();
       prospects[idx].mailText = mail.body;
       prospects[idx].status = 'mail';
       prospects[idx].updated = new Date().toISOString();
       saveProspects(prospects);
 
-      return json(res, 200, { success: true, personId, leadId, steps, mailId: mailR.data?.data?.id || null });
+      return json(res, 200, { success: true, personId, steps, mailId: mailR.data?.data?.id || null });
+    }
+
+    // List Pipedrive person fields (helper to find outreach field key)
+    if (p === '/api/pipedrive/person-fields' && req.method === 'GET') {
+      if (!PIPEDRIVE_API_KEY) return json(res, 500, { error: 'PIPEDRIVE_API_KEY nicht konfiguriert' });
+      const r = await pipedrive('GET', '/personFields');
+      if (r.status === 200 && r.data && r.data.data) {
+        const fields = r.data.data
+          .filter(f => f.edit_flag === true) // only custom fields
+          .map(f => ({ key: f.key, name: f.name, field_type: f.field_type, options: f.options || null }));
+        return json(res, 200, { success: true, fields, configured: { field: PIPEDRIVE_OUTREACH_FIELD || '(nicht gesetzt)', value: PIPEDRIVE_OUTREACH_VALUE || '(nicht gesetzt)' } });
+      }
+      return json(res, r.status || 500, { error: 'Felder laden fehlgeschlagen', details: r.data });
     }
 
     // Mark mail as sent (manual fallback — e.g. sent via Instantly)
@@ -479,6 +501,7 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, async () => {
   console.log(`\n  ELEVO Deploy Center v3.0 | Port ${PORT}`);
-  console.log(`  Coolify: ${COOLIFY_URL} | Claude: ${ANTHROPIC_API_KEY ? '✓' : '✗'} | Pipedrive: ${PIPEDRIVE_API_KEY ? '✓' : '✗'}\n`);
+  console.log(`  Coolify: ${COOLIFY_URL} | Claude: ${ANTHROPIC_API_KEY ? '✓' : '✗'} | Pipedrive: ${PIPEDRIVE_API_KEY ? '✓' : '✗'}`);
+  console.log(`  Outreach Field: ${PIPEDRIVE_OUTREACH_FIELD || '✗ (nicht gesetzt)'} → ${PIPEDRIVE_OUTREACH_VALUE || '✗'}\n`);
   await detectGHApp();
 });
