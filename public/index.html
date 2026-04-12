@@ -421,12 +421,12 @@ select.fi{-webkit-appearance:none;appearance:none;background-image:url("data:ima
         <div class="mp-val" id="mailBody"></div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="ab prim" onclick="copyMail()" style="flex:1;justify-content:center;min-height:44px">📋 Mail kopieren</button>
-        <button class="ab" onclick="openMailto()" style="flex:1;justify-content:center;min-height:44px">✉ Mail-App</button>
+        <button class="ab prim" onclick="sendViaPipedrive()" id="pdSendBtn" style="flex:2;justify-content:center;min-height:44px">Via Pipedrive senden</button>
+        <button class="ab" onclick="copyMail()" style="flex:1;justify-content:center;min-height:44px">📋 Kopieren</button>
       </div>
       <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-        <button class="ab" onclick="markMailSent()" style="flex:1;justify-content:center;min-height:44px;border-color:var(--gn);color:var(--gn)">✓ Als gesendet markieren</button>
-        <button class="ab" onclick="createPipedriveLead()" id="pdBtn" style="flex:1;justify-content:center;min-height:44px">Pipedrive Lead</button>
+        <button class="ab" onclick="openMailto()" style="flex:1;justify-content:center;min-height:44px">✉ Mail-App</button>
+        <button class="ab" onclick="markMailSent()" style="flex:1;justify-content:center;min-height:44px;color:var(--dm)">Manuell markieren</button>
       </div>
     </div>
   </div>
@@ -742,13 +742,26 @@ async function markMailSent(){
   }catch(e){toast('Fehler','te')}
 }
 
-async function createPipedriveLead(){
+async function sendViaPipedrive(){
   if(!currentMailSlug)return;
-  const btn=document.getElementById('pdBtn');btn.disabled=true;btn.innerHTML='<span class="sp" style="width:12px;height:12px"></span>';
-  try{const r=await fetch('/api/prospect/'+currentMailSlug+'/pipedrive',{method:'POST'});const d=await r.json();
-    if(d.success){toast('Pipedrive Lead erstellt!','ts');btn.innerHTML='✓ Erstellt';btn.style.borderColor='var(--gn)';btn.style.color='var(--gn)'}
-    else{toast(d.error||'Pipedrive Fehler','te');btn.disabled=false;btn.innerHTML='Pipedrive Lead'}
-  }catch(e){toast('Fehler','te');btn.disabled=false;btn.innerHTML='Pipedrive Lead'}
+  const btn=document.getElementById('pdSendBtn');
+  const origText=btn.innerHTML;
+  btn.disabled=true;btn.innerHTML='<span class="sp" style="width:14px;height:14px"></span> Sende...';
+  try{
+    const r=await fetch('/api/prospect/'+currentMailSlug+'/send-mail',{method:'POST'});
+    const d=await r.json();
+    if(d.success){
+      const steps=d.steps||[];
+      let msg='Mail gesendet via Pipedrive!';
+      if(steps.includes('person'))msg+=' Person erstellt.';
+      if(steps.includes('lead'))msg+=' Lead erstellt.';
+      toast(msg,'ts');
+      closeMailModal();loadProspects();
+    }else{
+      toast(d.error||'Fehler beim Senden','te');
+      btn.disabled=false;btn.innerHTML=origText;
+    }
+  }catch(e){toast('Netzwerk-Fehler: '+e.message,'te');btn.disabled=false;btn.innerHTML=origText}
 }
 
 // ═══ PROSPECT DETAIL ═══
