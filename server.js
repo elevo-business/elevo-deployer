@@ -223,6 +223,7 @@ const server = http.createServer(async (req, res) => {
         mailSent: null,
         mailText: null,
         pipedriveId: null,
+        pipedrivePersonId: null,
         created: new Date().toISOString(),
         updated: new Date().toISOString()
       };
@@ -286,7 +287,73 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, { success: true, mail });
     }
 
-    // Mark mail as sent
+    // Send mail via Pipedrive (Person + Lead + Mail in one action)
+    const sendMailMatch = p.match(/^\/api\/prospect\/([a-z0-9-]+)\/send-mail$/);
+    if (sendMailMatch && req.method === 'POST') {
+      const slug = sendMailMatch[1];
+      if (!PIPEDRIVE_API_KEY) return json(res, 500, { error: 'PIPEDRIVE_API_KEY nicht konfiguriert' });
+      const prospects = loadProspects();
+      const idx = prospects.findIndex(p => p.slug === slug);
+      if (idx === -1) return json(res, 404, { error: 'Nicht gefunden' });
+      const prospect = prospects[idx];
+      if (!prospect.email) return json(res, 400, { error: 'Keine E-Mail hinterlegt' });
+
+      const mail = generateMail(prospect);
+      const steps = [];
+
+      // Step 1: Create person (if not yet in Pipedrive)
+      let personId = prospect.pipedrivePersonId || null;
+      if (!personId) {
+        const personData = { name: prospect.contact || prospect.name };
+        personData.email = [{ value: prospect.email, primary: true }];
+        const personR = await pipedrive('POST', '/persons', personData);
+        if (personR.status !== 201 && personR.status !== 200) return json(res, 500, { error: 'Pipedrive Person fehlgeschlagen', details: personR.data });
+        personId = personR.data && personR.data.data ? personR.data.data.id : null;
+        steps.push('person');
+      }
+
+      // Step 2: Create lead (if not yet created)
+      let leadId = prospect.pipedriveId || null;
+      if (!leadId) {
+        const leadData = { title: `ELEVO Preview — ${prospect.name}`, person_id: personId };
+        const leadR = await pipedrive('POST', '/leads', leadData);
+        if (leadR.status !== 201 && leadR.status !== 200) return json(res, 500, { error: 'Pipedrive Lead fehlgeschlagen', details: leadR.data });
+        leadId = leadR.data && leadR.data.data ? leadR.data.data.id : null;
+        steps.push('lead');
+      }
+
+      // Step 3: Send email via Pipedrive Mail API
+      const htmlBody = mail.body.replace(/\n/g, '<br>');
+      const mailData = {
+        subject: mail.subject,
+        body: htmlBody,
+        to: [{ email: prospect.email, name: prospect.contact || prospect.name }],
+        lead_id: leadId
+      };
+      const mailR = await pipedrive('POST', '/mailbox/mailMessages', mailData);
+      if (mailR.status !== 200 && mailR.status !== 201) {
+        // Save person+lead even if mail fails
+        prospects[idx].pipedrivePersonId = personId;
+        prospects[idx].pipedriveId = leadId;
+        prospects[idx].updated = new Date().toISOString();
+        saveProspects(prospects);
+        return json(res, 500, { error: 'Mail-Versand fehlgeschlagen — Lead wurde erstellt', details: mailR.data, personId, leadId, steps });
+      }
+      steps.push('mail');
+
+      // Step 4: Update prospect
+      prospects[idx].pipedrivePersonId = personId;
+      prospects[idx].pipedriveId = leadId;
+      prospects[idx].mailSent = new Date().toISOString();
+      prospects[idx].mailText = mail.body;
+      prospects[idx].status = 'mail';
+      prospects[idx].updated = new Date().toISOString();
+      saveProspects(prospects);
+
+      return json(res, 200, { success: true, personId, leadId, steps, mailId: mailR.data?.data?.id || null });
+    }
+
+    // Mark mail as sent (manual fallback — e.g. sent via Instantly)
     const mailSentMatch = p.match(/^\/api\/prospect\/([a-z0-9-]+)\/mail-sent$/);
     if (mailSentMatch && req.method === 'POST') {
       const slug = mailSentMatch[1];
@@ -300,38 +367,6 @@ const server = http.createServer(async (req, res) => {
       prospects[idx].updated = new Date().toISOString();
       saveProspects(prospects);
       return json(res, 200, { success: true, prospect: prospects[idx] });
-    }
-
-    // Create Pipedrive lead
-    const pdMatch = p.match(/^\/api\/prospect\/([a-z0-9-]+)\/pipedrive$/);
-    if (pdMatch && req.method === 'POST') {
-      const slug = pdMatch[1];
-      if (!PIPEDRIVE_API_KEY) return json(res, 500, { error: 'PIPEDRIVE_API_KEY nicht konfiguriert' });
-      const prospects = loadProspects();
-      const idx = prospects.findIndex(p => p.slug === slug);
-      if (idx === -1) return json(res, 404, { error: 'Nicht gefunden' });
-      const prospect = prospects[idx];
-
-      // Create person first
-      const personData = { name: prospect.contact || prospect.name };
-      if (prospect.email) personData.email = [{ value: prospect.email, primary: true }];
-      const personR = await pipedrive('POST', '/persons', personData);
-      if (personR.status !== 201 && personR.status !== 200) return json(res, 500, { error: 'Pipedrive Person fehlgeschlagen', details: personR.data });
-      const personId = personR.data && personR.data.data ? personR.data.data.id : null;
-
-      // Create lead
-      const leadData = {
-        title: `ELEVO Preview — ${prospect.name}`,
-        person_id: personId
-      };
-      const leadR = await pipedrive('POST', '/leads', leadData);
-      if (leadR.status !== 201 && leadR.status !== 200) return json(res, 500, { error: 'Pipedrive Lead fehlgeschlagen', details: leadR.data });
-
-      const leadId = leadR.data && leadR.data.data ? leadR.data.data.id : null;
-      prospects[idx].pipedriveId = leadId;
-      prospects[idx].updated = new Date().toISOString();
-      saveProspects(prospects);
-      return json(res, 200, { success: true, personId, leadId });
     }
 
     // ═══ EXISTING ROUTES ═══
