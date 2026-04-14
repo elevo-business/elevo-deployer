@@ -19,6 +19,7 @@ const DEPLOY_SECRET = process.env.DEPLOY_SECRET || '';
 const PIPEDRIVE_API_KEY = process.env.PIPEDRIVE_API_KEY || '';
 const PIPEDRIVE_OUTREACH_FIELD = process.env.PIPEDRIVE_OUTREACH_FIELD || '';
 const PIPEDRIVE_OUTREACH_VALUE = process.env.PIPEDRIVE_OUTREACH_VALUE || '';
+const GOOGLE_PLACES_KEY = process.env.GOOGLE_PLACES_KEY || '';
 
 let ghAppUuid = GITHUB_APP_UUID;
 
@@ -92,7 +93,7 @@ const server = http.createServer(async (req, res) => {
   if (p.startsWith('/api/') && p !== '/api/login' && !checkAuth(req)) return json(res, 401, { error: 'Unauthorized' });
 
   try {
-    if (p === '/api/config') return json(res, 200, { coolify: !!COOLIFY_TOKEN, github: !!GITHUB_TOKEN, anthropic: !!ANTHROPIC_API_KEY, pipedrive: !!PIPEDRIVE_API_KEY, outreachField: !!PIPEDRIVE_OUTREACH_FIELD });
+    if (p === '/api/config') return json(res, 200, { coolify: !!COOLIFY_TOKEN, github: !!GITHUB_TOKEN, anthropic: !!ANTHROPIC_API_KEY, pipedrive: !!PIPEDRIVE_API_KEY, places: !!GOOGLE_PLACES_KEY, outreachField: !!PIPEDRIVE_OUTREACH_FIELD });
 
     // ═══ DASHBOARD ═══
     if (p === '/api/dashboard') {
@@ -273,6 +274,53 @@ const server = http.createServer(async (req, res) => {
       prospects[idx].mailSent = new Date().toISOString(); prospects[idx].mailText = b.mailText || null;
       prospects[idx].status = 'mail'; logHistory(prospects, idx, 'mail_manuell', 'Manuell markiert'); saveProspects(prospects);
       return json(res, 200, { success: true });
+    }
+
+    // ═══ RESEARCH — Google Places ═══
+    if (p === '/api/research' && req.method === 'POST') {
+      if (!GOOGLE_PLACES_KEY) return json(res, 500, { error: 'GOOGLE_PLACES_KEY nicht konfiguriert' });
+      const b = await parseBody(req);
+      if (!b.query) return json(res, 400, { error: 'query fehlt' });
+
+      const payload = JSON.stringify({
+        textQuery: b.query,
+        languageCode: 'de',
+        maxResultCount: b.limit || 20
+      });
+      const fieldMask = 'places.displayName,places.formattedAddress,places.websiteUri,places.nationalPhoneNumber,places.internationalPhoneNumber,places.rating,places.userRatingCount,places.id,places.googleMapsUri';
+      const opts = {
+        hostname: 'places.googleapis.com', port: 443, method: 'POST',
+        path: '/v1/places:searchText',
+        headers: { 'Content-Type': 'application/json', 'X-Goog-Api-Key': GOOGLE_PLACES_KEY, 'X-Goog-FieldMask': fieldMask, 'Content-Length': Buffer.byteLength(payload) }
+      };
+      const r = await httpReq(https, opts, payload);
+      if (r.status !== 200) return json(res, r.status || 500, { error: 'Google Places Fehler', details: r.data });
+
+      const places = (r.data.places || []).map(pl => {
+        const domain = (pl.websiteUri || '').replace(/^https?:\/\//, '').replace(/\/.*$/, '').toLowerCase();
+        return {
+          name: pl.displayName?.text || '',
+          address: pl.formattedAddress || '',
+          website: pl.websiteUri || '',
+          domain,
+          phone: pl.nationalPhoneNumber || pl.internationalPhoneNumber || '',
+          rating: pl.rating || 0,
+          reviews: pl.userRatingCount || 0,
+          mapsUrl: pl.googleMapsUri || '',
+          placeId: pl.id || ''
+        };
+      });
+
+      // Filter out prospects that already exist
+      const prospects = loadProspects();
+      const existingSlugs = new Set(prospects.map(x => x.slug));
+      const results = places.map(pl => ({
+        ...pl,
+        exists: existingSlugs.has(toSlug(pl.name)),
+        slug: toSlug(pl.name)
+      }));
+
+      return json(res, 200, { success: true, count: results.length, results });
     }
 
     // Pipedrive fields
