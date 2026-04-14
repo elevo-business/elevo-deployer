@@ -166,7 +166,31 @@ select.fi{-webkit-appearance:none;cursor:pointer;background-image:url("data:imag
 
       <button class="btn btn-p" id="depBtn" onclick="deploy()">Deploy starten</button>
     </div>
-    <div class="success-card" id="depDone"><div class="check">✓</div><h3 id="doneT">Live!</h3><div class="link-box"><a id="doneL" href="#" target="_blank"></a><button class="cpb" onclick="copyT(gid('doneL').textContent)">📋</button></div><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="ab prim" onclick="window.open(gid('doneL').href,'_blank')">Öffnen</button><button class="ab" onclick="resetDep()">Nächste</button></div></div>
+    <div class="success-card" id="depDone">
+      <div class="check">✓</div>
+      <h3 id="doneT">Live!</h3>
+      <div class="link-box"><a id="doneL" href="#" target="_blank"></a><button class="cpb" onclick="copyT(gid('doneL').textContent)">📋</button></div>
+      <!-- Quick Outreach -->
+      <div id="quickOutreach" style="text-align:left;margin-top:16px;padding-top:16px;border-top:1px solid var(--bd)">
+        <div style="font-family:Sora;font-size:12px;font-weight:600;color:var(--ac);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">→ Direkt Outreach</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <input class="fi" id="qoEmail" placeholder="E-Mail *" inputmode="email" style="font-size:13px;padding:10px 12px">
+          <input class="fi" id="qoContact" placeholder="Ansprechpartner" style="font-size:13px;padding:10px 12px">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <select class="fi" id="qoBranch" style="font-size:13px;padding:10px 12px"><option value="">Branche</option><option value="makler">Makler</option><option value="kueche">Küche</option><option value="handwerk">Handwerk</option><option value="gastro">Gastro</option><option value="solar">Solar</option><option value="sonstige">Sonst</option></select>
+          <select class="fi" id="qoAnrede" style="font-size:13px;padding:10px 12px"><option value="Sie">Sie</option><option value="du">Du</option></select>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="ab prim" onclick="quickOutreach()" id="qoBtn" style="flex:2;justify-content:center;min-height:44px">Prospect anlegen & Mail öffnen</button>
+          <button class="ab" onclick="quickOutreachSkip()" style="flex:1;justify-content:center;min-height:44px">Nur Prospect</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="ab" onclick="window.open(gid('doneL').href,'_blank')" style="flex:1;justify-content:center;min-height:40px">Öffnen</button>
+          <button class="ab" onclick="resetDep()" style="flex:1;justify-content:center;min-height:40px">Nächste Website</button>
+        </div>
+      </div>
+    </div>
     <div class="log" id="log"></div>
   </div>
 </div>
@@ -337,12 +361,50 @@ async function deploy(){
   const payload={name,html:depFiles['index.html'],files:[]};
   for(const[fn,content] of Object.entries(depFiles)){if(fn!=='index.html'&&content.trim())payload.files.push({name:fn,content})}
   try{const r=await fetch('/api/deploy-full',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const d=await r.json();
-    if(d.success){setS(4);lg('✓ Live: '+d.domain+' ('+fileNames.join(', ')+')','ok');setTimeout(()=>{gid('depForm').style.display='none';gid('depDone').style.display='block';gid('doneT').textContent=name+' ist live!';const l=gid('doneL');l.href=d.domain||'https://'+slug+'-preview.elevo.solutions';l.textContent=(d.domain||'').replace('https://','');toast('Live!','ts');const p=prospects.find(x=>x.slug===slug);if(p&&p.status==='neu')fetch('/api/prospect/'+slug+'/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'preview'})}).then(()=>loadP())},400)}
+    if(d.success){setS(4);lg('✓ Live: '+d.domain+' ('+fileNames.join(', ')+')','ok');setTimeout(()=>{gid('depForm').style.display='none';gid('depDone').style.display='block';gid('doneT').textContent=name+' ist live!';const l=gid('doneL');l.href=d.domain||'https://'+slug+'-preview.elevo.solutions';l.textContent=(d.domain||'').replace('https://','');toast('Live!','ts');
+      // Pre-fill quick outreach from existing prospect
+      const ep=prospects.find(x=>x.slug===slug);
+      if(ep){gid('qoEmail').value=ep.email||'';gid('qoContact').value=ep.contact||'';gid('qoBranch').value=ep.branch||'';gid('qoAnrede').value=ep.anrede||'Sie';if(ep.status==='neu')fetch('/api/prospect/'+slug+'/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'preview'})}).then(()=>loadP())}
+    },400)}
     else{lg('✗ '+(d.error||'Fehler'),'er');setS(1);toast('Fehler','te')}
   }catch(e){lg('✗ '+e.message,'er');toast('Fehler','te')}
   btn.disabled=false;btn.innerHTML='Deploy starten';
 }
-function resetDep(){gid('depForm').style.display='block';gid('depDone').style.display='none';gid('log').style.display='none';gid('dName').value='';depFiles={'index.html':''};depActive='index.html';gid('dCode').value='';updDepCnt();updDepTabs();gid('pvLink').textContent='Subdomain erscheint hier...';gid('pvBox').classList.add('empty');gid('pvCopy').style.display='none';gid('fLabel').textContent='Dateien wählen oder hierhin ziehen';gid('fLabel').classList.remove('has');setS(1)}
+function resetDep(){gid('depForm').style.display='block';gid('depDone').style.display='none';gid('log').style.display='none';gid('dName').value='';depFiles={'index.html':''};depActive='index.html';gid('dCode').value='';updDepCnt();updDepTabs();gid('pvLink').textContent='Subdomain erscheint hier...';gid('pvBox').classList.add('empty');gid('pvCopy').style.display='none';gid('fLabel').textContent='Dateien wählen oder hierhin ziehen';gid('fLabel').classList.remove('has');gid('qoEmail').value='';gid('qoContact').value='';gid('qoBranch').value='';gid('qoAnrede').value='Sie';setS(1)}
+
+// Quick Outreach from Deploy
+async function quickOutreach(){
+  const name=gid('dName').value.trim();const email=gid('qoEmail').value.trim();
+  if(!email)return toast('E-Mail eingeben','te');
+  const btn=gid('qoBtn');btn.disabled=true;btn.innerHTML='<span class="sp" style="width:14px;height:14px"></span>';
+  const slug=await createQuickProspect(name,email);
+  if(slug){resetDep();sw('outreach');setTimeout(()=>openMail(slug),300)}
+  btn.disabled=false;btn.innerHTML='Prospect anlegen & Mail öffnen';
+}
+async function quickOutreachSkip(){
+  const name=gid('dName').value.trim();const email=gid('qoEmail').value.trim();
+  const slug=await createQuickProspect(name,email);
+  if(slug)toast('Prospect angelegt!','ts');
+}
+async function createQuickProspect(name,email){
+  if(!name)return null;
+  const slug=toSlug(name);
+  const data={name,email:email||'',contact:gid('qoContact').value.trim(),branch:gid('qoBranch').value,anrede:gid('qoAnrede').value,score:0};
+  const existing=prospects.find(x=>x.slug===slug);
+  if(existing){
+    // Update existing with any new data
+    data.status='preview';
+    await fetch('/api/prospect/'+slug,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    await loadP();return slug;
+  }
+  try{const r=await fetch('/api/prospect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const d=await r.json();
+    if(d.success||d.prospect){
+      await fetch('/api/prospect/'+slug+'/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'preview'})});
+      await loadP();return slug}
+    else{toast(d.error||'Fehler','te');return null}
+  }catch(e){toast(e.message,'te');return null}
+}
+function closeDep(){resetDep()}
 
 // ═══ APPS ═══
 const INFRA=[1,2,4,5,7];
