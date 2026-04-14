@@ -120,9 +120,11 @@ const server = http.createServer(async (req, res) => {
 
       const actions = [];
       const readyMail = prospects.filter(pr => pr.status === 'preview' && pr.email);
+      const needEmail = prospects.filter(pr => pr.status === 'preview' && !pr.email);
       const needPrev = prospects.filter(pr => pr.status === 'neu');
       const needFU = prospects.filter(pr => pr.status === 'mail' && pr.mailSent && (Date.now() - new Date(pr.mailSent)) > 3 * 86400000);
       if (needPrev.length) actions.push({ type: 'preview', count: needPrev.length, label: `${needPrev.length} Preview${needPrev.length > 1 ? 's' : ''} bauen` });
+      if (needEmail.length) actions.push({ type: 'email', count: needEmail.length, label: `${needEmail.length}× E-Mail ergänzen` });
       if (readyMail.length) actions.push({ type: 'mail', count: readyMail.length, label: `${readyMail.length} Mail${readyMail.length > 1 ? 's' : ''} senden` });
       if (needFU.length) actions.push({ type: 'followup', count: needFU.length, label: `${needFU.length} Follow-up${needFU.length > 1 ? 's' : ''} fällig` });
 
