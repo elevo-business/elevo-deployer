@@ -136,31 +136,34 @@ select.fi{-webkit-appearance:none;cursor:pointer;background-image:url("data:imag
 <!-- DEPLOY -->
 <div class="sec" id="dep">
   <div class="dw">
-    <h2>Website deployen</h2><p>HTML kopieren → hier pasten → live.</p>
+    <h2>Website deployen</h2><p>Dateien hinzufügen → deployen → live.</p>
     <div class="steps"><div class="step act" id="s1"><span class="n">1</span>Eingabe</div><div class="step" id="s2"><span class="n">2</span>GitHub</div><div class="step" id="s3"><span class="n">3</span>Coolify</div><div class="step" id="s4"><span class="n">4</span>Live</div></div>
     <div id="depForm">
       <div class="fg"><label>Firmenname</label><input type="text" class="fi" id="dName" placeholder="z.B. Mueller Sanitaer" autocomplete="off"></div>
       <div class="preview-box empty" id="pvBox"><span class="link" id="pvLink">Subdomain erscheint hier...</span><button class="cpb" onclick="copyT(gid('pvLink').textContent)" id="pvCopy" style="display:none">📋</button></div>
-      <div class="fg">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><label style="margin:0">HTML-Code</label><div style="display:flex;gap:5px"><button class="cpb" onclick="pasteF()" style="font-size:11px;padding:5px 10px">📋</button><button class="cpb" onclick="gid('dHtml').value='';gid('dHtml').dispatchEvent(new Event('input'))" style="font-size:11px;padding:5px 10px">✕</button></div></div>
-        <textarea class="fi" id="dHtml" placeholder="<!DOCTYPE html>..."></textarea>
+
+      <!-- File tabs -->
+      <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap;align-items:center" id="depTabs"></div>
+
+      <!-- Active file editor -->
+      <div class="fg" id="depFileArea">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+          <label style="margin:0" id="depFileLabel">index.html</label>
+          <div style="display:flex;gap:5px">
+            <button class="cpb" onclick="pasteF()" style="font-size:11px;padding:5px 10px">📋</button>
+            <button class="cpb" onclick="gid('dCode').value='';updDepCnt()" style="font-size:11px;padding:5px 10px">✕</button>
+          </div>
+        </div>
+        <textarea class="fi" id="dCode" placeholder="<!DOCTYPE html>..." oninput="updDepCnt()"></textarea>
         <div class="char-count" id="chCnt">0 Zeichen</div>
       </div>
-      <div style="margin-bottom:14px">
-        <div style="display:flex;gap:6px;margin-bottom:8px">
-          <button class="cpb" id="togCss" onclick="togExtra('css')" style="font-size:11px;padding:5px 10px">+ CSS</button>
-          <button class="cpb" id="togJs" onclick="togExtra('js')" style="font-size:11px;padding:5px 10px">+ JS</button>
-        </div>
-        <div id="cssWrap" style="display:none;margin-bottom:10px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><label style="font-size:11px;color:var(--dm);text-transform:uppercase;letter-spacing:.1em;font-weight:500;margin:0">style.css</label><button class="cpb" onclick="gid('dCss').value='';togExtra('css')" style="font-size:10px;padding:3px 8px">✕</button></div>
-          <textarea class="fi" id="dCss" placeholder="/* CSS */" style="min-height:100px"></textarea>
-        </div>
-        <div id="jsWrap" style="display:none;margin-bottom:10px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><label style="font-size:11px;color:var(--dm);text-transform:uppercase;letter-spacing:.1em;font-weight:500;margin:0">script.js</label><button class="cpb" onclick="gid('dJs').value='';togExtra('js')" style="font-size:10px;padding:3px 8px">✕</button></div>
-          <textarea class="fi" id="dJs" placeholder="// JS" style="min-height:100px"></textarea>
-        </div>
+
+      <!-- File upload -->
+      <div class="fg">
+        <label for="dFile" class="file-label" id="fLabel">Dateien wählen oder hierhin ziehen</label>
+        <input type="file" accept=".html,.htm,.css,.js,.json,.svg,.txt,.md" id="dFile" multiple>
       </div>
-      <div class="fg"><label for="dFile" class="file-label" id="fLabel">HTML-Datei wählen</label><input type="file" accept=".html,.htm" id="dFile"></div>
+
       <button class="btn btn-p" id="depBtn" onclick="deploy()">Deploy starten</button>
     </div>
     <div class="success-card" id="depDone"><div class="check">✓</div><h3 id="doneT">Live!</h3><div class="link-box"><a id="doneL" href="#" target="_blank"></a><button class="cpb" onclick="copyT(gid('doneL').textContent)">📋</button></div><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="ab prim" onclick="window.open(gid('doneL').href,'_blank')">Öffnen</button><button class="ab" onclick="resetDep()">Nächste</button></div></div>
@@ -248,7 +251,6 @@ const gid=id=>document.getElementById(id);
 let apps=[],filt='all',prospects=[],pFilter='all',oBranch='',editSlug=null,mailSlug=null;
 
 function copyT(t){if(!t||t.includes('erscheint'))return;navigator.clipboard.writeText(t).then(()=>toast('Kopiert!','ts')).catch(()=>toast('Fehler','te'))}
-async function pasteF(){try{const t=await navigator.clipboard.readText();if(t){gid('dHtml').value=t;gid('dHtml').dispatchEvent(new Event('input'));toast('Eingefügt!','ts')}}catch(e){toast('Clipboard verweigert','te')}}
 function toSlug(n){return n.toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')}
 function h(s){return(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 function toast(m,t='ti'){const e=gid('toast');e.textContent=m;e.className=`toast ${t} show`;setTimeout(()=>e.classList.remove('show'),2800)}
@@ -292,29 +294,55 @@ async function loadDashboard(){
   gid('syncBtn').innerHTML='↻ Sync';
 }
 
-// ═══ DEPLOY ═══
+// ═══ DEPLOY — MULTI-FILE ═══
+let depFiles={'index.html':''},depActive='index.html';
+function updDepTabs(){
+  const names=Object.keys(depFiles);
+  gid('depTabs').innerHTML=names.map(fn=>`<button class="cpb${fn===depActive?' on':''}" onclick="switchDepFile('${fn}')" style="font-size:11px;padding:5px 12px">${fn}</button>`).join('')+
+    `<button class="cpb" onclick="addDepFile()" style="font-size:11px;padding:5px 10px;border-style:dashed">+ Datei</button>`;
+  gid('depFileLabel').textContent=depActive;
+}
+function switchDepFile(fn){depFiles[depActive]=gid('dCode').value;depActive=fn;gid('dCode').value=depFiles[fn]||'';updDepCnt();updDepTabs()}
+function updDepCnt(){const v=gid('dCode').value;gid('chCnt').textContent=v.length.toLocaleString('de')+' Zeichen · '+v.split('\n').length+' Zeilen'}
+function addDepFile(){const fn=prompt('Dateiname (z.B. about.html, style.css, script.js):');if(!fn||!fn.trim())return;const clean=fn.trim().toLowerCase().replace(/[^a-z0-9._-]/g,'');if(!clean)return toast('Ungültiger Name','te');if(depFiles[clean]!==undefined)return toast('Existiert bereits','te');depFiles[clean]='';switchDepFile(clean)}
+function removeDepFile(fn){if(fn==='index.html')return toast('index.html ist Pflicht','te');delete depFiles[fn];if(depActive===fn){depActive='index.html';gid('dCode').value=depFiles['index.html']||'';updDepCnt()}updDepTabs()}
 gid('dName').addEventListener('input',function(){const v=this.value.trim();if(v){gid('pvLink').textContent=toSlug(v)+'-preview.elevo.solutions';gid('pvBox').classList.remove('empty');gid('pvCopy').style.display='inline-flex'}else{gid('pvLink').textContent='Subdomain erscheint hier...';gid('pvBox').classList.add('empty');gid('pvCopy').style.display='none'}});
-gid('dHtml').addEventListener('input',function(){gid('chCnt').textContent=this.value.length.toLocaleString('de')+' Zeichen'});
-gid('dFile').addEventListener('change',function(){const f=this.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{gid('dHtml').value=e.target.result;gid('dHtml').dispatchEvent(new Event('input'));gid('fLabel').textContent='✓ '+f.name;gid('fLabel').classList.add('has');if(!gid('dName').value){gid('dName').value=f.name.replace(/\.html?$/i,'').replace(/[-_]/g,' ');gid('dName').dispatchEvent(new Event('input'))}};r.readAsText(f)});
+gid('dFile').addEventListener('change',function(){
+  for(const f of this.files){
+    const r=new FileReader();const fname=f.name.toLowerCase();
+    r.onload=e=>{depFiles[fname]=e.target.result;if(Object.keys(depFiles).length===2&&!depFiles['index.html']){/* first file */}switchDepFile(fname);toast('✓ '+fname,'ts');
+      if(!gid('dName').value&&fname==='index.html'){gid('dName').value=f.name.replace(/\.html?$/i,'').replace(/[-_]/g,' ');gid('dName').dispatchEvent(new Event('input'))}
+    };r.readAsText(f);
+  }
+  gid('fLabel').textContent=`✓ ${this.files.length} Datei${this.files.length>1?'en':''} geladen`;gid('fLabel').classList.add('has');
+});
+const fl=gid('fLabel');fl.addEventListener('dragover',e=>{e.preventDefault();fl.style.borderColor='var(--ac)'});fl.addEventListener('dragleave',()=>{fl.style.borderColor=''});
+fl.addEventListener('drop',e=>{e.preventDefault();fl.style.borderColor='';if(e.dataTransfer.files.length){gid('dFile').files=e.dataTransfer.files;gid('dFile').dispatchEvent(new Event('change'))}});
+async function pasteF(){try{const t=await navigator.clipboard.readText();if(t){gid('dCode').value=t;updDepCnt();toast('Eingefügt!','ts')}}catch(e){toast('Clipboard verweigert','te')}}
+updDepTabs();
+
 function setS(n){[1,2,3,4].forEach(i=>{const e=gid('s'+i);e.classList.remove('act','done');if(i<n)e.classList.add('done');if(i===n)e.classList.add('act')})}
 function lg(m,c='l'){const e=gid('log');e.style.display='block';e.innerHTML+=`<span class="${c}">${m}</span>\n`;e.scrollTop=e.scrollHeight}
-function togExtra(type){const w=gid(type==='css'?'cssWrap':'jsWrap');const b=gid(type==='css'?'togCss':'togJs');if(w.style.display==='none'){w.style.display='block';b.style.borderColor='var(--ac)';b.style.color='var(--ac)'}else{w.style.display='none';b.style.borderColor='';b.style.color=''}}
 async function deploy(){
-  const name=gid('dName').value.trim(),html=gid('dHtml').value.trim();
-  const css=gid('dCss').value.trim(),js=gid('dJs').value.trim();
-  if(!name)return toast('Name fehlt','te');if(!html||html.length<100)return toast('HTML fehlt/zu kurz','te');
+  depFiles[depActive]=gid('dCode').value;
+  const name=gid('dName').value.trim();
+  if(!name)return toast('Name fehlt','te');
+  if(!depFiles['index.html']||depFiles['index.html'].length<50)return toast('index.html fehlt oder zu kurz','te');
   const btn=gid('depBtn');btn.disabled=true;btn.innerHTML='<span class="sp"></span> Deploying...';gid('log').innerHTML='';gid('log').style.display='block';setS(2);
-  const slug=toSlug(name);lg('▸ '+name+' → '+slug+'-preview.elevo.solutions','i');
-  const payload={name,html};if(css)payload.css=css;if(js)payload.js=js;
-  const fileList=['index.html'];if(css)fileList.push('style.css');if(js)fileList.push('script.js');
-  lg('▸ Dateien: '+fileList.join(', '),'l');
+  const slug=toSlug(name);
+  const fileNames=Object.keys(depFiles).filter(fn=>depFiles[fn].trim());
+  lg('▸ '+name+' → '+slug+'-preview.elevo.solutions','i');
+  lg('▸ Dateien: '+fileNames.join(', '),'l');
+  // Build payload: html is index.html, rest goes in files array
+  const payload={name,html:depFiles['index.html'],files:[]};
+  for(const[fn,content] of Object.entries(depFiles)){if(fn!=='index.html'&&content.trim())payload.files.push({name:fn,content})}
   try{const r=await fetch('/api/deploy-full',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const d=await r.json();
-    if(d.success){setS(4);lg('✓ Live: '+d.domain+' ('+fileList.join(', ')+')','ok');setTimeout(()=>{gid('depForm').style.display='none';gid('depDone').style.display='block';gid('doneT').textContent=name+' ist live!';const l=gid('doneL');l.href=d.domain||'https://'+slug+'-preview.elevo.solutions';l.textContent=(d.domain||'').replace('https://','');toast('Live!','ts');const p=prospects.find(x=>x.slug===slug);if(p&&p.status==='neu')fetch('/api/prospect/'+slug+'/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'preview'})}).then(()=>loadP())},400)}
+    if(d.success){setS(4);lg('✓ Live: '+d.domain+' ('+fileNames.join(', ')+')','ok');setTimeout(()=>{gid('depForm').style.display='none';gid('depDone').style.display='block';gid('doneT').textContent=name+' ist live!';const l=gid('doneL');l.href=d.domain||'https://'+slug+'-preview.elevo.solutions';l.textContent=(d.domain||'').replace('https://','');toast('Live!','ts');const p=prospects.find(x=>x.slug===slug);if(p&&p.status==='neu')fetch('/api/prospect/'+slug+'/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'preview'})}).then(()=>loadP())},400)}
     else{lg('✗ '+(d.error||'Fehler'),'er');setS(1);toast('Fehler','te')}
   }catch(e){lg('✗ '+e.message,'er');toast('Fehler','te')}
   btn.disabled=false;btn.innerHTML='Deploy starten';
 }
-function resetDep(){gid('depForm').style.display='block';gid('depDone').style.display='none';gid('log').style.display='none';gid('dName').value='';gid('dHtml').value='';gid('dCss').value='';gid('dJs').value='';gid('cssWrap').style.display='none';gid('jsWrap').style.display='none';gid('togCss').style.borderColor='';gid('togCss').style.color='';gid('togJs').style.borderColor='';gid('togJs').style.color='';gid('chCnt').textContent='0 Zeichen';gid('pvLink').textContent='Subdomain erscheint hier...';gid('pvBox').classList.add('empty');gid('pvCopy').style.display='none';gid('fLabel').textContent='HTML-Datei wählen';gid('fLabel').classList.remove('has');setS(1)}
+function resetDep(){gid('depForm').style.display='block';gid('depDone').style.display='none';gid('log').style.display='none';gid('dName').value='';depFiles={'index.html':''};depActive='index.html';gid('dCode').value='';updDepCnt();updDepTabs();gid('pvLink').textContent='Subdomain erscheint hier...';gid('pvBox').classList.add('empty');gid('pvCopy').style.display='none';gid('fLabel').textContent='Dateien wählen oder hierhin ziehen';gid('fLabel').classList.remove('has');setS(1)}
 
 // ═══ APPS ═══
 const INFRA=[1,2,4,5,7];
