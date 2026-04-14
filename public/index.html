@@ -102,16 +102,27 @@ select.fi{-webkit-appearance:none;cursor:pointer;background-image:url("data:imag
 <!-- DASHBOARD -->
 <div class="sec on" id="home">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-    <h2 style="font-family:Sora;font-size:20px;font-weight:700">Guten Abend</h2>
+    <h2 style="font-family:Sora;font-size:20px;font-weight:700">Dashboard</h2>
     <button class="ab" onclick="loadDashboard()" id="syncBtn">↻ Sync</button>
   </div>
-  <div class="stats" id="dashStats">
-    <div class="st"><small>Prospects</small><strong class="b" id="dAll">-</strong></div>
-    <div class="st"><small>Preview</small><strong class="v" id="dPrev">-</strong></div>
-    <div class="st"><small>Gesendet</small><strong class="o" id="dMail">-</strong></div>
-    <div class="st"><small>Termine</small><strong class="g" id="dTerm">-</strong></div>
+  <!-- Pipeline Funnel -->
+  <div style="background:var(--sf);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:12px">
+    <div style="font-size:10px;color:var(--dm);text-transform:uppercase;letter-spacing:.12em;font-weight:600;margin-bottom:10px">Pipeline</div>
+    <div id="pipelineFunnel" style="display:flex;gap:4px;align-items:flex-end;height:48px;margin-bottom:8px"></div>
+    <div id="pipelineLabels" style="display:flex;gap:4px;font-size:9px;color:var(--dm)"></div>
   </div>
-  <div id="dashActions" style="display:grid;gap:8px;margin-bottom:20px"></div>
+  <!-- Conversion Rates -->
+  <div class="stats" id="dashStats">
+    <div class="st"><small>Deployed</small><strong class="b" id="dDepl">-</strong><div style="font-size:9px;color:var(--dm)" id="dDeplR"></div></div>
+    <div class="st"><small>Gesendet</small><strong class="o" id="dSent">-</strong><div style="font-size:9px;color:var(--dm)" id="dSentR"></div></div>
+    <div class="st"><small>Antworten</small><strong class="v" id="dReply">-</strong><div style="font-size:9px;color:var(--dm)" id="dReplyR"></div></div>
+    <div class="st"><small>Termine</small><strong class="g" id="dTerm">-</strong><div style="font-size:9px;color:var(--dm)" id="dTermR"></div></div>
+  </div>
+  <!-- Actions -->
+  <div id="dashActions" style="display:grid;gap:8px;margin-bottom:16px"></div>
+  <!-- Timeline -->
+  <div id="dashTimeline"></div>
+  <!-- Pipedrive Activities -->
   <div id="dashActivities"></div>
 </div>
 
@@ -289,34 +300,72 @@ async function loadDashboard(){
   gid('syncBtn').innerHTML='<span class="sp" style="width:12px;height:12px;border-color:var(--bd);border-top-color:var(--ac)"></span>';
   try{
     const r=await fetch('/api/dashboard');const d=await r.json();
-    gid('dAll').textContent=d.local.total;gid('dPrev').textContent=d.local.preview;
-    gid('dMail').textContent=d.local.mail+d.local.followup;gid('dTerm').textContent=d.local.termin;
+
+    // Pipeline funnel
+    const pl=d.pipeline||{};const stages=[
+      {key:'neu',label:'Neu',color:'var(--ac)',n:pl.neu||0},
+      {key:'preview',label:'Preview',color:'var(--vi)',n:pl.preview||0},
+      {key:'mail',label:'Mail',color:'var(--og)',n:pl.mail||0},
+      {key:'followup',label:'Follow-up',color:'#F97316',n:pl.followup||0},
+      {key:'termin',label:'Termin',color:'var(--gn)',n:pl.termin||0},
+      {key:'skip',label:'Skip',color:'var(--rd)',n:pl.skip||0}
+    ];
+    const maxN=Math.max(...stages.map(s=>s.n),1);
+    gid('pipelineFunnel').innerHTML=stages.map(s=>{
+      const h=Math.max(s.n/maxN*100,s.n>0?12:4);
+      return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px"><div style="font-family:Sora;font-size:13px;font-weight:700;color:${s.color}">${s.n}</div><div style="width:100%;height:${h}%;min-height:3px;background:${s.color};border-radius:4px;opacity:${s.n>0?1:.15}"></div></div>`
+    }).join('');
+    gid('pipelineLabels').innerHTML=stages.map(s=>`<div style="flex:1;text-align:center">${s.label}</div>`).join('');
+
+    // Conversion rates
+    const cr=d.convRates||{};
+    const deployed=(pl.preview||0)+(pl.mail||0)+(pl.followup||0)+(pl.termin||0);
+    const sent=(pl.mail||0)+(pl.followup||0)+(pl.termin||0);
+    gid('dDepl').textContent=deployed;gid('dDeplR').textContent=cr.deployRate?cr.deployRate+'% von '+d.local.total:'';
+    gid('dSent').textContent=sent;gid('dSentR').textContent=cr.mailRate?cr.mailRate+'% von deployed':'';
+    gid('dReply').textContent=(pl.followup||0)+(pl.termin||0);gid('dReplyR').textContent=cr.replyRate?cr.replyRate+'% Reply Rate':'';
+    gid('dTerm').textContent=pl.termin||0;gid('dTermR').textContent=cr.terminRate?cr.terminRate+'% Close Rate':'';
 
     // Actions
     let ah='';
-    if(!d.actions.length)ah='<div style="text-align:center;color:var(--dm);padding:20px;font-size:13px">Keine offenen Aufgaben</div>';
+    if(!d.actions.length)ah='<div style="text-align:center;color:var(--dm);padding:16px;font-size:13px">Keine offenen Aufgaben</div>';
     for(const a of d.actions){
       const colors={preview:'rgba(59,130,246,.1)',email:'rgba(249,158,11,.1)',mail:'rgba(249,158,11,.1)',followup:'rgba(239,68,68,.1)'};
       const icons={preview:'🔨',email:'✎',mail:'✉',followup:'📞'};
-      const tabs={preview:'outreach',email:'outreach',mail:'outreach',followup:'outreach'};
-      ah+=`<div class="act-card" onclick="sw('${tabs[a.type]}');loadP()"><div class="ac-icon" style="background:${colors[a.type]}">${icons[a.type]}</div><div class="ac-text"><strong>${a.label}</strong><span>Klicken zum Anzeigen</span></div></div>`;
+      ah+=`<div class="act-card" onclick="sw('outreach');loadP()"><div class="ac-icon" style="background:${colors[a.type]||'rgba(59,130,246,.1)'}">${icons[a.type]||'→'}</div><div class="ac-text"><strong>${a.label}</strong><span>Klicken zum Anzeigen</span></div></div>`;
     }
     gid('dashActions').innerHTML=ah;
+
+    // Timeline
+    let th='';
+    if(d.timeline&&d.timeline.length){
+      th='<div style="background:var(--sf);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:12px"><div style="font-size:10px;color:var(--dm);text-transform:uppercase;letter-spacing:.12em;font-weight:600;margin-bottom:10px">Letzte Aktivitäten</div>';
+      const actionLabels={erstellt:'angelegt',importiert:'importiert',status:'Status →',mail_gesendet:'Mail gesendet',mail_manuell:'Mail markiert',bearbeitet:'bearbeitet'};
+      for(const t of d.timeline.slice(0,12)){
+        const ago=timeAgo(t.date);
+        const label=actionLabels[t.action]||t.action;
+        const colors={erstellt:'var(--ac)',importiert:'var(--ac)',status:'var(--vi)',mail_gesendet:'var(--og)',mail_manuell:'var(--og)',bearbeitet:'var(--dm)'};
+        th+=`<div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:12px;align-items:center"><span style="color:${colors[t.action]||'var(--dm)'};font-weight:500;min-width:90px">${label}</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" onclick="openDet('${t.slug}')" style="cursor:pointer">${h(t.name)}${t.note?' · '+h(t.note):''}</span><span style="color:var(--dm);font-size:10px;flex-shrink:0">${ago}</span></div>`;
+      }
+      th+='</div>';
+    }
+    gid('dashTimeline').innerHTML=th;
 
     // Pipedrive activities
     let ph='';
     if(d.pipedrive.synced&&d.pipedrive.activities.length){
-      ph='<h3 style="font-family:Sora;font-size:14px;font-weight:600;margin-bottom:10px">Pipedrive Aktivitäten</h3>';
+      ph='<div style="background:var(--sf);border:1px solid var(--bd);border-radius:14px;padding:16px"><div style="font-size:10px;color:var(--dm);text-transform:uppercase;letter-spacing:.12em;font-weight:600;margin-bottom:10px">Pipedrive Tasks</div>';
       for(const a of d.pipedrive.activities){
         const od=a.overdue?'color:var(--rd)':'color:var(--dm)';
-        ph+=`<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:12px"><span style="font-weight:500">${h(a.subject)}</span> <span style="${od}">${a.due_date||''}</span>${a.person_name?` · <span style="color:var(--mt)">${h(a.person_name)}</span>`:''}</div>`;
+        ph+=`<div style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:12px;display:flex;gap:8px"><span style="font-weight:500;flex:1">${h(a.subject)}</span><span style="${od}">${a.due_date||''}</span>${a.person_name?`<span style="color:var(--mt)">${h(a.person_name)}</span>`:''}</div>`;
       }
-    } else if(d.pipedrive.synced){ph='<div style="color:var(--dm);font-size:12px;padding:8px 0">Keine offenen Aktivitäten in Pipedrive</div>';}
-    else if(!d.pipedrive.synced&&!d.pipedrive.error){ph='<div style="color:var(--dm);font-size:12px">Pipedrive nicht verbunden</div>';}
+      ph+='</div>';
+    }
     gid('dashActivities').innerHTML=ph;
   }catch(e){toast('Dashboard Fehler','te')}
   gid('syncBtn').innerHTML='↻ Sync';
 }
+function timeAgo(d){const s=Math.floor((Date.now()-new Date(d))/1000);if(s<60)return'jetzt';if(s<3600)return Math.floor(s/60)+'m';if(s<86400)return Math.floor(s/3600)+'h';if(s<604800)return Math.floor(s/86400)+'d';return new Date(d).toLocaleDateString('de')}
 
 // ═══ DEPLOY — MULTI-FILE ═══
 let depFiles={'index.html':''},depActive='index.html';
@@ -512,6 +561,7 @@ function openDet(slug){const p=prospects.find(x=>x.slug===slug);if(!p)return;gid
     ${p.mailSent?`<div class="pd-row"><span class="pd-l">Mail</span><span class="pd-v" style="color:var(--gn)">${new Date(p.mailSent).toLocaleDateString('de')}</span></div>`:''}
     ${p.pipedrivePersonId?`<div class="pd-row"><span class="pd-l">PD</span><span class="pd-v" style="color:var(--gn)">Person #${p.pipedrivePersonId}</span></div>`:''}
     ${p.notes?`<div style="margin-top:10px;padding:10px;background:var(--bg2);border-radius:8px;font-size:11px;color:var(--mt);line-height:1.5">${h(p.notes)}</div>`:''}
+    ${p.history&&p.history.length?`<div style="margin-top:12px"><div style="font-size:9px;color:var(--dm);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:6px">Verlauf</div>${p.history.slice().reverse().slice(0,10).map(ev=>{const actionLabels={erstellt:'Angelegt',importiert:'Importiert',status:'Status →',mail_gesendet:'Mail gesendet',mail_manuell:'Manuell markiert',bearbeitet:'Bearbeitet'};return`<div style="display:flex;gap:8px;padding:4px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,.02)"><span style="color:var(--mt);font-weight:500;min-width:80px">${actionLabels[ev.action]||ev.action}</span><span style="color:var(--dm);flex:1">${h(ev.note)||''}</span><span style="color:var(--dm);font-size:10px">${timeAgo(ev.date)}</span></div>`}).join('')}</div>`:''}
     <div style="display:flex;gap:6px;margin-top:14px;flex-wrap:wrap">
       ${p.status==='neu'?`<button class="ab prim" onclick="gid('detMo').classList.remove('show');deployP('${p.slug}')">Website</button>`:''}
       <button class="ab" onclick="gid('detMo').classList.remove('show');openMail('${p.slug}')">✉ Mail</button>
