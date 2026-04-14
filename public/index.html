@@ -296,9 +296,9 @@ async function loadDashboard(){
     let ah='';
     if(!d.actions.length)ah='<div style="text-align:center;color:var(--dm);padding:20px;font-size:13px">Keine offenen Aufgaben</div>';
     for(const a of d.actions){
-      const colors={preview:'rgba(59,130,246,.1)',mail:'rgba(249,158,11,.1)',followup:'rgba(239,68,68,.1)'};
-      const icons={preview:'🔨',mail:'✉',followup:'📞'};
-      const tabs={preview:'outreach',mail:'outreach',followup:'outreach'};
+      const colors={preview:'rgba(59,130,246,.1)',email:'rgba(249,158,11,.1)',mail:'rgba(249,158,11,.1)',followup:'rgba(239,68,68,.1)'};
+      const icons={preview:'🔨',email:'✎',mail:'✉',followup:'📞'};
+      const tabs={preview:'outreach',email:'outreach',mail:'outreach',followup:'outreach'};
       ah+=`<div class="act-card" onclick="sw('${tabs[a.type]}');loadP()"><div class="ac-icon" style="background:${colors[a.type]}">${icons[a.type]}</div><div class="ac-text"><strong>${a.label}</strong><span>Klicken zum Anzeigen</span></div></div>`;
     }
     gid('dashActions').innerHTML=ah;
@@ -361,10 +361,19 @@ async function deploy(){
   const payload={name,html:depFiles['index.html'],files:[]};
   for(const[fn,content] of Object.entries(depFiles)){if(fn!=='index.html'&&content.trim())payload.files.push({name:fn,content})}
   try{const r=await fetch('/api/deploy-full',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const d=await r.json();
-    if(d.success){setS(4);lg('✓ Live: '+d.domain+' ('+fileNames.join(', ')+')','ok');setTimeout(()=>{gid('depForm').style.display='none';gid('depDone').style.display='block';gid('doneT').textContent=name+' ist live!';const l=gid('doneL');l.href=d.domain||'https://'+slug+'-preview.elevo.solutions';l.textContent=(d.domain||'').replace('https://','');toast('Live!','ts');
-      // Pre-fill quick outreach from existing prospect
+    if(d.success){setS(4);lg('✓ Live: '+d.domain+' ('+fileNames.join(', ')+')','ok');setTimeout(async()=>{gid('depForm').style.display='none';gid('depDone').style.display='block';gid('doneT').textContent=name+' ist live!';const l=gid('doneL');l.href=d.domain||'https://'+slug+'-preview.elevo.solutions';l.textContent=(d.domain||'').replace('https://','');toast('Live!','ts');
+      // Auto-create prospect if not exists, or update to preview
       const ep=prospects.find(x=>x.slug===slug);
-      if(ep){gid('qoEmail').value=ep.email||'';gid('qoContact').value=ep.contact||'';gid('qoBranch').value=ep.branch||'';gid('qoAnrede').value=ep.anrede||'Sie';if(ep.status==='neu')fetch('/api/prospect/'+slug+'/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'preview'})}).then(()=>loadP())}
+      if(ep){
+        gid('qoEmail').value=ep.email||'';gid('qoContact').value=ep.contact||'';gid('qoBranch').value=ep.branch||'';gid('qoAnrede').value=ep.anrede||'Sie';
+        if(ep.status==='neu'){await fetch('/api/prospect/'+slug+'/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'preview'})});await loadP()}
+      } else {
+        // Auto-create prospect with status preview
+        await fetch('/api/prospect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,status:'neu'})});
+        await fetch('/api/prospect/'+slug+'/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'preview'})});
+        await loadP();
+        lg('✓ Prospect angelegt','ok');
+      }
     },400)}
     else{lg('✗ '+(d.error||'Fehler'),'er');setS(1);toast('Fehler','te')}
   }catch(e){lg('✗ '+e.message,'er');toast('Fehler','te')}
@@ -453,7 +462,7 @@ function renderP(){
   gid('oAll').textContent=prospects.length;gid('oNeu').textContent=c.neu;gid('oPrv').textContent=c.preview;gid('oMl').textContent=c.mail+c.followup;gid('oTm').textContent=c.termin;
   if(!f.length){gid('pGrid').innerHTML=`<div style="text-align:center;padding:48px;color:var(--dm);grid-column:1/-1"><p style="font-size:13px;margin-bottom:12px">${prospects.length?'Kein Treffer':'Noch keine Prospects'}</p>${!prospects.length?'<button class="ab prim" onclick="openAddP()">+ Ersten anlegen</button>':''}</div>`;return}
   gid('pGrid').innerHTML=f.map(p=>{const dom=(p.url||'').replace(/^https?:\/\//,'').replace(/\/$/,'');
-    return`<div class="card" onclick="openDet('${p.slug}')"><div class="tag tag-p" style="font-size:9px">${p.score?'● '+p.score:''}</div><h4>${h(p.name)}</h4><div class="url">${dom?`<a href="https://${h(dom)}" target="_blank" onclick="event.stopPropagation()">${h(dom)}</a>`:'<span style="color:var(--dm)">—</span>'}</div><div style="display:flex;gap:6px;align-items:center;margin:6px 0"><span class="badge badge-${p.status}">${statusL(p.status)}</span>${p.contact?`<span style="font-size:10px;color:var(--mt)">${h(p.contact)}</span>`:''}</div><div class="acts" onclick="event.stopPropagation()">${p.status==='neu'?`<button class="ab prim" onclick="deployP('${p.slug}')">Website</button>`:p.status==='preview'?`<button class="ab prim" onclick="openMail('${p.slug}')">Mail</button>`:p.status==='mail'?`<button class="ab" onclick="setSt('${p.slug}','followup')" style="border-color:var(--og);color:var(--og)">Follow-up</button>`:p.status==='followup'?`<button class="ab" onclick="setSt('${p.slug}','termin')" style="border-color:var(--gn);color:var(--gn)">Termin!</button>`:''}<button class="ab" onclick="openMail('${p.slug}')">✉</button><button class="ab" onclick="editP('${p.slug}')">✎</button><button class="ab x" onclick="delP('${p.slug}')">✕</button></div></div>`}).join('')}
+    return`<div class="card" onclick="openDet('${p.slug}')"><div class="tag tag-p" style="font-size:9px">${p.score?'● '+p.score:''}</div><h4>${h(p.name)}</h4><div class="url">${dom?`<a href="https://${h(dom)}" target="_blank" onclick="event.stopPropagation()">${h(dom)}</a>`:'<span style="color:var(--dm)">—</span>'}</div><div style="display:flex;gap:6px;align-items:center;margin:6px 0"><span class="badge badge-${p.status}">${statusL(p.status)}</span>${p.contact?`<span style="font-size:10px;color:var(--mt)">${h(p.contact)}</span>`:''}${!p.email&&p.status==='preview'?'<span style="font-size:9px;color:var(--og)">E-Mail fehlt</span>':''}</div><div class="acts" onclick="event.stopPropagation()">${p.status==='neu'?`<button class="ab prim" onclick="deployP('${p.slug}')">Website</button>`:p.status==='preview'&&!p.email?`<button class="ab prim" onclick="editP('${p.slug}')">E-Mail ergänzen</button>`:p.status==='preview'?`<button class="ab prim" onclick="openMail('${p.slug}')">Mail senden</button>`:p.status==='mail'?`<button class="ab" onclick="setSt('${p.slug}','followup')" style="border-color:var(--og);color:var(--og)">Follow-up</button>`:p.status==='followup'?`<button class="ab" onclick="setSt('${p.slug}','termin')" style="border-color:var(--gn);color:var(--gn)">Termin!</button>`:''}<button class="ab" onclick="openMail('${p.slug}')">✉</button><button class="ab" onclick="editP('${p.slug}')">✎</button><button class="ab x" onclick="delP('${p.slug}')">✕</button></div></div>`}).join('')}
 
 function openAddP(){editSlug=null;gid('pmT').innerHTML='Hinzufügen <span class="cx" onclick="closePM()">✕</span>';gid('pmN').value='';gid('pmU').value='';gid('pmE').value='';gid('pmC').value='';gid('pmB').value='';gid('pmA').value='Sie';gid('pmS').value='0';gid('pmNo').value='';gid('pMo').classList.add('show');setTimeout(()=>gid('pmN').focus(),100)}
 function editP(slug){const p=prospects.find(x=>x.slug===slug);if(!p)return;editSlug=slug;gid('pmT').innerHTML='Bearbeiten <span class="cx" onclick="closePM()">✕</span>';gid('pmN').value=p.name;gid('pmU').value=p.url;gid('pmE').value=p.email;gid('pmC').value=p.contact;gid('pmB').value=p.branch;gid('pmA').value=p.anrede||'Sie';gid('pmS').value=p.score;gid('pmNo').value=p.notes;gid('pMo').classList.add('show')}
@@ -466,7 +475,10 @@ async function setSt(slug,st){await fetch('/api/prospect/'+slug+'/status',{metho
 function deployP(slug){const p=prospects.find(x=>x.slug===slug);if(!p)return;sw('dep');gid('dName').value=p.name;gid('dName').dispatchEvent(new Event('input'));toast('Name übernommen — HTML einfügen','ti')}
 
 // MAIL (editable)
-async function openMail(slug){mailSlug=slug;gid('mailLoad').style.display='block';gid('mailCont').style.display='none';gid('mailMo').classList.add('show');
+async function openMail(slug){
+  const pr=prospects.find(x=>x.slug===slug);
+  if(pr&&!pr.email){toast('E-Mail fehlt — erst ergänzen','te');editP(slug);return}
+  mailSlug=slug;gid('mailLoad').style.display='block';gid('mailCont').style.display='none';gid('mailMo').classList.add('show');
   try{const r=await fetch('/api/prospect/'+slug+'/mail-generate');const d=await r.json();if(d.success){gid('mailTo').textContent=d.mail.to;gid('mailSub').value=d.mail.subject;gid('mailBody').value=d.mail.body;gid('mailSig').textContent=d.mail.signature;gid('mailLoad').style.display='none';gid('mailCont').style.display='block';gid('pdSend').disabled=false;gid('pdSend').innerHTML='Via Pipedrive senden'}else{toast(d.error||'Fehler','te');closeMM()}}catch(e){toast(e.message,'te');closeMM()}}
 function closeMM(){gid('mailMo').classList.remove('show');mailSlug=null}
 function copyMail(){const full=gid('mailBody').value+'\n\n'+gid('mailSig').textContent;copyT(full);toast('Kopiert! Betreff: '+gid('mailSub').value,'ts')}
