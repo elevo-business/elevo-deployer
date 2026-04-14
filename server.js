@@ -29,6 +29,11 @@ function ensureDataDir() { if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, 
 ensureDataDir();
 function loadProspects() { try { return JSON.parse(fs.readFileSync(PROSPECTS_FILE, 'utf8')); } catch (e) { return []; } }
 function saveProspects(data) { fs.writeFileSync(PROSPECTS_FILE, JSON.stringify(data, null, 2), 'utf8'); }
+function logHistory(prospects, idx, action, note) {
+  if (!prospects[idx].history) prospects[idx].history = [];
+  prospects[idx].history.push({ action, note: note || '', date: new Date().toISOString() });
+  prospects[idx].updated = new Date().toISOString();
+}
 
 // ═══ HELPERS ═══
 function json(res, s, d) { res.writeHead(s, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type,Authorization' }); res.end(JSON.stringify(d)); }
@@ -128,7 +133,30 @@ const server = http.createServer(async (req, res) => {
       if (readyMail.length) actions.push({ type: 'mail', count: readyMail.length, label: `${readyMail.length} Mail${readyMail.length > 1 ? 's' : ''} senden` });
       if (needFU.length) actions.push({ type: 'followup', count: needFU.length, label: `${needFU.length} Follow-up${needFU.length > 1 ? 's' : ''} fällig` });
 
-      return json(res, 200, { local, pipedrive: pd, actions });
+      // Pipeline stats
+      const pipeline = { neu: local.neu, preview: local.preview, mail: local.mail, followup: local.followup, termin: local.termin, skip: local.skip };
+      const convRates = {};
+      if (pipeline.neu + pipeline.preview + pipeline.mail + pipeline.followup + pipeline.termin > 0) {
+        const sent = pipeline.mail + pipeline.followup + pipeline.termin;
+        const deployed = sent + pipeline.preview;
+        convRates.deployRate = local.total > 0 ? Math.round((deployed / local.total) * 100) : 0;
+        convRates.mailRate = deployed > 0 ? Math.round((sent / deployed) * 100) : 0;
+        convRates.replyRate = sent > 0 ? Math.round(((pipeline.followup + pipeline.termin) / sent) * 100) : 0;
+        convRates.terminRate = sent > 0 ? Math.round((pipeline.termin / sent) * 100) : 0;
+      }
+
+      // Timeline: recent actions across all prospects
+      const timeline = [];
+      for (const pr of prospects) {
+        if (!pr.history) continue;
+        for (const h of pr.history) {
+          timeline.push({ slug: pr.slug, name: pr.name, action: h.action, note: h.note, date: h.date });
+        }
+      }
+      timeline.sort((a, b) => new Date(b.date) - new Date(a.date));
+      const recentTimeline = timeline.slice(0, 20);
+
+      return json(res, 200, { local, pipeline, convRates, pipedrive: pd, actions, timeline: recentTimeline });
     }
 
     // ═══ PROSPECTS ═══
@@ -138,7 +166,7 @@ const server = http.createServer(async (req, res) => {
       const b = await parseBody(req); if (!b.name) return json(res, 400, { error: 'Name fehlt' });
       const prospects = loadProspects(); const slug = toSlug(b.name);
       if (prospects.find(x => x.slug === slug)) return json(res, 409, { error: 'Existiert bereits' });
-      const pr = { slug, name: b.name, url: b.url || '', email: b.email || '', contact: b.contact || '', branch: b.branch || '', anrede: b.anrede || 'Sie', status: 'neu', score: b.score || 0, notes: b.notes || '', preview: `${slug}-preview.elevo.solutions`, mailSent: null, mailText: null, pipedrivePersonId: null, pipedriveStatus: null, created: new Date().toISOString(), updated: new Date().toISOString() };
+      const pr = { slug, name: b.name, url: b.url || '', email: b.email || '', contact: b.contact || '', branch: b.branch || '', anrede: b.anrede || 'Sie', status: 'neu', score: b.score || 0, notes: b.notes || '', preview: `${slug}-preview.elevo.solutions`, mailSent: null, mailText: null, pipedrivePersonId: null, pipedriveStatus: null, history: [{ action: 'erstellt', note: '', date: new Date().toISOString() }], created: new Date().toISOString(), updated: new Date().toISOString() };
       prospects.push(pr); saveProspects(prospects);
       return json(res, 201, { success: true, prospect: pr });
     }
@@ -151,7 +179,7 @@ const server = http.createServer(async (req, res) => {
         const m = mapCSV(row); if (!m.name) { skipped++; continue; }
         const slug = toSlug(m.name);
         if (prospects.find(x => x.slug === slug)) { skipped++; continue; }
-        prospects.push({ slug, ...m, status: 'neu', preview: `${slug}-preview.elevo.solutions`, mailSent: null, mailText: null, pipedrivePersonId: null, pipedriveStatus: null, created: new Date().toISOString(), updated: new Date().toISOString() });
+        prospects.push({ slug, ...m, status: 'neu', preview: `${slug}-preview.elevo.solutions`, mailSent: null, mailText: null, pipedrivePersonId: null, pipedriveStatus: null, history: [{ action: 'importiert', note: 'CSV Import', date: new Date().toISOString() }], created: new Date().toISOString(), updated: new Date().toISOString() });
         imported++;
       }
       saveProspects(prospects);
@@ -163,7 +191,7 @@ const server = http.createServer(async (req, res) => {
       const slug = slugMatch[1]; const b = await parseBody(req); const prospects = loadProspects();
       const idx = prospects.findIndex(x => x.slug === slug); if (idx < 0) return json(res, 404, { error: 'Nicht gefunden' });
       ['name', 'url', 'email', 'contact', 'branch', 'anrede', 'status', 'score', 'notes'].forEach(k => { if (b[k] !== undefined) prospects[idx][k] = b[k]; });
-      prospects[idx].updated = new Date().toISOString(); saveProspects(prospects);
+      logHistory(prospects, idx, 'bearbeitet', Object.keys(b).filter(k=>b[k]!==undefined).join(', ')); saveProspects(prospects);
       return json(res, 200, { success: true, prospect: prospects[idx] });
     }
     if (slugMatch && req.method === 'DELETE') {
@@ -178,7 +206,7 @@ const server = http.createServer(async (req, res) => {
       if (!valid.includes(b.status)) return json(res, 400, { error: 'Ungültiger Status' });
       const prospects = loadProspects(); const idx = prospects.findIndex(x => x.slug === statusMatch[1]);
       if (idx < 0) return json(res, 404, { error: 'Nicht gefunden' });
-      prospects[idx].status = b.status; prospects[idx].updated = new Date().toISOString(); saveProspects(prospects);
+      prospects[idx].status = b.status; logHistory(prospects, idx, 'status', b.status); saveProspects(prospects);
       return json(res, 200, { success: true });
     }
 
@@ -231,7 +259,8 @@ const server = http.createServer(async (req, res) => {
       if (aR.status === 200 || aR.status === 201) steps.push('activity');
 
       prospects[idx].pipedrivePersonId = pid; prospects[idx].mailSent = new Date().toISOString();
-      prospects[idx].mailText = full; prospects[idx].status = 'mail'; prospects[idx].updated = new Date().toISOString();
+      prospects[idx].mailText = full; prospects[idx].status = 'mail';
+      logHistory(prospects, idx, 'mail_gesendet', `Via Pipedrive · Betreff: ${subject}`);
       saveProspects(prospects);
       return json(res, 200, { success: true, pid, steps });
     }
@@ -242,7 +271,7 @@ const server = http.createServer(async (req, res) => {
       const b = await parseBody(req).catch(() => ({})); const prospects = loadProspects();
       const idx = prospects.findIndex(x => x.slug === mSent[1]); if (idx < 0) return json(res, 404, { error: 'Nicht gefunden' });
       prospects[idx].mailSent = new Date().toISOString(); prospects[idx].mailText = b.mailText || null;
-      prospects[idx].status = 'mail'; prospects[idx].updated = new Date().toISOString(); saveProspects(prospects);
+      prospects[idx].status = 'mail'; logHistory(prospects, idx, 'mail_manuell', 'Manuell markiert'); saveProspects(prospects);
       return json(res, 200, { success: true });
     }
 
