@@ -45,7 +45,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(5,7,14,.92);backdrop-fi
 .badge-neu{background:rgba(59,130,246,.1);color:var(--ac)}.badge-preview{background:rgba(129,140,248,.1);color:var(--vi)}.badge-mail{background:rgba(249,158,11,.1);color:var(--og)}.badge-followup{background:rgba(249,115,22,.1);color:#F97316}.badge-termin{background:rgba(16,185,129,.1);color:var(--gn)}.badge-skip{background:rgba(239,68,68,.06);color:var(--rd)}
 .card .acts{display:flex;gap:5px;margin-top:10px;flex-wrap:wrap}
 .ab{padding:7px 12px;font-size:11px;border-radius:8px;border:1px solid var(--bd);background:transparent;color:var(--mt);cursor:pointer;transition:.15s;min-height:36px;display:inline-flex;align-items:center;gap:4px}.ab:hover{border-color:var(--ac);color:var(--ac)}.ab:active{transform:scale(.96)}.ab.x:hover{border-color:var(--rd);color:var(--rd)}.ab.prim{background:var(--ac);border-color:var(--ac);color:#fff}.ab.prim:hover{background:var(--ach)}
-.cpb{padding:4px 8px;font-size:10px;border-radius:6px;border:1px solid var(--bd);background:transparent;color:var(--dm);cursor:pointer;transition:.15s;min-height:28px;display:inline-flex;align-items:center;gap:3px}.cpb:hover{border-color:var(--ac);color:var(--ac)}
+.cpb{padding:4px 8px;font-size:10px;border-radius:6px;border:1px solid var(--bd);background:transparent;color:var(--dm);cursor:pointer;transition:.15s;min-height:28px;display:inline-flex;align-items:center;gap:3px}.cpb:hover{border-color:var(--ac);color:var(--ac)}.cpb.on{border-color:var(--ac);color:var(--ac);background:rgba(59,130,246,.06)}
 .dw{max-width:640px}.dw h2{font-family:Sora;font-size:20px;font-weight:700;margin-bottom:4px}.dw>p{color:var(--mt);font-size:13px;margin-bottom:20px}
 .fg{margin-bottom:14px}.fg label{display:block;font-size:11px;color:var(--dm);text-transform:uppercase;letter-spacing:.1em;font-weight:500;margin-bottom:5px}
 .fi{width:100%;padding:12px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;color:var(--tx);font-size:14px;outline:none;transition:.2s;resize:vertical;min-height:44px}.fi:focus{border-color:var(--ac)}
@@ -146,6 +146,20 @@ select.fi{-webkit-appearance:none;cursor:pointer;background-image:url("data:imag
         <textarea class="fi" id="dHtml" placeholder="<!DOCTYPE html>..."></textarea>
         <div class="char-count" id="chCnt">0 Zeichen</div>
       </div>
+      <div style="margin-bottom:14px">
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <button class="cpb" id="togCss" onclick="togExtra('css')" style="font-size:11px;padding:5px 10px">+ CSS</button>
+          <button class="cpb" id="togJs" onclick="togExtra('js')" style="font-size:11px;padding:5px 10px">+ JS</button>
+        </div>
+        <div id="cssWrap" style="display:none;margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><label style="font-size:11px;color:var(--dm);text-transform:uppercase;letter-spacing:.1em;font-weight:500;margin:0">style.css</label><button class="cpb" onclick="gid('dCss').value='';togExtra('css')" style="font-size:10px;padding:3px 8px">✕</button></div>
+          <textarea class="fi" id="dCss" placeholder="/* CSS */" style="min-height:100px"></textarea>
+        </div>
+        <div id="jsWrap" style="display:none;margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><label style="font-size:11px;color:var(--dm);text-transform:uppercase;letter-spacing:.1em;font-weight:500;margin:0">script.js</label><button class="cpb" onclick="gid('dJs').value='';togExtra('js')" style="font-size:10px;padding:3px 8px">✕</button></div>
+          <textarea class="fi" id="dJs" placeholder="// JS" style="min-height:100px"></textarea>
+        </div>
+      </div>
       <div class="fg"><label for="dFile" class="file-label" id="fLabel">HTML-Datei wählen</label><input type="file" accept=".html,.htm" id="dFile"></div>
       <button class="btn btn-p" id="depBtn" onclick="deploy()">Deploy starten</button>
     </div>
@@ -172,8 +186,9 @@ select.fi{-webkit-appearance:none;cursor:pointer;background-image:url("data:imag
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><button class="ab" onclick="sw('dash')">← Zurück</button><h2 id="edTitle" style="font-family:Sora;font-size:18px;font-weight:700;margin:0"></h2></div>
     <div id="edLoad" style="text-align:center;padding:40px;color:var(--dm)"><div class="sp" style="width:24px;height:24px;border-color:var(--bd);border-top-color:var(--ac)"></div></div>
     <div id="edCont" style="display:none">
+      <div id="edTabs" style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap"></div>
       <textarea class="fi" id="edCode" style="min-height:50vh;font-family:monospace;font-size:11px;line-height:1.5"></textarea>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px"><div class="char-count" id="edCnt">0</div><div style="display:flex;gap:8px"><button class="ab" onclick="sw('dash')">Abbrechen</button><button class="ab prim" id="edSave" onclick="saveCode()">Speichern</button></div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px"><div class="char-count" id="edCnt">0</div><div style="display:flex;gap:8px"><button class="ab" onclick="sw('dash')">Abbrechen</button><button class="ab prim" id="edSave" onclick="saveCode()">Speichern & Deploy</button></div></div>
     </div>
   </div>
 </div>
@@ -230,7 +245,7 @@ select.fi{-webkit-appearance:none;cursor:pointer;background-image:url("data:imag
 
 <script>
 const gid=id=>document.getElementById(id);
-let apps=[],filt='all',prospects=[],pFilter='all',oBranch='',editSlug=null,mailSlug=null,edRepo='',edName='';
+let apps=[],filt='all',prospects=[],pFilter='all',oBranch='',editSlug=null,mailSlug=null;
 
 function copyT(t){if(!t||t.includes('erscheint'))return;navigator.clipboard.writeText(t).then(()=>toast('Kopiert!','ts')).catch(()=>toast('Fehler','te'))}
 async function pasteF(){try{const t=await navigator.clipboard.readText();if(t){gid('dHtml').value=t;gid('dHtml').dispatchEvent(new Event('input'));toast('Eingefügt!','ts')}}catch(e){toast('Clipboard verweigert','te')}}
@@ -283,18 +298,23 @@ gid('dHtml').addEventListener('input',function(){gid('chCnt').textContent=this.v
 gid('dFile').addEventListener('change',function(){const f=this.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{gid('dHtml').value=e.target.result;gid('dHtml').dispatchEvent(new Event('input'));gid('fLabel').textContent='✓ '+f.name;gid('fLabel').classList.add('has');if(!gid('dName').value){gid('dName').value=f.name.replace(/\.html?$/i,'').replace(/[-_]/g,' ');gid('dName').dispatchEvent(new Event('input'))}};r.readAsText(f)});
 function setS(n){[1,2,3,4].forEach(i=>{const e=gid('s'+i);e.classList.remove('act','done');if(i<n)e.classList.add('done');if(i===n)e.classList.add('act')})}
 function lg(m,c='l'){const e=gid('log');e.style.display='block';e.innerHTML+=`<span class="${c}">${m}</span>\n`;e.scrollTop=e.scrollHeight}
+function togExtra(type){const w=gid(type==='css'?'cssWrap':'jsWrap');const b=gid(type==='css'?'togCss':'togJs');if(w.style.display==='none'){w.style.display='block';b.style.borderColor='var(--ac)';b.style.color='var(--ac)'}else{w.style.display='none';b.style.borderColor='';b.style.color=''}}
 async function deploy(){
   const name=gid('dName').value.trim(),html=gid('dHtml').value.trim();
+  const css=gid('dCss').value.trim(),js=gid('dJs').value.trim();
   if(!name)return toast('Name fehlt','te');if(!html||html.length<100)return toast('HTML fehlt/zu kurz','te');
   const btn=gid('depBtn');btn.disabled=true;btn.innerHTML='<span class="sp"></span> Deploying...';gid('log').innerHTML='';gid('log').style.display='block';setS(2);
   const slug=toSlug(name);lg('▸ '+name+' → '+slug+'-preview.elevo.solutions','i');
-  try{const r=await fetch('/api/deploy-full',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,html})});const d=await r.json();
-    if(d.success){setS(4);lg('✓ Live: '+d.domain,'ok');setTimeout(()=>{gid('depForm').style.display='none';gid('depDone').style.display='block';gid('doneT').textContent=name+' ist live!';const l=gid('doneL');l.href=d.domain||'https://'+slug+'-preview.elevo.solutions';l.textContent=(d.domain||'').replace('https://','');toast('Live!','ts');const p=prospects.find(x=>x.slug===slug);if(p&&p.status==='neu')fetch('/api/prospect/'+slug+'/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'preview'})}).then(()=>loadP())},400)}
+  const payload={name,html};if(css)payload.css=css;if(js)payload.js=js;
+  const fileList=['index.html'];if(css)fileList.push('style.css');if(js)fileList.push('script.js');
+  lg('▸ Dateien: '+fileList.join(', '),'l');
+  try{const r=await fetch('/api/deploy-full',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const d=await r.json();
+    if(d.success){setS(4);lg('✓ Live: '+d.domain+' ('+fileList.join(', ')+')','ok');setTimeout(()=>{gid('depForm').style.display='none';gid('depDone').style.display='block';gid('doneT').textContent=name+' ist live!';const l=gid('doneL');l.href=d.domain||'https://'+slug+'-preview.elevo.solutions';l.textContent=(d.domain||'').replace('https://','');toast('Live!','ts');const p=prospects.find(x=>x.slug===slug);if(p&&p.status==='neu')fetch('/api/prospect/'+slug+'/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'preview'})}).then(()=>loadP())},400)}
     else{lg('✗ '+(d.error||'Fehler'),'er');setS(1);toast('Fehler','te')}
   }catch(e){lg('✗ '+e.message,'er');toast('Fehler','te')}
   btn.disabled=false;btn.innerHTML='Deploy starten';
 }
-function resetDep(){gid('depForm').style.display='block';gid('depDone').style.display='none';gid('log').style.display='none';gid('dName').value='';gid('dHtml').value='';gid('chCnt').textContent='0 Zeichen';gid('pvLink').textContent='Subdomain erscheint hier...';gid('pvBox').classList.add('empty');gid('pvCopy').style.display='none';gid('fLabel').textContent='HTML-Datei wählen';gid('fLabel').classList.remove('has');setS(1)}
+function resetDep(){gid('depForm').style.display='block';gid('depDone').style.display='none';gid('log').style.display='none';gid('dName').value='';gid('dHtml').value='';gid('dCss').value='';gid('dJs').value='';gid('cssWrap').style.display='none';gid('jsWrap').style.display='none';gid('togCss').style.borderColor='';gid('togCss').style.color='';gid('togJs').style.borderColor='';gid('togJs').style.color='';gid('chCnt').textContent='0 Zeichen';gid('pvLink').textContent='Subdomain erscheint hier...';gid('pvBox').classList.add('empty');gid('pvCopy').style.display='none';gid('fLabel').textContent='HTML-Datei wählen';gid('fLabel').classList.remove('has');setS(1)}
 
 // ═══ APPS ═══
 const INFRA=[1,2,4,5,7];
@@ -314,10 +334,23 @@ async function reD(u,n){toast(n+' redeploying...','ti');await fetch('/api/deploy
 function delA(u,n){gid('cP').textContent=`"${n}" löschen?`;gid('cBtn').onclick=async()=>{gid('cMo').classList.remove('show');await fetch('/api/app/'+u,{method:'DELETE'});toast('Gelöscht','ts');setTimeout(loadApps,1000)};gid('cMo').classList.add('show')}
 
 // EDITOR
-async function openEd(repo,name){edRepo=repo;edName=name;gid('edTitle').textContent=name;gid('edLoad').style.display='block';gid('edCont').style.display='none';document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));gid('editor').classList.add('on');document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
-  try{const r=await fetch('/api/code/'+encodeURIComponent(repo));const d=await r.json();if(d.success){gid('edCode').value=d.html;gid('edCnt').textContent=d.html.length.toLocaleString('de')+' Z';gid('edLoad').style.display='none';gid('edCont').style.display='block'}else{toast('Fehler','te');sw('dash')}}catch(e){toast(e.message,'te');sw('dash')}}
-gid('edCode').addEventListener('input',function(){gid('edCnt').textContent=this.value.length.toLocaleString('de')+' Z'});
-async function saveCode(){const html=gid('edCode').value;if(!html||html.length<100)return toast('Zu kurz','te');const btn=gid('edSave');btn.disabled=true;btn.innerHTML='<span class="sp"></span>';try{const r=await fetch('/api/code/'+encodeURIComponent(edRepo),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({html})});if((await r.json()).success){toast('Gespeichert!','ts');sw('dash');loadApps()}else toast('Fehler','te')}catch(e){toast(e.message,'te')}btn.disabled=false;btn.innerHTML='Speichern'}
+let edFiles={},edActive='',edRepo='',edName='';
+async function openEd(repo,name){edRepo=repo;edName=name;edFiles={};edActive='';gid('edTitle').textContent=name;gid('edLoad').style.display='block';gid('edCont').style.display='none';document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));gid('editor').classList.add('on');document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  try{const r=await fetch('/api/code/'+encodeURIComponent(repo));const d=await r.json();
+    if(d.success&&d.files){edFiles={};for(const[fn,data]of Object.entries(d.files)){edFiles[fn]=data.content||''}
+      const names=Object.keys(edFiles);edActive=names.includes('index.html')?'index.html':names[0]||'';
+      renderEdTabs();gid('edCode').value=edFiles[edActive]||'';updEdCnt();gid('edLoad').style.display='none';gid('edCont').style.display='block'}
+    else if(d.html){edFiles={'index.html':d.html};edActive='index.html';renderEdTabs();gid('edCode').value=d.html;updEdCnt();gid('edLoad').style.display='none';gid('edCont').style.display='block'}
+    else{toast('Fehler','te');sw('dash')}}catch(e){toast(e.message,'te');sw('dash')}}
+function renderEdTabs(){const names=Object.keys(edFiles);gid('edTabs').innerHTML=names.map(fn=>`<button class="cpb ${fn===edActive?'on':''}" onclick="switchEdFile('${fn}')" style="font-size:11px;padding:5px 12px;${fn===edActive?'border-color:var(--ac);color:var(--ac)':''}">${fn}</button>`).join('')+(names.length?`<button class="cpb" onclick="copyT(gid('edCode').value)" style="font-size:10px;padding:4px 8px;margin-left:auto">📋</button>`:'')}
+function switchEdFile(fn){edFiles[edActive]=gid('edCode').value;edActive=fn;gid('edCode').value=edFiles[fn]||'';updEdCnt();renderEdTabs()}
+function updEdCnt(){gid('edCnt').textContent=(gid('edCode').value.length).toLocaleString('de')+' Z'}
+gid('edCode').addEventListener('input',updEdCnt);
+async function saveCode(){edFiles[edActive]=gid('edCode').value;if(!edFiles['index.html']||edFiles['index.html'].length<50)return toast('index.html zu kurz','te');
+  const btn=gid('edSave');btn.disabled=true;btn.innerHTML='<span class="sp"></span>';
+  try{const r=await fetch('/api/code/'+encodeURIComponent(edRepo),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({files:edFiles})});
+    if((await r.json()).success){toast('Gespeichert & Deploy!','ts');sw('dash');loadApps()}else toast('Fehler','te')}catch(e){toast(e.message,'te')}
+  btn.disabled=false;btn.innerHTML='Speichern & Deploy'}
 
 // ═══ OUTREACH ═══
 async function loadP(){try{const r=await fetch('/api/prospects');prospects=(await r.json()).prospects||[];renderP();gid('oBadge').textContent=prospects.length}catch(e){toast('Fehler','te')}}
