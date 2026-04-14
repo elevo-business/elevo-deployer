@@ -280,24 +280,87 @@ const server = http.createServer(async (req, res) => {
       const rR = await github('POST', '/user/repos', { name: repo, description: `Preview ${b.name}`, private: true, auto_init: true });
       const exists = rR.status === 422; if (!exists && rR.status !== 201) return json(res, 500, { error: 'Repo failed' });
       if (!exists) await new Promise(r => setTimeout(r, 2500));
-      let sha = null; if (exists) { const ex = await github('GET', `/repos/${GITHUB_ORG}/${repo}/contents/index.html`); sha = ex.data?.sha || null; }
-      const pp = { message: sha ? 'Update' : 'Initial', content: Buffer.from(b.html).toString('base64'), branch: 'main' }; if (sha) pp.sha = sha;
-      let pR = await github('PUT', `/repos/${GITHUB_ORG}/${repo}/contents/index.html`, pp);
-      if (pR.status === 409 || pR.status === 422) { const re = await github('GET', `/repos/${GITHUB_ORG}/${repo}/contents/index.html`); if (re.data?.sha) { pp.sha = re.data.sha; pR = await github('PUT', `/repos/${GITHUB_ORG}/${repo}/contents/index.html`, pp); } }
-      if (pR.status !== 200 && pR.status !== 201) return json(res, 500, { error: 'Push failed' });
+
+      // Push all files
+      const files = [{ name: 'index.html', content: b.html }];
+      if (b.css) files.push({ name: 'style.css', content: b.css });
+      if (b.js) files.push({ name: 'script.js', content: b.js });
+      // Support arbitrary extra files [{name, content}]
+      if (Array.isArray(b.files)) { for (const f of b.files) { if (f.name && f.content) files.push({ name: f.name, content: f.content }); } }
+
+      for (const file of files) {
+        let sha = null;
+        if (exists) { const ex = await github('GET', `/repos/${GITHUB_ORG}/${repo}/contents/${file.name}`); sha = ex.data?.sha || null; }
+        const pp = { message: sha ? `Update ${file.name}` : `Add ${file.name}`, content: Buffer.from(file.content).toString('base64'), branch: 'main' }; if (sha) pp.sha = sha;
+        let pR = await github('PUT', `/repos/${GITHUB_ORG}/${repo}/contents/${file.name}`, pp);
+        if (pR.status === 409 || pR.status === 422) { const re = await github('GET', `/repos/${GITHUB_ORG}/${repo}/contents/${file.name}`); if (re.data?.sha) { pp.sha = re.data.sha; pR = await github('PUT', `/repos/${GITHUB_ORG}/${repo}/contents/${file.name}`, pp); } }
+        if (pR.status !== 200 && pR.status !== 201) return json(res, 500, { error: `Push ${file.name} failed` });
+      }
+
       const aR = await coolify('GET', '/applications'); const ex = Array.isArray(aR.data) ? aR.data.find(a => a.git_repository === `${GITHUB_ORG}/${repo}`) : null;
-      if (ex) { await coolify('GET', `/applications/${ex.uuid}/restart`); return json(res, 200, { success: true, action: 'updated', uuid: ex.uuid, domain: ex.fqdn }); }
+      if (ex) { await coolify('GET', `/applications/${ex.uuid}/restart`); return json(res, 200, { success: true, action: 'updated', uuid: ex.uuid, domain: ex.fqdn, files: files.map(f => f.name) }); }
       const ga = await detectGHApp(); if (!ga) return json(res, 500, { error: 'GH App fehlt' });
       const domain = `https://${slug}-preview.elevo.solutions`;
       const cR = await coolify('POST', '/applications/private-github-app', { project_uuid: COOLIFY_PROJECT_UUID, server_uuid: COOLIFY_SERVER_UUID, environment_name: 'production', github_app_uuid: ga, destination_uuid: COOLIFY_DEST_UUID, git_repository: `${GITHUB_ORG}/${repo}`, git_branch: 'main', build_pack: 'static', ports_exposes: '80', domains: domain, name: `${slug}-preview`, instant_deploy: true, is_static: true });
-      if (cR.status === 201 || cR.status === 200) return json(res, 201, { success: true, action: 'created', uuid: cR.data.uuid, domain });
+      if (cR.status === 201 || cR.status === 200) return json(res, 201, { success: true, action: 'created', uuid: cR.data.uuid, domain, files: files.map(f => f.name) });
       return json(res, 500, { error: 'Coolify failed' });
     }
 
     const dM = p.match(/^\/api\/deploy\/(.+)$/); if (dM) { await coolify('GET', `/applications/${dM[1]}/restart`); return json(res, 200, { success: true }); }
+
+    // Code: GET all files from repo
     const cM = p.match(/^\/api\/code\/(.+)$/);
-    if (cM && req.method === 'GET') { const r = await github('GET', `/repos/${GITHUB_ORG}/${decodeURIComponent(cM[1])}/contents/index.html`); if (r.status === 200 && r.data?.content) return json(res, 200, { success: true, html: Buffer.from(r.data.content, 'base64').toString('utf8'), sha: r.data.sha }); return json(res, 404, { error: 'Nicht gefunden' }); }
-    if (cM && req.method === 'POST') { const repo = decodeURIComponent(cM[1]); const b = await parseBody(req); const ex = await github('GET', `/repos/${GITHUB_ORG}/${repo}/contents/index.html`); const pp = { message: 'Update', content: Buffer.from(b.html).toString('base64'), branch: 'main' }; if (ex.data?.sha) pp.sha = ex.data.sha; const pR = await github('PUT', `/repos/${GITHUB_ORG}/${repo}/contents/index.html`, pp); if (pR.status !== 200 && pR.status !== 201) return json(res, 500, { error: 'Push failed' }); const aR = await coolify('GET', '/applications'); const app = Array.isArray(aR.data) ? aR.data.find(a => a.git_repository?.includes(repo)) : null; if (app) await coolify('GET', `/applications/${app.uuid}/restart`); return json(res, 200, { success: true }); }
+    if (cM && req.method === 'GET') {
+      const repo = decodeURIComponent(cM[1]);
+      // List repo contents
+      const listR = await github('GET', `/repos/${GITHUB_ORG}/${repo}/contents/`);
+      const result = { success: true, files: {} };
+      const editableExt = ['.html', '.css', '.js', '.json', '.md', '.txt', '.svg'];
+      if (listR.status === 200 && Array.isArray(listR.data)) {
+        for (const item of listR.data) {
+          if (item.type !== 'file') continue;
+          if (!editableExt.some(ext => item.name.endsWith(ext))) continue;
+          const fR = await github('GET', `/repos/${GITHUB_ORG}/${repo}/contents/${item.name}`);
+          if (fR.status === 200 && fR.data?.content) {
+            result.files[item.name] = { content: Buffer.from(fR.data.content, 'base64').toString('utf8'), sha: fR.data.sha, size: item.size };
+          }
+        }
+      }
+      // Fallback: at least try index.html
+      if (!Object.keys(result.files).length) {
+        const r = await github('GET', `/repos/${GITHUB_ORG}/${repo}/contents/index.html`);
+        if (r.status === 200 && r.data?.content) result.files['index.html'] = { content: Buffer.from(r.data.content, 'base64').toString('utf8'), sha: r.data.sha };
+        else return json(res, 404, { error: 'Nicht gefunden' });
+      }
+      // Backwards compat
+      if (result.files['index.html']) result.html = result.files['index.html'].content;
+      return json(res, 200, result);
+    }
+
+    // Code: POST save files + redeploy
+    if (cM && req.method === 'POST') {
+      const repo = decodeURIComponent(cM[1]);
+      const b = await parseBody(req);
+      // Support: {html} (backwards compat) or {files: {filename: content}}
+      const filesToPush = {};
+      if (b.files && typeof b.files === 'object') { Object.assign(filesToPush, b.files); }
+      if (b.html) filesToPush['index.html'] = b.html;
+      if (b.css) filesToPush['style.css'] = b.css;
+      if (b.js) filesToPush['script.js'] = b.js;
+      if (!Object.keys(filesToPush).length) return json(res, 400, { error: 'Keine Dateien' });
+
+      for (const [fname, content] of Object.entries(filesToPush)) {
+        const ex = await github('GET', `/repos/${GITHUB_ORG}/${repo}/contents/${fname}`);
+        const pp = { message: `Update ${fname}`, content: Buffer.from(content).toString('base64'), branch: 'main' };
+        if (ex.data?.sha) pp.sha = ex.data.sha;
+        const pR = await github('PUT', `/repos/${GITHUB_ORG}/${repo}/contents/${fname}`, pp);
+        if (pR.status !== 200 && pR.status !== 201) return json(res, 500, { error: `Push ${fname} failed` });
+      }
+      const aR = await coolify('GET', '/applications'); const app = Array.isArray(aR.data) ? aR.data.find(a => a.git_repository?.includes(repo)) : null;
+      if (app) await coolify('GET', `/applications/${app.uuid}/restart`);
+      return json(res, 200, { success: true, files: Object.keys(filesToPush) });
+    }
+
     const delM = p.match(/^\/api\/app\/(.+)$/); if (delM && req.method === 'DELETE') { await coolify('DELETE', `/applications/${delM[1]}`); return json(res, 200, { success: true }); }
 
     json(res, 404, { error: 'Not found' });
