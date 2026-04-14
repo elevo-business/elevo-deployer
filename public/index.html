@@ -138,6 +138,7 @@ select.fi{-webkit-appearance:none;cursor:pointer;background-image:url("data:imag
   <div class="bar">
     <input type="text" id="oq" placeholder="Suchen..." oninput="renderP()">
     <select onchange="oBranch=this.value;renderP()"><option value="">Alle</option><option value="makler">Makler</option><option value="kueche">Küche</option><option value="handwerk">Handwerk</option><option value="gastro">Gastro</option><option value="solar">Solar</option><option value="sonstige">Sonst</option></select>
+    <button class="fbtn" onclick="openResearch()" style="background:rgba(16,185,129,.1);border-color:var(--gn);color:var(--gn)">🔍 Recherche</button>
     <button class="fbtn" onclick="openCSV()">CSV</button>
     <button class="fbtn" onclick="openAddP()" style="background:var(--ac);border-color:var(--ac);color:#fff">+</button>
   </div>
@@ -278,6 +279,22 @@ select.fi{-webkit-appearance:none;cursor:pointer;background-image:url("data:imag
 </div></div>
 
 <div class="mo" id="detMo"><div class="mo-box"><h3 id="detT">Detail <span class="cx" onclick="gid('detMo').classList.remove('show')">✕</span></h3><div id="detC"></div></div></div>
+
+<div class="mo" id="resMo"><div class="mo-box" style="max-width:560px">
+  <h3>Prospect-Recherche <span class="cx" onclick="closeResearch()">✕</span></h3>
+  <div style="display:flex;gap:8px;margin-bottom:14px">
+    <input class="fi" id="resQ" placeholder="z.B. Immobilienmakler Düren" style="flex:1;font-size:13px" onkeydown="if(event.key==='Enter')doResearch()">
+    <button class="ab prim" onclick="doResearch()" id="resBtn" style="min-width:80px;justify-content:center">Suchen</button>
+  </div>
+  <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+    <button class="cpb" onclick="gid('resQ').value='Immobilienmakler Düren';doResearch()" style="font-size:10px;padding:4px 8px">Makler Düren</button>
+    <button class="cpb" onclick="gid('resQ').value='Immobilienmakler Euskirchen';doResearch()" style="font-size:10px;padding:4px 8px">Makler Euskirchen</button>
+    <button class="cpb" onclick="gid('resQ').value='Immobilienmakler Heinsberg';doResearch()" style="font-size:10px;padding:4px 8px">Makler Heinsberg</button>
+    <button class="cpb" onclick="gid('resQ').value='Immobilienmakler Mönchengladbach';doResearch()" style="font-size:10px;padding:4px 8px">Makler MG</button>
+    <button class="cpb" onclick="gid('resQ').value='Küchenstudio Aachen';doResearch()" style="font-size:10px;padding:4px 8px">Küchen AC</button>
+  </div>
+  <div id="resResults" style="max-height:55vh;overflow-y:auto"></div>
+</div></div>
 
 <div class="toast" id="toast"></div>
 
@@ -570,6 +587,59 @@ function openDet(slug){const p=prospects.find(x=>x.slug===slug);if(!p)return;gid
       ${p.status!=='skip'?`<button class="ab x" onclick="gid('detMo').classList.remove('show');setSt('${p.slug}','skip')">Skip</button>`:`<button class="ab" onclick="gid('detMo').classList.remove('show');setSt('${p.slug}','neu')">Reaktivieren</button>`}
     </div>`;
   gid('detMo').classList.add('show')}
+
+// ═══ RESEARCH ═══
+function openResearch(){gid('resResults').innerHTML='<div style="text-align:center;color:var(--dm);padding:24px;font-size:13px">Suchbegriff eingeben, z.B. "Immobilienmakler Düren"</div>';gid('resMo').classList.add('show');setTimeout(()=>gid('resQ').focus(),100)}
+function closeResearch(){gid('resMo').classList.remove('show')}
+async function doResearch(){
+  const q=gid('resQ').value.trim();if(!q)return toast('Suchbegriff eingeben','te');
+  const btn=gid('resBtn');btn.disabled=true;btn.innerHTML='<span class="sp" style="width:12px;height:12px"></span>';
+  gid('resResults').innerHTML='<div style="text-align:center;padding:24px"><div class="sp" style="width:20px;height:20px;border-color:var(--bd);border-top-color:var(--ac)"></div><div style="color:var(--dm);font-size:12px;margin-top:8px">Google Places durchsuchen...</div></div>';
+  try{
+    const r=await fetch('/api/research',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q})});
+    const d=await r.json();
+    if(!d.success){gid('resResults').innerHTML=`<div style="color:var(--rd);padding:16px;font-size:12px">${d.error||'Fehler'}</div>`;btn.disabled=false;btn.innerHTML='Suchen';return}
+    if(!d.results.length){gid('resResults').innerHTML='<div style="color:var(--dm);padding:16px;font-size:12px">Keine Ergebnisse</div>';btn.disabled=false;btn.innerHTML='Suchen';return}
+    gid('resResults').innerHTML=d.results.map((r,i)=>{
+      const stars='★'.repeat(Math.round(r.rating))+'☆'.repeat(5-Math.round(r.rating));
+      const hasWeb=!!r.domain;
+      return`<div style="padding:12px;border-bottom:1px solid rgba(255,255,255,.04);${r.exists?'opacity:.5':''}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div style="flex:1;min-width:0">
+            <div style="font-family:Sora;font-size:13px;font-weight:600;margin-bottom:2px">${h(r.name)}${r.exists?' <span style="font-size:9px;color:var(--og);font-weight:400">bereits angelegt</span>':''}</div>
+            <div style="font-size:11px;color:var(--dm);margin-bottom:4px">${h(r.address)}</div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <span style="font-size:11px;color:var(--og)">${stars}</span>
+              <span style="font-size:10px;color:var(--dm)">${r.rating} · ${r.reviews} Bew.</span>
+              ${hasWeb?`<a href="${r.website}" target="_blank" style="font-size:10px;color:var(--ac);text-decoration:none">${h(r.domain)}</a>`:'<span style="font-size:10px;color:var(--rd)">Keine Website</span>'}
+              ${r.phone?`<span style="font-size:10px;color:var(--dm)">${h(r.phone)}</span>`:''}
+            </div>
+          </div>
+          <div style="display:flex;gap:4px;flex-shrink:0">
+            ${!r.exists?`<button class="ab prim" onclick="addFromResearch(${i})" style="font-size:10px;padding:6px 10px">+ Prospect</button>`:''}
+            ${r.mapsUrl?`<button class="ab" onclick="window.open('${r.mapsUrl}','_blank')" style="font-size:10px;padding:6px 8px">Maps</button>`:''}
+            ${hasWeb?`<button class="ab" onclick="window.open('${r.website}','_blank')" style="font-size:10px;padding:6px 8px">Web</button>`:''}
+          </div>
+        </div>
+      </div>`}).join('');
+    // Store results globally for addFromResearch
+    window._researchResults=d.results;
+  }catch(e){gid('resResults').innerHTML=`<div style="color:var(--rd);padding:16px;font-size:12px">${e.message}</div>`}
+  btn.disabled=false;btn.innerHTML='Suchen';
+}
+async function addFromResearch(idx){
+  const r=window._researchResults[idx];if(!r)return;
+  const data={name:r.name,url:r.website||'',email:'',contact:'',branch:gid('resQ').value.toLowerCase().includes('makler')?'makler':gid('resQ').value.toLowerCase().includes('küchen')?'kueche':gid('resQ').value.toLowerCase().includes('gastro')?'gastro':'sonstige',score:0,notes:`${r.address}\nTel: ${r.phone||'–'}\n${r.rating}★ (${r.reviews} Bewertungen)\nGoogle Maps: ${r.mapsUrl||'–'}`};
+  try{
+    const resp=await fetch('/api/prospect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    const d=await resp.json();
+    if(d.success||d.prospect){toast(r.name+' angelegt!','ts');r.exists=true;await loadP();
+      // Update the button in results
+      const btns=gid('resResults').querySelectorAll('.ab.prim');
+      if(btns[idx])btns[idx].outerHTML='<span style="font-size:10px;color:var(--gn)">✓</span>';
+    }else toast(d.error||'Fehler','te');
+  }catch(e){toast(e.message,'te')}
+}
 
 // INIT
 async function init(){try{const r=await fetch('/api/config');const d=await r.json();const ok=d.coolify&&d.github;gid('cfgPill').textContent=ok?'Ready':'Config!';gid('cfgPill').className='pill '+(ok?'pill-g':'pill-b')}catch(e){}loadDashboard();loadP();setS(1)}
