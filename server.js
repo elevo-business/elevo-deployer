@@ -1,4 +1,4 @@
-// ELEVO DEPLOY CENTER v4.0 — deploy.elevo.solutions
+// ELEVO DEPLOY CENTER v4.1 — deploy.elevo.solutions
 const http = require('http');
 const https = require('https');
 const fs = require('fs');
@@ -16,6 +16,8 @@ const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
 const GITHUB_ORG = process.env.GITHUB_ORG || 'elevo-business';
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 const DEPLOY_SECRET = process.env.DEPLOY_SECRET || '';
+// Comma-separated list of programmatic API keys (e.g. for CI, agents, automations)
+const API_KEYS = process.env.API_KEYS ? process.env.API_KEYS.split(',').map(k => k.trim()).filter(Boolean) : [];
 const PIPEDRIVE_API_KEY = process.env.PIPEDRIVE_API_KEY || '';
 const PIPEDRIVE_OUTREACH_FIELD = process.env.PIPEDRIVE_OUTREACH_FIELD || '';
 const PIPEDRIVE_OUTREACH_VALUE = process.env.PIPEDRIVE_OUTREACH_VALUE || '';
@@ -40,7 +42,20 @@ function logHistory(prospects, idx, action, note) {
 function json(res, s, d) { res.writeHead(s, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type,Authorization' }); res.end(JSON.stringify(d)); }
 function parseBody(req) { return new Promise((r, j) => { let b = ''; req.on('data', c => { b += c; if (b.length > 10e6) { req.destroy(); j(new Error('too large')); } }); req.on('end', () => { try { r(JSON.parse(b)); } catch (e) { j(e); } }); req.on('error', j); }); }
 function toSlug(n) { return n.toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); }
-function checkAuth(req) { if (!DEPLOY_SECRET) return true; const a = req.headers.authorization; if (a === `Bearer ${DEPLOY_SECRET}`) return true; const u = new URL(req.url, `http://${req.headers.host}`); if (u.searchParams.get('token') === DEPLOY_SECRET) return true; const c = req.headers.cookie || ''; const m = c.match(/deploy_token=([^;]+)/); if (m && m[1] === DEPLOY_SECRET) return true; return false; }
+function checkAuth(req) {
+  // API_KEYS always work as Bearer tokens
+  const bearer = (req.headers.authorization || '').replace(/^Bearer /, '');
+  if (API_KEYS.length && API_KEYS.includes(bearer)) return true;
+  if (!DEPLOY_SECRET) return true;
+  if (bearer === DEPLOY_SECRET) return true;
+  const u = new URL(req.url, `http://${req.headers.host}`);
+  if (u.searchParams.get('token') === DEPLOY_SECRET) return true;
+  const c = req.headers.cookie || '';
+  const m = c.match(/deploy_token=([^;]+)/);
+  if (m && m[1] === DEPLOY_SECRET) return true;
+  return false;
+}
+function log(level, msg, data) { console.log(JSON.stringify({ ts: new Date().toISOString(), level, msg, ...(data || {}) })); }
 function httpReq(transport, opts, payload) { return new Promise((resolve, reject) => { const req = transport.request(opts, res => { let body = ''; res.on('data', c => body += c); res.on('end', () => { try { resolve({ status: res.statusCode, data: JSON.parse(body) }); } catch (e) { resolve({ status: res.statusCode, data: body }); } }); }); req.on('error', reject); if (payload) req.write(payload); req.end(); }); }
 function coolify(method, p, data) { const url = new URL(`${COOLIFY_URL}/api/v1${p}`); const t = url.protocol === 'https:' ? https : http; const payload = data ? JSON.stringify(data) : null; const opts = { hostname: url.hostname, port: url.port || (url.protocol === 'https:' ? 443 : 80), path: url.pathname + url.search, method, headers: { 'Authorization': `Bearer ${COOLIFY_TOKEN}`, 'Content-Type': 'application/json', 'Accept': 'application/json' } }; if (payload) opts.headers['Content-Length'] = Buffer.byteLength(payload); return httpReq(t, opts, payload); }
 function github(method, p, data) { const payload = data ? JSON.stringify(data) : null; const opts = { hostname: 'api.github.com', port: 443, path: p, method, headers: { 'Authorization': `Bearer ${GITHUB_TOKEN}`, 'Accept': 'application/vnd.github+json', 'User-Agent': 'ELEVO/4', 'X-GitHub-Api-Version': '2022-11-28', 'Content-Type': 'application/json' } }; if (payload) opts.headers['Content-Length'] = Buffer.byteLength(payload); return httpReq(https, opts, payload); }
@@ -93,6 +108,9 @@ const server = http.createServer(async (req, res) => {
   if (p.startsWith('/api/') && p !== '/api/login' && !checkAuth(req)) return json(res, 401, { error: 'Unauthorized' });
 
   try {
+    // ═══ HEALTH ═══
+    if (p === '/api/health') return json(res, 200, { status: 'ok', version: '4.1', ts: new Date().toISOString(), coolify: !!COOLIFY_TOKEN, github: !!GITHUB_TOKEN });
+
     if (p === '/api/config') return json(res, 200, { coolify: !!COOLIFY_TOKEN, github: !!GITHUB_TOKEN, anthropic: !!ANTHROPIC_API_KEY, pipedrive: !!PIPEDRIVE_API_KEY, places: !!GOOGLE_PLACES_KEY, outreachField: !!PIPEDRIVE_OUTREACH_FIELD });
 
     // ═══ DASHBOARD ═══
@@ -381,11 +399,38 @@ const server = http.createServer(async (req, res) => {
       const ga = await detectGHApp(); if (!ga) return json(res, 500, { error: 'GH App fehlt' });
       const domain = `https://${slug}-preview.elevo.solutions`;
       const cR = await coolify('POST', '/applications/private-github-app', { project_uuid: COOLIFY_PROJECT_UUID, server_uuid: COOLIFY_SERVER_UUID, environment_name: 'production', github_app_uuid: ga, destination_uuid: COOLIFY_DEST_UUID, git_repository: `${GITHUB_ORG}/${repo}`, git_branch: 'main', build_pack: 'static', ports_exposes: '80', domains: domain, name: `${slug}-preview`, instant_deploy: true, is_static: true });
-      if (cR.status === 201 || cR.status === 200) return json(res, 201, { success: true, action: 'created', uuid: cR.data.uuid, domain, files: files.map(f => f.name) });
+      if (cR.status === 201 || cR.status === 200) { log('info', 'app created + deployed', { slug, domain }); return json(res, 201, { success: true, action: 'created', uuid: cR.data.uuid, domain, files: files.map(f => f.name) }); }
+      log('error', 'coolify create failed', { slug, status: cR.status });
       return json(res, 500, { error: 'Coolify failed' });
     }
 
-    const dM = p.match(/^\/api\/deploy\/(.+)$/); if (dM) { await coolify('GET', `/applications/${dM[1]}/restart`); return json(res, 200, { success: true }); }
+    // ═══ PROGRAMMATIC DEPLOY API ═══
+    // POST /api/deploy — trigger deployment by uuid, slug, name, or repo
+    // Auth: Bearer <API_KEY> or Bearer <DEPLOY_SECRET>
+    if (p === '/api/deploy' && req.method === 'POST') {
+      const b = await parseBody(req);
+      let appUuid = b.uuid;
+      let appInfo = null;
+      if (!appUuid) {
+        const aR = await coolify('GET', '/applications');
+        const apps = Array.isArray(aR.data) ? aR.data : [];
+        if (b.repo) {
+          appInfo = apps.find(a => a.git_repository === b.repo || a.git_repository === `${GITHUB_ORG}/${b.repo}` || a.name === b.repo);
+        } else if (b.slug || b.name) {
+          const s = b.slug || toSlug(b.name);
+          appInfo = apps.find(a => a.name === s || a.name === `${s}-preview` || (a.git_repository || '').includes(s));
+        }
+        if (!appInfo) return json(res, 404, { error: 'App not found. Provide uuid, slug, name, or repo.' });
+        appUuid = appInfo.uuid;
+      }
+      const r = await coolify('GET', `/applications/${appUuid}/restart`);
+      log('info', 'deploy triggered via API', { uuid: appUuid, name: appInfo?.name, status: r.status });
+      if (r.status < 300) return json(res, 200, { success: true, uuid: appUuid, name: appInfo?.name || null });
+      return json(res, 500, { error: 'Coolify deploy failed', coolifyStatus: r.status });
+    }
+
+    // Legacy: GET /api/deploy/:uuid (kept for backwards compat)
+    const dM = p.match(/^\/api\/deploy\/(.+)$/); if (dM) { log('info', 'deploy via uuid route', { uuid: dM[1] }); await coolify('GET', `/applications/${dM[1]}/restart`); return json(res, 200, { success: true }); }
 
     // Code: GET all files from repo
     const cM = p.match(/^\/api\/code\/(.+)$/);
@@ -443,7 +488,11 @@ const server = http.createServer(async (req, res) => {
     const delM = p.match(/^\/api\/app\/(.+)$/); if (delM && req.method === 'DELETE') { await coolify('DELETE', `/applications/${delM[1]}`); return json(res, 200, { success: true }); }
 
     json(res, 404, { error: 'Not found' });
-  } catch (e) { console.error(e); json(res, 500, { error: e.message }); }
+  } catch (e) { log('error', 'unhandled error', { msg: e.message, path: p }); json(res, 500, { error: e.message }); }
 });
 
-server.listen(PORT, async () => { console.log(`\n  ELEVO v4.0 | :${PORT} | PD:${PIPEDRIVE_API_KEY ? '✓' : '✗'} | CF:${COOLIFY_TOKEN ? '✓' : '✗'}\n`); await detectGHApp(); });
+server.listen(PORT, async () => {
+  log('info', 'server started', { port: PORT, coolify: !!COOLIFY_TOKEN, github: !!GITHUB_TOKEN, pipedrive: !!PIPEDRIVE_API_KEY, apiKeys: API_KEYS.length });
+  console.log(`\n  ELEVO v4.1 | :${PORT} | PD:${PIPEDRIVE_API_KEY ? '✓' : '✗'} | CF:${COOLIFY_TOKEN ? '✓' : '✗'} | API_KEYS:${API_KEYS.length}\n`);
+  await detectGHApp();
+});
